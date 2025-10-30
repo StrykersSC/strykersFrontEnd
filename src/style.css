@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+body {
+  font-family: 'Orbitron', 'Arial', 'Helvetica', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+}
