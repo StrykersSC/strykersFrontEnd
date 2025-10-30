@@ -10,11 +10,14 @@
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/src/style.css" rel="stylesheet" />
     <title>Strykers Star Citizen</title>
   </head>
   <body
     class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen"
   >
+    <!-- Marca d'água -->
     <div
       class="fixed inset-0 pointer-events-none z-0 flex items-center justify-center"
     >
@@ -24,8 +27,101 @@
         class="opacity-20 w-full h-full object-contain"
       />
     </div>
-    <h1 class="text-3xl font-bold underline">Main page Strykers</h1>
-    <main></main>
-    <link href="/src/style.css" rel="stylesheet" />
+
+    <!-- Navbar -->
+    <nav
+      class="relative z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700"
+    >
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Logo/Nome -->
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-slate-700 rounded flex items-center justify-center"
+            >
+              <span class="text-cyan-400 font-bold text-xl">S</span>
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-wider">
+              STRYKERS
+            </h1>
+          </div>
+
+          <!-- Menu Links -->
+          <div class="flex space-x-8">
+            <a
+              href="/"
+              class="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors border-b-2 border-cyan-400 pb-1"
+            >
+              HOME
+            </a>
+            <a
+              href="/membros"
+              class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
+            >
+              MEMBROS
+            </a>
+            <a
+              href="/missoes"
+              class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
+            >
+              MISSÕES
+            </a>
+            <a
+              href="/recrutamento"
+              class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
+            >
+              RECRUTAMENTO
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="relative z-10 container mx-auto px-6 py-16">
+      <!-- Hero Section -->
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-bold text-white mb-4 tracking-wide">
+          BEM-VINDO AOS STRYKERS
+        </h2>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+          Unidade de elite militar no universo de Star Citizen. Precisão,
+          estratégia e honra.
+        </p>
+      </div>
+
+      <!-- Cards de Informação -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+        <div
+          class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 hover:border-cyan-400 transition-colors"
+        >
+          <h3 class="text-2xl font-bold text-cyan-400 mb-3">MISSÃO</h3>
+          <p class="text-gray-300">
+            Operações táticas coordenadas com foco em objetivos estratégicos e
+            trabalho em equipe.
+          </p>
+        </div>
+
+        <div
+          class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 hover:border-cyan-400 transition-colors"
+        >
+          <h3 class="text-2xl font-bold text-cyan-400 mb-3">VALORES</h3>
+          <p class="text-gray-300">
+            Disciplina, lealdade e excelência operacional em cada missão
+            executada.
+          </p>
+        </div>
+
+        <div
+          class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 hover:border-cyan-400 transition-colors"
+        >
+          <h3 class="text-2xl font-bold text-cyan-400 mb-3">COMUNIDADE</h3>
+          <p class="text-gray-300">
+            Grupo unido de jogadores dedicados a construir experiências
+            memoráveis juntos.
+          </p>
+        </div>
+      </div>
+    </main>
   </body>
 </html>
