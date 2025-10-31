@@ -23,7 +23,7 @@
     >
       <img
         src="/STRYKERS-Logo.png"
-        alt=""
+        alt="Logo da Strykers"
         class="opacity-20 w-full h-full object-contain"
       />
     </div>
@@ -61,16 +61,22 @@
               MEMBROS
             </a>
             <a
-              href="/missoes"
+              href="/eventos"
               class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
             >
-              MISSÕES
+              EVENTOS
             </a>
             <a
               href="/recrutamento"
               class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
             >
               RECRUTAMENTO
+            </a>
+            <a
+              href="/forcasespeciais"
+              class="text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
+            >
+              FORÇAS ESPECIAIS
             </a>
           </div>
         </div>
@@ -122,6 +128,93 @@
           </p>
         </div>
       </div>
+
+      <!-- Carrossel de Imagens -->
+      <div class="mt-20 mb-20">
+        <h2
+          class="text-3xl font-bold text-white mb-8 text-center tracking-wide"
+        >
+          GALERIA DE OPERAÇÕES
+        </h2>
+        <div
+          class="relative overflow-hidden rounded-lg border border-slate-700"
+        >
+          <div
+            id="carousel"
+            class="flex transition-transform duration-500 ease-in-out"
+          >
+            <!-- Os slides serão gerados dinamicamente pelo JavaScript -->
+          </div>
+
+          <!-- Indicadores -->
+          <div
+            id="carousel-indicators"
+            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"
+          >
+            <!-- Os indicadores serão gerados dinamicamente pelo JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Briefing Section -->
+      <div class="mt-20">
+        <div
+          class="bg-slate-800/60 backdrop-blur-sm border-l-4 border-cyan-400 rounded-lg p-8"
+        >
+          <h2 class="text-3xl font-bold text-cyan-400 mb-6 tracking-wide">
+            BRIEFING: STRYKERS
+          </h2>
+
+          <div class="space-y-4 text-gray-300 leading-relaxed">
+            <p>
+              Os <span class="text-cyan-400 font-semibold">Strykers</span> são
+              uma unidade de elite militar operando no vasto universo de Star
+              Citizen. Fundada por veteranos com décadas de experiência em
+              combate tático e operações estratégicas, nossa organização se
+              destaca pela excelência operacional e compromisso inabalável com a
+              missão.
+            </p>
+
+            <p>
+              Nossa doutrina é baseada em três pilares fundamentais:
+              <span class="text-cyan-400 font-semibold">Precisão</span> em cada
+              movimento,
+              <span class="text-cyan-400 font-semibold">Estratégia</span> em
+              cada decisão, e
+              <span class="text-cyan-400 font-semibold">Honra</span> em cada
+              ação. Não somos apenas jogadores, somos uma irmandade forjada no
+              fogo do combate espacial.
+            </p>
+
+            <p>
+              As operações dos Strykers variam desde missões de reconhecimento
+              profundo até assaltos coordenados em larga escala. Cada membro
+              passa por treinamento rigoroso, garantindo que estejamos sempre
+              prontos para enfrentar qualquer desafio que o universo nos
+              apresente.
+            </p>
+
+            <p>
+              Se você busca mais do que apenas jogar - se busca pertencer a algo
+              maior, onde cada vitória é compartilhada e cada desafio é superado
+              em equipe - os Strykers podem ser seu destino.
+              <span class="text-cyan-400 font-semibold">Junte-se a nós.</span>
+            </p>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-slate-700">
+            <p class="text-sm text-gray-400 italic">
+              "Precisão no caos. Estratégia na adversidade. Honra em cada
+              estrela."
+            </p>
+            <p class="text-sm text-cyan-400 font-semibold mt-2">
+              - Lema dos Strykers
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
+
+    <script type="module" src="/src/carousel.js"></script>
   </body>
 </html>
