@@ -9,35 +9,29 @@ class Carousel {
     this.autoPlayInterval = null;
     this.imagesPerSlide = 3;
 
-    this.init();
+    if (this.carousel && this.indicatorsContainer) {
+      this.init();
+    }
   }
 
   async init() {
-    // Carrega as imagens da pasta
     await this.loadImages();
 
-    // Se não houver imagens, não inicia o carrossel
     if (this.totalSlides === 0) {
       console.warn('Nenhuma imagem encontrada na pasta /images');
       return;
     }
 
-    // Adiciona event listeners aos indicadores
     this.indicators.forEach((indicator, index) => {
       indicator.addEventListener('click', () => this.goToSlide(index));
     });
 
-    // Inicia o auto-play
     this.startAutoPlay();
   }
 
   async loadImages() {
-    // Lista de possíveis imagens (você pode expandir essa lista)
-    // Como não podemos listar diretamente o diretório no browser,
-    // vamos tentar carregar imagens com nomes comuns
     const possibleImages = [];
 
-    // Tenta carregar imagens numeradas de 1 a 50
     for (let i = 1; i <= 50; i++) {
       possibleImages.push(`/images/image${i}.jpg`);
       possibleImages.push(`/images/image${i}.jpeg`);
@@ -50,17 +44,13 @@ class Carousel {
       possibleImages.push(`/images/${i}.png`);
     }
 
-    // Verifica quais imagens existem
     const validImages = await this.checkImages(possibleImages);
 
     if (validImages.length === 0) {
       return;
     }
 
-    // Embaralha as imagens aleatoriamente
     this.shuffleArray(validImages);
-
-    // Cria os slides
     this.createSlides(validImages);
   }
 
@@ -74,7 +64,7 @@ class Carousel {
           validImages.push(path);
         }
       } catch (error) {
-        // Imagem não existe, continua
+        // Imagem não existe
       }
     }
 
@@ -98,7 +88,6 @@ class Carousel {
   }
 
   createSlides(images) {
-    // Divide as imagens em grupos de 3
     const slides = [];
     for (let i = 0; i < images.length; i += this.imagesPerSlide) {
       slides.push(images.slice(i, i + this.imagesPerSlide));
@@ -106,7 +95,6 @@ class Carousel {
 
     this.totalSlides = slides.length;
 
-    // Cria o HTML dos slides
     slides.forEach((slideImages, slideIndex) => {
       const slideDiv = document.createElement('div');
       slideDiv.className = 'flex-shrink-0 w-full grid grid-cols-3 gap-4 p-4';
@@ -125,7 +113,6 @@ class Carousel {
         slideDiv.appendChild(imageContainer);
       });
 
-      // Preenche com placeholders se necessário
       const remaining = this.imagesPerSlide - slideImages.length;
       for (let i = 0; i < remaining; i++) {
         const placeholder = document.createElement('div');
@@ -139,7 +126,6 @@ class Carousel {
       this.carousel.appendChild(slideDiv);
     });
 
-    // Cria os indicadores
     this.createIndicators();
   }
 
@@ -180,7 +166,7 @@ class Carousel {
   }
 
   startAutoPlay() {
-    this.autoPlayInterval = setInterval(() => this.nextSlide(), 10000); // Altere aqui o tempo de troca dos slides, em milisegundos
+    this.autoPlayInterval = setInterval(() => this.nextSlide(), 5000);
   }
 
   resetAutoPlay() {
@@ -189,7 +175,6 @@ class Carousel {
   }
 }
 
-// Inicializa o carrossel quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
+export function initCarousel() {
   new Carousel();
-});
+}

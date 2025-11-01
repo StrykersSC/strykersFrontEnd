@@ -1,0 +1,48 @@
+João Silva|Marechal|15|2023-01-15|Ativo|87|S.T.O.R.M.|Comandante experiente com especializações em táticas avançadas
+Maria Santos|General|12|2023-02-20|Ativo|65|S.T.O.R.M.|Líder de operações especiais
+Pedro Oliveira|Tenente-Coronel|8|2023-03-10|Ativo|45|Não|Piloto de caças espaciais
+Ana Costa|Major|6|2023-04-05|Reservista|38|Não|Especialista em logística
+Carlos Ferreira|Capitão|5|2023-05-12|Ativo|32|Não|Comandante de esquadrão terrestre
+Julia Rodrigues|Tenente|4|2023-06-08|Ativo|28|Não|Oficial de comunicações
+Ricardo Alves|Subtenente|3|2023-07-14|Ativo|22|Não|Líder de pelotão
+Fernanda Lima|Sargento-Mor|5|2023-08-20|Ativo|35|Não|Instrutora de combate
+Paulo Martins|Primeiro-Sargento|4|2023-09-15|Desertor|18|Não|Ausente há 3 meses
+Camila Souza|Segundo-Sargento|3|2023-10-10|Ativo|15|Não|Especialista em explosivos
+Lucas Pereira|Terceiro-Sargento|2|2023-11-05|Ativo|12|Não|Atirador de elite
+Amanda Barbosa|Cabo|2|2023-12-01|Reservista|10|Não|Médica de combate
+Bruno Cardoso|Soldado|1|2024-01-08|Ativo|8|Não|Recruta promissor
+Juliana Mendes|Soldado|1|2024-01-20|Ativo|7|Não|Operadora de drones
+Gabriel Rocha|Recruta|0|2024-02-15|Ativo|3|Não|Em treinamento básico
+Mariana Torres|Coronel|10|2023-02-28|Ativo|58|S.T.O.R.M.|Estrategista de operações
+Rafael Dias|Brigadeiro|13|2023-01-30|Ativo|72|S.T.O.R.M.|Vice-comandante geral
+Beatriz Cunha|Capitão|5|2023-06-22|Ativo|30|Não|Piloto de transporte
+Thiago Nascimento|Tenente|4|2023-07-30|Ativo|25|Não|Oficial de inteligência
+Patricia Moreira|Major|7|2023-03-18|Ativo|42|Não|Comandante de base
+Rodrigo Castro|Sargento-Mor|5|2023-08-05|Ativo|33|Não|Instrutor de armamentos
+Larissa Ribeiro|Primeiro-Sargento|4|2023-09-12|Reservista|20|Não|Especialista em navegação
+Felipe Azevedo|Segundo-Sargento|3|2023-10-25|Ativo|16|Não|Operador de veículos blindados
+Carolina Freitas|Terceiro-Sargento|2|2023-11-18|Ativo|13|Não|Técnica de suporte
+Diego Monteiro|Cabo|2|2024-01-03|Ativo|9|Não|Soldado de infantaria
+Aline Carvalho|Soldado|1|2024-02-10|Ativo|6|Não|Operadora de sensores
+Marcos Vieira|Soldado|1|2024-02-22|Ativo|5|Não|Recruta em avaliação
+Natalia Campos|Recruta|0|2024-03-05|Ativo|2|Não|Em treinamento inicial
+Eduardo Pinto|Tenente-Coronel|9|2023-03-25|Ativo|50|Não|Comandante de frota
+Vanessa Lopes|Capitão|6|2023-06-15|Desertor|29|Não|Sem contato há 2 meses
+Gustavo Teixeira|Tenente|4|2023-08-28|Ativo|24|Não|Oficial de operações
+Isabela Gomes|Subtenente|3|2023-09-20|Ativo|19|Não|Coordenadora tática
+Leonardo Correia|Sargento-Mor|5|2023-07-08|Ativo|36|Não|Veterano de combate
+Priscila Nunes|Primeiro-Sargento|4|2023-10-15|Ativo|21|Não|Especialista em comunicações
+Henrique Farias|Segundo-Sargento|3|2023-11-22|Reservista|14|Não|Técnico de manutenção
+Tatiana Medeiros|Terceiro-Sargento|2|2024-01-12|Ativo|11|Não|Soldado de reconhecimento
+Vinicius Barros|Cabo|2|2024-02-05|Ativo|8|Não|Operador de sistemas
+Renata Pires|Soldado|1|2024-02-28|Ativo|4|Não|Recruta
+Adriano Reis|General|11|2023-02-10|Ativo|63|S.T.O.R.M.|Comandante de operações terrestres
+Sabrina Costa|Coronel|10|2023-03-15|Ativo|55|Não|Comandante de divisão aérea
+Alexandre Duarte|Major|7|2023-05-20|Ativo|40|Não|Chefe de estratégia
+Bianca Moura|Capitão|5|2023-07-25|Ativo|31|Não|Líder de esquadrão de reconhecimento
+Mauricio Santana|Tenente|4|2023-09-08|Ativo|26|Não|Oficial de logística
+Daniela Xavier|Subtenente|3|2023-10-30|Ativo|17|Não|Assistente de comando
+Roberto Machado|Sargento-Mor|5|2023-08-12|Desertor|34|Não|Desaparecido em missão
+Leticia Aragão|Primeiro-Sargento|4|2023-11-05|Ativo|23|Não|Instrutora de pilotos
+Anderson Silva|Segundo-Sargento|3|2024-01-18|Ativo|15|Não|Soldado de infantaria
+Michele Barreto|Terceiro-Sargento|2|2024-02-12|Ativo|10|Não|Operadora de comunicações
