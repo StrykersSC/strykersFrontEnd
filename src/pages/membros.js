@@ -1,9 +1,14 @@
 export const membrosPage = () => {
   return `
     <main class="relative z-10 container mx-auto px-6 py-16">
-      <div class="mb-8">
-        <h2 class="text-4xl font-bold text-white mb-2 tracking-wide">MEMBROS</h2>
-        <p class="text-cyan-400 text-xl" id="total-membros">Total: 0 membros</p>
+      <div class="mb-8 flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="text-4xl font-bold text-white mb-2 tracking-wide">MEMBROS</h2>
+          <p class="text-cyan-400 text-xl" id="total-membros">Total: 0 membros</p>
+        </div>
+        <button id="add-membro-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors flex items-center gap-2">
+          ➕ Adicionar Membro
+        </button>
       </div>
 
       <!-- Barra de Pesquisa e Filtros -->
@@ -54,7 +59,7 @@ export const membrosPage = () => {
       </div>
     </main>
 
-    <!-- Sidebar de Detalhes (Aside) -->
+    <!-- Sidebar de Detalhes (Direita) -->
     <aside id="member-details-sidebar" class="fixed top-0 right-0 h-full w-96 bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
       <div class="p-6">
         <div class="flex justify-between items-center mb-6">
@@ -64,6 +69,156 @@ export const membrosPage = () => {
         <div id="member-details-content">
           <!-- Conteúdo será preenchido dinamicamente -->
         </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar de Edição (Esquerda) -->
+    <aside id="edit-member-sidebar" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400" id="edit-sidebar-title">EDITAR MEMBRO</h3>
+          <button id="close-edit-sidebar" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+
+        <form id="form-membro" class="space-y-4">
+          <input type="hidden" id="membro-id" />
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">NOME *</label>
+            <input
+              type="text"
+              id="membro-nome"
+              required
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">FOTO (URL)</label>
+            <input
+              type="text"
+              id="membro-foto"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">PATENTE *</label>
+            <select
+              id="membro-patente"
+              required
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            >
+              <option value="Recruta">Recruta</option>
+              <option value="Soldado">Soldado</option>
+              <option value="Cabo">Cabo</option>
+              <option value="Terceiro-Sargento">Terceiro-Sargento</option>
+              <option value="Segundo-Sargento">Segundo-Sargento</option>
+              <option value="Primeiro-Sargento">Primeiro-Sargento</option>
+              <option value="Sargento-Mor">Sargento-Mor</option>
+              <option value="Subtenente">Subtenente</option>
+              <option value="Tenente">Tenente</option>
+              <option value="Capitão">Capitão</option>
+              <option value="Major">Major</option>
+              <option value="Tenente-Coronel">Tenente-Coronel</option>
+              <option value="Coronel">Coronel</option>
+              <option value="Brigadeiro">Brigadeiro</option>
+              <option value="General">General</option>
+              <option value="Marechal">Marechal</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">ATRIBUIÇÃO *</label>
+            <select
+              id="membro-atribuicao"
+              required
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            >
+              <option value="Infantaria">Infantaria</option>
+              <option value="Força Aérea">Força Aérea</option>
+              <option value="Marinha">Marinha</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-400 text-sm mb-2">MEDALHAS</label>
+              <input
+                type="number"
+                id="membro-medalhas"
+                min="0"
+                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              />
+            </div>
+            <div>
+              <label class="block text-gray-400 text-sm mb-2">MISSÕES</label>
+              <input
+                type="number"
+                id="membro-missoes"
+                min="0"
+                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">DATA DE REGISTRO</label>
+            <input
+              type="date"
+              id="membro-dataRegistro"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">SITUAÇÃO</label>
+            <select
+              id="membro-situacao"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            >
+              <option value="Ativo">Ativo</option>
+              <option value="Reservista">Reservista</option>
+              <option value="Desertor">Desertor</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">FORÇA ESPECIAL</label>
+            <input
+              type="text"
+              id="membro-forcaEspecial"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="S.T.O.R.M. ou deixe 'Não'"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
+            <textarea
+              id="membro-observacoes"
+              rows="4"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
+            ></textarea>
+          </div>
+
+          <div class="flex gap-4">
+            <button
+              type="submit"
+              class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"
+            >
+              ✓ Salvar
+            </button>
+            <button
+              type="button"
+              id="btn-cancelar-edit"
+              class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors"
+            >
+              ✕ Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </aside>
 

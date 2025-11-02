@@ -1,5 +1,6 @@
 import { homePage } from './pages/home.js';
 import { membrosPage } from './pages/membros.js';
+import { eventosPage } from './pages/eventos.js';
 
 export const router = {
   currentPage: null,
@@ -7,8 +8,7 @@ export const router = {
   pages: {
     home: homePage,
     membros: membrosPage,
-    eventos: () =>
-      '<div class="relative z-10 container mx-auto px-6 py-16"><h1 class="text-4xl text-white">EVENTOS - Em construção</h1></div>',
+    eventos: eventosPage,
     recrutamento: () =>
       '<div class="relative z-10 container mx-auto px-6 py-16"><h1 class="text-4xl text-white">RECRUTAMENTO - Em construção</h1></div>',
     forcasespeciais: () =>
@@ -28,10 +28,7 @@ export const router = {
       return;
     }
 
-    // Atualiza links ativos no menu
     this.updateActiveLink(pageName);
-
-    // Renderiza a página
     this.render(pageFunction, pageName);
     this.currentPage = pageName;
   },
@@ -52,13 +49,15 @@ export const router = {
     const content = await pageFunction();
     this.contentContainer.innerHTML = content;
 
-    // Inicializa funcionalidades específicas da página
     if (pageName === 'home') {
       const { initCarousel } = await import('./carousel.js');
       initCarousel();
     } else if (pageName === 'membros') {
       const { initMembros } = await import('./membros.js');
       initMembros();
+    } else if (pageName === 'eventos') {
+      const { initEventos } = await import('./eventos.js');
+      initEventos();
     }
   },
 };
