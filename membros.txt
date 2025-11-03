@@ -1,15 +1,15 @@
-João Silva|Marechal|15|2023-01-15|Ativo|0|S.T.O.R.M.|Comandante experiente
-Maria Santos|General|12|2023-02-20|Ativo|0|S.T.O.R.M.|Líder de operações especiais
-Pedro Oliveira|Tenente-Coronel|8|2023-03-10|Ativo|0|Não|Piloto de caças espaciais
-Ana Costa|Major|6|2023-04-05|Reservista|0|Não|Especialista em logística
-Carlos Ferreira|Capitão|5|2023-05-12|Ativo|0|Não|Comandante de esquadrão
-Julia Rodrigues|Tenente|4|2023-06-08|Ativo|0|Não|Oficial de comunicações
-Ricardo Alves|Subtenente|3|2023-07-14|Ativo|0|Não|Líder de pelotão
-Fernanda Lima|Sargento-Mor|5|2023-08-20|Ativo|0|Não|Instrutora de combate
-Paulo Martins|Primeiro-Sargento|4|2023-09-15|Desertor|0|Não|Ausente há 3 meses
-Camila Souza|Segundo-Sargento|3|2023-10-10|Ativo|0|Não|Especialista em explosivos
-Lucas Pereira|Terceiro-Sargento|2|2023-11-05|Ativo|0|Não|Atirador de elite
-Amanda Barbosa|Cabo|2|2023-12-01|Reservista|0|Não|Médica de combate
-Bruno Cardoso|Soldado|1|2024-01-08|Ativo|0|Não|Recruta promissor
-Juliana Mendes|Soldado|1|2024-01-20|Ativo|0|Não|Operadora de drones
+João Silva|Marechal|0|2023-01-15|Ativo|0|S.T.O.R.M.|Comandante experiente
+Maria Santos|General|0|2023-02-20|Ativo|0|S.T.O.R.M.|Líder de operações especiais
+Pedro Oliveira|Tenente-Coronel|0|2023-03-10|Ativo|0|Não|Piloto de caças espaciais
+Ana Costa|Major|0|2023-04-05|Reservista|0|Não|Especialista em logística
+Carlos Ferreira|Capitão|0|2023-05-12|Ativo|0|Não|Comandante de esquadrão
+Julia Rodrigues|Tenente|0|2023-06-08|Ativo|0|Não|Oficial de comunicações
+Ricardo Alves|Subtenente|0|2023-07-14|Ativo|0|Não|Líder de pelotão
+Fernanda Lima|Sargento-Mor|0|2023-08-20|Ativo|0|Não|Instrutora de combate
+Paulo Martins|Primeiro-Sargento|0|2023-09-15|Desertor|0|Não|Ausente há 3 meses
+Camila Souza|Segundo-Sargento|0|2023-10-10|Ativo|0|Não|Especialista em explosivos
+Lucas Pereira|Terceiro-Sargento|0|2023-11-05|Ativo|0|Não|Atirador de elite
+Amanda Barbosa|Cabo|0|2023-12-01|Reservista|0|Não|Médica de combate
+Bruno Cardoso|Soldado|0|2024-01-08|Ativo|0|Não|Recruta promissor
+Juliana Mendes|Soldado|0|2024-01-20|Ativo|0|Não|Operadora de drones
 Gabriel Rocha|Recruta|0|2024-02-15|Ativo|0|Não|Em treinamento básico

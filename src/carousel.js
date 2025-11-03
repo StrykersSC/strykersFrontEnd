@@ -7,7 +7,7 @@ class Carousel {
     this.indicatorsContainer = document.getElementById('carousel-indicators');
     this.indicators = [];
     this.autoPlayInterval = null;
-    this.imagesPerSlide = 3;
+    this.imgCarrosselPerSlide = 3;
 
     if (this.carousel && this.indicatorsContainer) {
       this.init();
@@ -15,10 +15,10 @@ class Carousel {
   }
 
   async init() {
-    await this.loadImages();
+    await this.loadimgCarrossel();
 
     if (this.totalSlides === 0) {
-      console.warn('Nenhuma imagem encontrada na pasta /images');
+      console.warn('Nenhuma imagem encontrada na pasta /imgCarrossel');
       return;
     }
 
@@ -29,46 +29,48 @@ class Carousel {
     this.startAutoPlay();
   }
 
-  async loadImages() {
-    const possibleImages = [];
+  async loadimgCarrossel() {
+    const possibleimgCarrossel = [];
 
     for (let i = 1; i <= 50; i++) {
-      possibleImages.push(`/images/image${i}.jpg`);
-      possibleImages.push(`/images/image${i}.jpeg`);
-      possibleImages.push(`/images/image${i}.png`);
-      possibleImages.push(`/images/img${i}.jpg`);
-      possibleImages.push(`/images/img${i}.jpeg`);
-      possibleImages.push(`/images/img${i}.png`);
-      possibleImages.push(`/images/${i}.jpg`);
-      possibleImages.push(`/images/${i}.jpeg`);
-      possibleImages.push(`/images/${i}.png`);
+      possibleimgCarrossel.push(`/imgCarrossel/image${i}.jpg`);
+      possibleimgCarrossel.push(`/imgCarrossel/image${i}.jpeg`);
+      possibleimgCarrossel.push(`/imgCarrossel/image${i}.png`);
+      possibleimgCarrossel.push(`/imgCarrossel/img${i}.jpg`);
+      possibleimgCarrossel.push(`/imgCarrossel/img${i}.jpeg`);
+      possibleimgCarrossel.push(`/imgCarrossel/img${i}.png`);
+      possibleimgCarrossel.push(`/imgCarrossel/${i}.jpg`);
+      possibleimgCarrossel.push(`/imgCarrossel/${i}.jpeg`);
+      possibleimgCarrossel.push(`/imgCarrossel/${i}.png`);
     }
 
-    const validImages = await this.checkImages(possibleImages);
+    const validimgCarrossel = await this.checkimgCarrossel(
+      possibleimgCarrossel
+    );
 
-    if (validImages.length === 0) {
+    if (validimgCarrossel.length === 0) {
       return;
     }
 
-    this.shuffleArray(validImages);
-    this.createSlides(validImages);
+    this.shuffleArray(validimgCarrossel);
+    this.createSlides(validimgCarrossel);
   }
 
-  async checkImages(imagePaths) {
-    const validImages = [];
+  async checkimgCarrossel(imagePaths) {
+    const validimgCarrossel = [];
 
     for (const path of imagePaths) {
       try {
         const exists = await this.imageExists(path);
         if (exists) {
-          validImages.push(path);
+          validimgCarrossel.push(path);
         }
       } catch (error) {
         // Imagem não existe
       }
     }
 
-    return validImages;
+    return validimgCarrossel;
   }
 
   imageExists(url) {
@@ -87,33 +89,35 @@ class Carousel {
     }
   }
 
-  createSlides(images) {
+  createSlides(imgCarrossel) {
     const slides = [];
-    for (let i = 0; i < images.length; i += this.imagesPerSlide) {
-      slides.push(images.slice(i, i + this.imagesPerSlide));
+    for (let i = 0; i < imgCarrossel.length; i += this.imgCarrosselPerSlide) {
+      slides.push(imgCarrossel.slice(i, i + this.imgCarrosselPerSlide));
     }
 
     this.totalSlides = slides.length;
 
-    slides.forEach((slideImages, slideIndex) => {
+    slides.forEach((slideimgCarrossel, slideIndex) => {
       const slideDiv = document.createElement('div');
       slideDiv.className = 'flex-shrink-0 w-full grid grid-cols-3 gap-4 p-4';
 
-      slideImages.forEach((imagePath, imgIndex) => {
+      slideimgCarrossel.forEach((imagePath, imgIndex) => {
         const imageContainer = document.createElement('div');
         imageContainer.className =
           'bg-slate-700 rounded-lg overflow-hidden h-64';
 
         const img = document.createElement('img');
         img.src = imagePath;
-        img.alt = `Operação ${slideIndex * this.imagesPerSlide + imgIndex + 1}`;
+        img.alt = `Operação ${
+          slideIndex * this.imgCarrosselPerSlide + imgIndex + 1
+        }`;
         img.className = 'w-full h-full object-cover';
 
         imageContainer.appendChild(img);
         slideDiv.appendChild(imageContainer);
       });
 
-      const remaining = this.imagesPerSlide - slideImages.length;
+      const remaining = this.imgCarrosselPerSlide - slideimgCarrossel.length;
       for (let i = 0; i < remaining; i++) {
         const placeholder = document.createElement('div');
         placeholder.className =
