@@ -165,6 +165,38 @@ export const eventosPage = () => {
       </div>
     </aside>
 
+<!-- Aside para Gerenciar Participantes -->
+    <aside id="participantes-evento-sidebar" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400">GERENCIAR PARTICIPANTES</h3>
+          <button id="close-participantes-sidebar" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+
+        <!-- Participantes Adicionados -->
+        <div class="mb-6">
+          <h4 class="text-sm text-gray-400 mb-3">PARTICIPANTES ADICIONADOS</h4>
+          <div id="lista-participantes-evento" class="space-y-2 max-h-60 overflow-y-auto">
+            <!-- Preenchido dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Adicionar Participante -->
+        <div>
+          <h4 class="text-sm text-gray-400 mb-3">ADICIONAR MEMBRO</h4>
+          <input
+            type="text"
+            id="search-membro-participante"
+            placeholder="Buscar membro ativo..."
+            class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 mb-3 focus:outline-none focus:border-cyan-400"
+          />
+          <div id="lista-membros-disponiveis" class="space-y-2 max-h-96 overflow-y-auto">
+            <!-- Preenchido dinamicamente -->
+          </div>
+        </div>
+      </div>
+    </aside>
+
     <!-- Overlay -->
     <div id="eventos-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
   `;

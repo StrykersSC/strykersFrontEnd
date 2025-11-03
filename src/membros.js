@@ -70,18 +70,18 @@ async function loadFromFile() {
           nome?.trim() || 'User'
         )}&background=0f172a&color=22d3ee&size=150`,
         patente: patente?.trim() || 'Recruta',
-        atribuicao: 'Infantaria', // Padrão
+        atribuicao: 'Infantaria',
         medalhas: parseInt(medalhas?.trim()) || 0,
         dataRegistro:
           dataRegistro?.trim() || new Date().toISOString().split('T')[0],
         situacao: situacao?.trim() || 'Ativo',
-        missoes: parseInt(missoes?.trim()) || 0,
+        missoes: 0, // Sempre começa zerado
         forcaEspecial: forcaEspecial?.trim() || 'Não',
         observacoes: observacoes?.trim() || '',
+        eventosParticipados: [], // Inicializa vazio
       };
     });
 
-    // Salva no localStorage
     salvarMembros();
   } catch (error) {
     console.error('Erro ao carregar arquivo:', error);
@@ -158,12 +158,10 @@ function setupEventListeners() {
     .getElementById('sidebar-overlay')
     .addEventListener('click', closeSidebars);
 
-  // Adicionar membro
   document
     .getElementById('add-membro-btn')
     .addEventListener('click', () => abrirFormulario(null));
 
-  // Formulário
   document
     .getElementById('form-membro')
     .addEventListener('submit', salvarMembro);
@@ -295,9 +293,13 @@ function showMemberDetails(membro) {
             <p class="text-gray-400 text-sm">MEDALHAS</p>
             <p class="text-white text-lg font-semibold">${membro.medalhas}</p>
           </div>
-          <div>
+          <div class="cursor-pointer hover:bg-slate-800/50 rounded p-2 transition-colors" onclick="window.mostrarMissoesMembro('${
+            membro.id
+          }')">
             <p class="text-gray-400 text-sm">MISSÕES</p>
-            <p class="text-white text-lg font-semibold">${membro.missoes}</p>
+            <p class="text-cyan-400 text-lg font-semibold hover:text-cyan-300">${
+              membro.missoes || 0
+            } 👁️</p>
           </div>
         </div>
 
@@ -348,7 +350,6 @@ function abrirFormulario(membroId) {
   const titulo = document.getElementById('edit-sidebar-title');
 
   if (membroId) {
-    // Modo edição
     const membro = membrosData.find((m) => m.id === membroId);
     if (!membro) return;
 
@@ -360,14 +361,12 @@ function abrirFormulario(membroId) {
     document.getElementById('membro-atribuicao').value =
       membro.atribuicao || 'Infantaria';
     document.getElementById('membro-medalhas').value = membro.medalhas;
-    document.getElementById('membro-missoes').value = membro.missoes;
     document.getElementById('membro-dataRegistro').value = membro.dataRegistro;
     document.getElementById('membro-situacao').value = membro.situacao;
     document.getElementById('membro-forcaEspecial').value =
       membro.forcaEspecial;
     document.getElementById('membro-observacoes').value = membro.observacoes;
   } else {
-    // Modo adicionar
     titulo.textContent = 'ADICIONAR MEMBRO';
     document.getElementById('form-membro').reset();
     document.getElementById('membro-id').value = '';
@@ -397,22 +396,23 @@ function salvarMembro(e) {
     patente: document.getElementById('membro-patente').value,
     atribuicao: document.getElementById('membro-atribuicao').value,
     medalhas: parseInt(document.getElementById('membro-medalhas').value) || 0,
-    missoes: parseInt(document.getElementById('membro-missoes').value) || 0,
     dataRegistro: document.getElementById('membro-dataRegistro').value,
     situacao: document.getElementById('membro-situacao').value,
     forcaEspecial:
       document.getElementById('membro-forcaEspecial').value || 'Não',
     observacoes: document.getElementById('membro-observacoes').value,
+    eventosParticipados: id
+      ? membrosData.find((m) => m.id === id)?.eventosParticipados || []
+      : [],
+    missoes: id ? membrosData.find((m) => m.id === id)?.missoes || 0 : 0,
   };
 
   if (id) {
-    // Atualizar
     const index = membrosData.findIndex((m) => m.id === id);
     if (index !== -1) {
       membrosData[index] = membroData;
     }
   } else {
-    // Adicionar
     membrosData.push(membroData);
   }
 
@@ -434,6 +434,234 @@ function excluirMembro(membroId) {
   applyFilters();
 
   alert('✅ Membro excluído!');
+}
+
+function mostrarMissoesMembro(membroId) {
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  const eventosParticipados = membro.eventosParticipados || [];
+
+  let html = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-cyan-400">MISSÕES DE ${membro.nome}</h3>
+        <button onclick="window.fecharMissoesSidebar()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-gray-400">Total de missões: <span class="text-cyan-400 font-bold text-xl">${eventosParticipados.length}</span></p>
+      </div>
+
+      <div class="space-y-3">
+  `;
+
+  if (eventosParticipados.length === 0) {
+    html +=
+      '<p class="text-gray-500 text-center py-8">Nenhuma missão registrada</p>';
+  } else {
+    eventosParticipados.forEach((ep) => {
+      const dataFormatada = new Date(ep.data + 'T00:00:00').toLocaleDateString(
+        'pt-BR',
+        { day: '2-digit', month: 'short', year: 'numeric' }
+      );
+
+      const cores = {
+        treinamento: 'border-green-500 text-green-400',
+        missao: 'border-yellow-500 text-yellow-400',
+        operacao: 'border-orange-500 text-orange-400',
+        'mega-operacao': 'border-red-500 text-red-400',
+        campanha: 'border-purple-500 text-purple-400',
+        outro: 'border-blue-500 text-blue-400',
+      };
+
+      const cor = cores[ep.categoria] || 'border-gray-500 text-gray-400';
+
+      html += `
+        <div 
+          class="bg-slate-800 border-l-4 ${cor} rounded p-4 cursor-pointer hover:bg-slate-700 transition-colors"
+          onclick="window.mostrarDetalhesMissaoDoEvento(${ep.eventoId})"
+        >
+          <div class="font-semibold text-white mb-1">${ep.nome}</div>
+          <div class="text-sm text-gray-400">${dataFormatada}</div>
+        </div>
+      `;
+    });
+  }
+
+  html += '</div></div>';
+
+  let sidebar = document.getElementById('missoes-membro-sidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'missoes-membro-sidebar';
+    sidebar.className =
+      'fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = html;
+  sidebar.classList.remove('-translate-x-full');
+  document.getElementById('sidebar-overlay').classList.remove('hidden');
+}
+
+function fecharMissoesSidebar() {
+  const sidebar = document.getElementById('missoes-membro-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('-translate-x-full');
+  }
+
+  const detailsSidebar = document.getElementById('member-details-sidebar');
+  const editSidebar = document.getElementById('edit-member-sidebar');
+
+  if (
+    detailsSidebar.classList.contains('translate-x-full') &&
+    editSidebar.classList.contains('-translate-x-full')
+  ) {
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+  }
+}
+
+function mostrarDetalhesMissaoDoEvento(eventoId) {
+  const eventos = JSON.parse(localStorage.getItem('strykers_eventos') || '[]');
+  const evento = eventos.find((e) => e.id === eventoId);
+
+  if (!evento) {
+    alert('Evento não encontrado');
+    return;
+  }
+
+  const cores = {
+    treinamento: {
+      bg: 'bg-green-500',
+      text: 'text-green-400',
+      border: 'border-green-500',
+      nome: 'Treinamento',
+    },
+    missao: {
+      bg: 'bg-yellow-500',
+      text: 'text-yellow-400',
+      border: 'border-yellow-500',
+      nome: 'Missão',
+    },
+    operacao: {
+      bg: 'bg-orange-500',
+      text: 'text-orange-400',
+      border: 'border-orange-500',
+      nome: 'Operação',
+    },
+    'mega-operacao': {
+      bg: 'bg-red-500',
+      text: 'text-red-400',
+      border: 'border-red-500',
+      nome: 'Mega Operação',
+    },
+    campanha: {
+      bg: 'bg-purple-500',
+      text: 'text-purple-400',
+      border: 'border-purple-500',
+      nome: 'Campanha',
+    },
+    outro: {
+      bg: 'bg-blue-500',
+      text: 'text-blue-400',
+      border: 'border-blue-500',
+      nome: 'Outro',
+    },
+  };
+
+  const cor = cores[evento.categoria];
+  const dataEvento = new Date(evento.data + 'T00:00:00');
+  const dataFormatada = dataEvento.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const html = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-cyan-400">DETALHES DA MISSÃO</h3>
+        <button onclick="window.fecharDetalhesMissao()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <span class="inline-block px-3 py-1 ${
+            cor.bg
+          } text-slate-900 text-sm font-semibold rounded mb-3">${
+    cor.nome
+  }</span>
+          ${
+            evento.finalizado
+              ? '<span class="ml-2 inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded">✓ FINALIZADO</span>'
+              : ''
+          }
+          <h3 class="text-2xl font-bold text-white">${evento.nome}</h3>
+        </div>
+
+        <div class="border-t border-slate-700 pt-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-cyan-400">📅</span>
+            <span class="text-gray-300 capitalize">${dataFormatada}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-cyan-400">🕐</span>
+            <span class="text-gray-300">${evento.horario}</span>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700 pt-4">
+          <h4 class="text-sm text-gray-400 mb-2">DESCRIÇÃO</h4>
+          <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${
+            evento.descricao
+          }</p>
+        </div>
+
+        <div class="border-t border-slate-700 pt-4">
+          <h4 class="text-sm text-gray-400 mb-3">PARTICIPANTES (${
+            evento.participantes?.length || 0
+          })</h4>
+          <div class="space-y-2 max-h-60 overflow-y-auto">
+            ${
+              evento.participantes && evento.participantes.length > 0
+                ? evento.participantes
+                    .map(
+                      (p) => `
+                  <div class="bg-slate-800 rounded px-3 py-2 text-gray-300 text-sm flex items-center gap-2">
+                    <img src="${p.foto}" alt="${p.nome}" class="w-8 h-8 rounded-full" />
+                    <span>${p.nome}</span>
+                  </div>
+                `
+                    )
+                    .join('')
+                : '<p class="text-gray-500 text-sm">Nenhum participante registrado</p>'
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let sidebar = document.getElementById('detalhes-missao-sidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'detalhes-missao-sidebar';
+    sidebar.className =
+      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = html;
+  sidebar.classList.remove('translate-x-full');
+}
+
+function fecharDetalhesMissao() {
+  const sidebar = document.getElementById('detalhes-missao-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('translate-x-full');
+  }
 }
 
 function openSidebar(type) {
@@ -458,9 +686,26 @@ function closeSidebars() {
   document
     .getElementById('edit-member-sidebar')
     .classList.add('-translate-x-full');
+
+  const missoesSidebar = document.getElementById('missoes-membro-sidebar');
+  if (missoesSidebar) {
+    missoesSidebar.classList.add('-translate-x-full');
+  }
+
+  const detalhesMissaoSidebar = document.getElementById(
+    'detalhes-missao-sidebar'
+  );
+  if (detalhesMissaoSidebar) {
+    detalhesMissaoSidebar.classList.add('translate-x-full');
+  }
+
   document.getElementById('sidebar-overlay').classList.add('hidden');
 }
 
 // Expõe funções globalmente
 window.editarMembro = abrirFormulario;
 window.excluirMembro = excluirMembro;
+window.mostrarMissoesMembro = mostrarMissoesMembro;
+window.fecharMissoesSidebar = fecharMissoesSidebar;
+window.mostrarDetalhesMissaoDoEvento = mostrarDetalhesMissaoDoEvento;
+window.fecharDetalhesMissao = fecharDetalhesMissao;
