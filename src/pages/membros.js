@@ -142,27 +142,6 @@ export const membrosPage = () => {
             </select>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-gray-400 text-sm mb-2">MEDALHAS</label>
-              <input
-                type="number"
-                id="membro-medalhas"
-                min="0"
-                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-            <div>
-              <label class="block text-gray-400 text-sm mb-2">MISSÕES</label>
-              <input
-                type="number"
-                id="membro-missoes"
-                min="0"
-                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-          </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">DATA DE REGISTRO</label>
             <input
@@ -203,7 +182,34 @@ export const membrosPage = () => {
             ></textarea>
           </div>
 
-          <div class="flex gap-4">
+          <div class="border-t border-slate-700 pt-4">
+            <h4 class="text-cyan-400 font-semibold mb-3">📜 HISTÓRICO DE MISSÕES ANTIGAS</h4>
+            <p class="text-gray-500 text-xs mb-3">Use esta seção para registrar missões realizadas antes da criação deste sistema.</p>
+            
+            <div>
+              <label class="block text-gray-400 text-sm mb-2">HISTÓRICO</label>
+              <textarea
+                id="membro-historico"
+                rows="6"
+                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
+                placeholder="Descreva aqui as missões antigas e eventos relevantes..."
+              ></textarea>
+            </div>
+
+            <div class="mt-4">
+              <label class="block text-gray-400 text-sm mb-2">VALOR HISTÓRICO (Quantidade de Missões)</label>
+              <input
+                type="number"
+                id="membro-valorHistorico"
+                min="0"
+                value="0"
+                class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              />
+              <p class="text-gray-500 text-xs mt-1">Este número será somado ao total de missões do membro.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-4 pt-4">
             <button
               type="submit"
               class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"

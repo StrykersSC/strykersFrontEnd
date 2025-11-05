@@ -11,13 +11,11 @@ async function loadMembros() {
   try {
     showLoading();
 
-    // Tenta carregar do localStorage primeiro
     const localData = localStorage.getItem('strykers_membros');
 
     if (localData) {
       membrosData = JSON.parse(localData);
     } else {
-      // Se não tem no localStorage, carrega do arquivo .txt (primeira vez)
       await loadFromFile();
     }
 
@@ -27,7 +25,6 @@ async function loadMembros() {
       'total-membros'
     ).textContent = `Total: ${membrosData.length} membros`;
 
-    // Popula filtros
     const patentes = [...new Set(membrosData.map((m) => m.patente))].sort();
     const selectPatente = document.getElementById('filter-patente');
     selectPatente.innerHTML = '<option value="">Todas as Patentes</option>';
@@ -75,10 +72,12 @@ async function loadFromFile() {
         dataRegistro:
           dataRegistro?.trim() || new Date().toISOString().split('T')[0],
         situacao: situacao?.trim() || 'Ativo',
-        missoes: 0, // Sempre começa zerado
+        missoes: 0,
         forcaEspecial: forcaEspecial?.trim() || 'Não',
         observacoes: observacoes?.trim() || '',
-        eventosParticipados: [], // Inicializa vazio
+        eventosParticipados: [],
+        historico: '',
+        valorHistorico: 0,
       };
     });
 
@@ -256,6 +255,9 @@ function renderTable(data) {
 }
 
 function showMemberDetails(membro) {
+  const totalMissoes =
+    (membro.eventosParticipados?.length || 0) + (membro.valorHistorico || 0);
+
   const content = document.getElementById('member-details-content');
   content.innerHTML = `
     <div class="space-y-6">
@@ -301,9 +303,7 @@ function showMemberDetails(membro) {
             membro.id
           }')">
             <p class="text-gray-400 text-sm">MISSÕES</p>
-            <p class="text-cyan-400 text-lg font-semibold hover:text-cyan-300">${
-              membro.missoes || 0
-            } 👁️</p>
+            <p class="text-cyan-400 text-lg font-semibold hover:text-cyan-300">${totalMissoes} 👁️</p>
           </div>
         </div>
 
@@ -364,12 +364,14 @@ function abrirFormulario(membroId) {
     document.getElementById('membro-patente').value = membro.patente;
     document.getElementById('membro-atribuicao').value =
       membro.atribuicao || 'Infantaria';
-    document.getElementById('membro-medalhas').value = membro.medalhas;
     document.getElementById('membro-dataRegistro').value = membro.dataRegistro;
     document.getElementById('membro-situacao').value = membro.situacao;
     document.getElementById('membro-forcaEspecial').value =
       membro.forcaEspecial;
     document.getElementById('membro-observacoes').value = membro.observacoes;
+    document.getElementById('membro-historico').value = membro.historico || '';
+    document.getElementById('membro-valorHistorico').value =
+      membro.valorHistorico || 0;
   } else {
     titulo.textContent = 'ADICIONAR MEMBRO';
     document.getElementById('form-membro').reset();
@@ -377,6 +379,7 @@ function abrirFormulario(membroId) {
     document.getElementById('membro-dataRegistro').value = new Date()
       .toISOString()
       .split('T')[0];
+    document.getElementById('membro-valorHistorico').value = 0;
   }
 
   openSidebar('edit');
@@ -399,16 +402,22 @@ function salvarMembro(e) {
     foto: foto,
     patente: document.getElementById('membro-patente').value,
     atribuicao: document.getElementById('membro-atribuicao').value,
-    medalhas: parseInt(document.getElementById('membro-medalhas').value) || 0,
+    medalhas: id ? membrosData.find((m) => m.id === id)?.medalhas || 0 : 0,
     dataRegistro: document.getElementById('membro-dataRegistro').value,
     situacao: document.getElementById('membro-situacao').value,
     forcaEspecial:
       document.getElementById('membro-forcaEspecial').value || 'Não',
     observacoes: document.getElementById('membro-observacoes').value,
+    historico: document.getElementById('membro-historico').value || '',
+    valorHistorico:
+      parseInt(document.getElementById('membro-valorHistorico').value) || 0,
     eventosParticipados: id
       ? membrosData.find((m) => m.id === id)?.eventosParticipados || []
       : [],
     missoes: id ? membrosData.find((m) => m.id === id)?.missoes || 0 : 0,
+    medalhasDetalhadas: id
+      ? membrosData.find((m) => m.id === id)?.medalhasDetalhadas || []
+      : [],
   };
 
   if (id) {
@@ -446,6 +455,25 @@ function mostrarMissoesMembro(membroId) {
 
   const eventosParticipados = membro.eventosParticipados || [];
 
+  // Conta missões por categoria
+  const stats = {
+    treinamento: 0,
+    missao: 0,
+    operacao: 0,
+    'mega-operacao': 0,
+    campanha: 0,
+    outro: 0,
+  };
+
+  eventosParticipados.forEach((ep) => {
+    if (stats.hasOwnProperty(ep.categoria)) {
+      stats[ep.categoria]++;
+    }
+  });
+
+  const totalMissoes =
+    eventosParticipados.length + (membro.valorHistorico || 0);
+
   let html = `
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
@@ -453,17 +481,63 @@ function mostrarMissoesMembro(membroId) {
         <button onclick="window.fecharMissoesSidebar()" class="text-gray-400 hover:text-white text-2xl">×</button>
       </div>
 
+      <!-- Estatísticas por Categoria -->
+      <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 mb-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="text-center">
+            <div class="text-green-400 font-bold text-lg">TR: ${stats.treinamento}</div>
+            <div class="text-gray-500 text-xs">Treinamento</div>
+          </div>
+          <div class="text-center">
+            <div class="text-yellow-400 font-bold text-lg">MI: ${stats.missao}</div>
+            <div class="text-gray-500 text-xs">Missão</div>
+          </div>
+          <div class="text-center">
+            <div class="text-orange-400 font-bold text-lg">OP: ${stats.operacao}</div>
+            <div class="text-gray-500 text-xs">Operação</div>
+          </div>
+          <div class="text-center">
+            <div class="text-red-400 font-bold text-lg">MO: ${stats['mega-operacao']}</div>
+            <div class="text-gray-500 text-xs">Mega Op.</div>
+          </div>
+          <div class="text-center">
+            <div class="text-purple-400 font-bold text-lg">CA: ${stats.campanha}</div>
+            <div class="text-gray-500 text-xs">Campanha</div>
+          </div>
+          <div class="text-center">
+            <div class="text-blue-400 font-bold text-lg">OU: ${stats.outro}</div>
+            <div class="text-gray-500 text-xs">Outro</div>
+          </div>
+        </div>
+      </div>
+
       <div class="mb-4">
-        <p class="text-gray-400">Total de missões: <span class="text-cyan-400 font-bold text-xl">${eventosParticipados.length}</span></p>
+        <p class="text-gray-400">Total de missões: <span class="text-cyan-400 font-bold text-xl">${totalMissoes}</span></p>
       </div>
 
       <div class="space-y-3">
   `;
 
-  if (eventosParticipados.length === 0) {
+  // Adiciona histórico se existir
+  if (membro.historico && membro.historico.trim() !== '') {
+    html += `
+      <div 
+        class="bg-slate-800 border-l-4 border-gray-500 text-gray-400 rounded p-4 cursor-pointer hover:bg-slate-700 transition-colors"
+        onclick="window.mostrarHistoricoMembro('${membro.id}')"
+      >
+        <div class="font-semibold text-white mb-1">📜 Histórico</div>
+        <div class="text-sm text-gray-400">Registros anteriores</div>
+      </div>
+    `;
+  }
+
+  if (
+    eventosParticipados.length === 0 &&
+    (!membro.historico || membro.historico.trim() === '')
+  ) {
     html +=
       '<p class="text-gray-500 text-center py-8">Nenhuma missão registrada</p>';
-  } else {
+  } else if (eventosParticipados.length > 0) {
     eventosParticipados.forEach((ep) => {
       const dataFormatada = new Date(ep.data + 'T00:00:00').toLocaleDateString(
         'pt-BR',
@@ -507,6 +581,59 @@ function mostrarMissoesMembro(membroId) {
   sidebar.innerHTML = html;
   sidebar.classList.remove('-translate-x-full');
   document.getElementById('sidebar-overlay').classList.remove('hidden');
+}
+
+function mostrarHistoricoMembro(membroId) {
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro || !membro.historico) return;
+
+  const html = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-400">📜 HISTÓRICO</h3>
+        <button onclick="window.fecharHistoricoMembro()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-slate-800 rounded-lg p-4 border border-gray-500">
+          <h4 class="text-sm text-gray-400 mb-3">REGISTROS ANTERIORES</h4>
+          <div class="text-gray-300 leading-relaxed whitespace-pre-wrap">${
+            membro.historico
+          }</div>
+        </div>
+
+        ${
+          membro.valorHistorico > 0
+            ? `
+          <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+            <p class="text-gray-400 text-sm">Missões históricas registradas:</p>
+            <p class="text-cyan-400 font-bold text-2xl">${membro.valorHistorico}</p>
+          </div>
+        `
+            : ''
+        }
+      </div>
+    </div>
+  `;
+
+  let sidebar = document.getElementById('historico-membro-sidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'historico-membro-sidebar';
+    sidebar.className =
+      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = html;
+  sidebar.classList.remove('translate-x-full');
+}
+
+function fecharHistoricoMembro() {
+  const sidebar = document.getElementById('historico-membro-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('translate-x-full');
+  }
 }
 
 function fecharMissoesSidebar() {
@@ -720,6 +847,11 @@ function closeSidebars() {
     detalhesMissaoSidebar.classList.add('translate-x-full');
   }
 
+  const historicoSidebar = document.getElementById('historico-membro-sidebar');
+  if (historicoSidebar) {
+    historicoSidebar.classList.add('translate-x-full');
+  }
+
   document.getElementById('sidebar-overlay').classList.add('hidden');
 }
 
@@ -869,7 +1001,6 @@ function fecharMedalhasSidebar() {
     sidebar.classList.add('-translate-x-full');
   }
 
-  // Só fecha o overlay se não houver outros sidebars abertos
   const detailsSidebar = document.getElementById('member-details-sidebar');
   const editSidebar = document.getElementById('edit-member-sidebar');
   const missoesSidebar = document.getElementById('missoes-membro-sidebar');
@@ -968,7 +1099,6 @@ function abrirCondecoracao(membroId) {
   sidebar.innerHTML = html;
   sidebar.classList.remove('translate-x-full');
 
-  // Adiciona listener ao form
   document
     .getElementById('form-condecorar')
     .addEventListener('submit', salvarCondecoracao);
@@ -1038,7 +1168,6 @@ function salvarCondecoracao(e) {
   const medalhaInfo = MEDALHAS_DISPONIVEIS[tipoMedalha];
   alert(`✅ ${membro.nome} recebeu a ${medalhaInfo.nome}!`);
 
-  // Atualiza a visualização
   mostrarMedalhasMembro(membroId);
 }
 
@@ -1068,7 +1197,6 @@ function mostrarDetalhesMedalha(membroId, medalhaId) {
     `;
   }
 
-  // Cria modal
   let modal = document.getElementById('modal-medalha');
   if (!modal) {
     modal = document.createElement('div');
@@ -1230,3 +1358,5 @@ window.fecharModalMedalha = fecharModalMedalha;
 window.abrirRemoverMedalha = abrirRemoverMedalha;
 window.fecharRemoverMedalha = fecharRemoverMedalha;
 window.confirmarRemocaoMedalha = confirmarRemocaoMedalha;
+window.mostrarHistoricoMembro = mostrarHistoricoMembro;
+window.fecharHistoricoMembro = fecharHistoricoMembro;

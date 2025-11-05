@@ -1,6 +1,7 @@
 import { homePage } from './pages/home.js';
 import { membrosPage } from './pages/membros.js';
 import { eventosPage } from './pages/eventos.js';
+import { forcasEspeciaisPage } from './pages/forcasespeciais.js';
 
 export const router = {
   currentPage: null,
@@ -9,10 +10,9 @@ export const router = {
     home: homePage,
     membros: membrosPage,
     eventos: eventosPage,
+    forcasespeciais: forcasEspeciaisPage,
     recrutamento: () =>
       '<div class="relative z-10 container mx-auto px-6 py-16"><h1 class="text-4xl text-white">RECRUTAMENTO - Em construção</h1></div>',
-    forcasespeciais: () =>
-      '<div class="relative z-10 container mx-auto px-6 py-16"><h1 class="text-4xl text-white">FORÇAS ESPECIAIS - Em construção</h1></div>',
   },
 
   init() {
@@ -58,6 +58,9 @@ export const router = {
     } else if (pageName === 'eventos') {
       const { initEventos } = await import('./eventos.js');
       initEventos();
+    } else if (pageName === 'forcasespeciais') {
+      const { initForcasEspeciais } = await import('./forcasespeciais.js');
+      initForcasEspeciais();
     }
   },
 };
