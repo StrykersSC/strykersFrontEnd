@@ -5,11 +5,6 @@ export const membrosPage = () => {
         <div>
           <h2 class="text-4xl font-bold text-white mb-2 tracking-wide">MEMBROS</h2>
           <p class="text-cyan-400 text-xl" id="total-membros">Total: 0 membros</p>
-        </div>
-        <button id="add-membro-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors flex items-center gap-2">
-          ➕ Adicionar Membro
-        </button>
-      </div>
 
       <!-- Barra de Pesquisa e Filtros -->
       <div class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-6">
