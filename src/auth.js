@@ -28,7 +28,10 @@ export function getUsuarioAtual() {
 }
 
 export function renderizarBotaoAuth() {
-  const container = document.querySelector('.flex.space-x-8');
+  // Procura o container do menu
+  const menuContainer = document.querySelector('.flex.items-center.space-x-8');
+  if (!menuContainer) return;
+
   // Remove botão existente se houver
   const existingAuth = document.getElementById('auth-container');
   if (existingAuth) existingAuth.remove();
@@ -39,7 +42,7 @@ export function renderizarBotaoAuth() {
 
   const authContainer = document.createElement('div');
   authContainer.id = 'auth-container';
-  authContainer.className = 'ml-8';
+  authContainer.className = 'ml-auto pl-8 border-l border-slate-700';
 
   if (usuarioAtual) {
     authContainer.innerHTML = `
@@ -59,7 +62,7 @@ export function renderizarBotaoAuth() {
       </button>
     `;
   }
-  container.appendChild(authContainer);
+  menuContainer.appendChild(authContainer);
   setupAuthEventListeners();
 }
 
@@ -78,6 +81,7 @@ function setupAuthEventListeners() {
 
 function toggleDropdown(btn) {
   let dropdown = document.getElementById('user-dropdown');
+
   if (!dropdown) {
     dropdown = document.createElement('div');
     dropdown.id = 'user-dropdown';
@@ -99,6 +103,7 @@ function toggleDropdown(btn) {
       </button>
     `;
     document.body.appendChild(dropdown);
+
     // Eventos dos botões do dropdown
     document
       .getElementById('btn-configuracoes')
@@ -108,18 +113,22 @@ function toggleDropdown(btn) {
       .addEventListener('click', realizarLogout);
   }
 
-  // Posiciona o dropdown logo abaixo do botão
+  // Posiciona o dropdown logo abaixo do botão, alinhado à direita
   const rect = btn.getBoundingClientRect();
-  dropdown.style.position = 'absolute';
-  dropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
-  dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
-  dropdown.style.display =
-    dropdown.style.display === 'block' ? 'none' : 'block';
+  dropdown.style.position = 'fixed';
+  dropdown.style.top = `${rect.bottom + 4}px`;
+  dropdown.style.right = `${window.innerWidth - rect.right}px`;
+  dropdown.style.left = 'auto';
 
-  // Fecha ao clicar fora
-  setTimeout(() => {
-    document.addEventListener('click', fecharDropdownAoClicarFora);
-  }, 0);
+  const isVisible = dropdown.style.display === 'block';
+  dropdown.style.display = isVisible ? 'none' : 'block';
+
+  if (!isVisible) {
+    // Fecha ao clicar fora
+    setTimeout(() => {
+      document.addEventListener('click', fecharDropdownAoClicarFora);
+    }, 0);
+  }
 }
 
 function fecharDropdownAoClicarFora(e) {
@@ -138,7 +147,6 @@ function realizarLogout() {
     renderizarBotaoAuth();
     if (window.router) window.router.navigate('home');
     alert('✅ Logout realizado com sucesso!');
-    // Remove dropdown ao sair
     const dropdown = document.getElementById('user-dropdown');
     if (dropdown) dropdown.remove();
   }
@@ -162,34 +170,21 @@ function abrirModalLogin() {
         <form id="form-login" class="space-y-4">
           <div>
             <label class="block text-gray-400 text-sm mb-2">E-MAIL</label>
-            <input
-              type="email"
-              id="login-email"
-              required
+            <input type="email" id="login-email" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="seu@email.com"
-            />
+              placeholder="seu@email.com" />
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">SENHA</label>
-            <input
-              type="password"
-              id="login-senha"
-              required
+            <input type="password" id="login-senha" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="••••••••"
-            />
+              placeholder="••••••••" />
           </div>
-
-          <button
-            type="submit"
-            class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
+          <button type="submit"
+            class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
             ENTRAR
           </button>
         </form>
-
         <div class="mt-6 text-center">
           <p class="text-gray-400 text-sm">
             Ainda não tem uma conta? 
@@ -201,12 +196,10 @@ function abrirModalLogin() {
       </div>
     `;
     document.body.appendChild(modal);
-
     document
       .getElementById('form-login')
       .addEventListener('submit', realizarLogin);
   }
-
   modal.classList.remove('hidden');
 }
 
@@ -217,13 +210,11 @@ function fecharModalLogin() {
 
 async function realizarLogin(e) {
   e.preventDefault();
-
   const email = document
     .getElementById('login-email')
     .value.trim()
     .toLowerCase();
   const senha = document.getElementById('login-senha').value;
-
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -234,7 +225,6 @@ async function realizarLogin(e) {
     return;
   }
 
-  // Verificar status do usuário
   if (usuario.status === 'aguardando_confirmacao') {
     mostrarMensagemEmailPendente();
     return;
@@ -252,19 +242,12 @@ async function realizarLogin(e) {
     return;
   }
 
-  // Verificar senha
   if (usuario.senha !== senha) {
     alert('⚠️ Senha incorreta!');
     return;
   }
 
-  // Login bem-sucedido
-  salvarSessao({
-    id: usuario.id,
-    nome: usuario.nome,
-    email: usuario.email,
-  });
-
+  salvarSessao({ id: usuario.id, nome: usuario.nome, email: usuario.email });
   fecharModalLogin();
   renderizarBotaoAuth();
   alert('✅ Login realizado com sucesso!');
@@ -276,7 +259,6 @@ function mostrarMensagemEmailPendente() {
       '⚠️ Você precisa confirmar seu e-mail antes de fazer login.\n\nDeseja reenviar o e-mail de confirmação?'
     )
   ) {
-    // Simular reenvio de e-mail
     alert(
       '✉️ E-mail de confirmação reenviado! Verifique sua caixa de entrada.'
     );
@@ -286,7 +268,6 @@ function mostrarMensagemEmailPendente() {
 // ==================== MODAL DE CADASTRO ====================
 function abrirModalCadastro() {
   fecharModalLogin();
-
   let modal = document.getElementById('modal-cadastro');
   if (!modal) {
     modal = document.createElement('div');
@@ -297,89 +278,52 @@ function abrirModalCadastro() {
       <div class="absolute inset-0 bg-black/70" onclick="window.fecharModalCadastro()"></div>
       <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-md w-full mx-4 my-8">
         <button onclick="window.fecharModalCadastro()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
-        
         <h2 class="text-3xl font-bold text-cyan-400 mb-6 text-center">CADASTRO</h2>
-        
         <form id="form-cadastro" class="space-y-4">
           <div>
             <label class="block text-gray-400 text-sm mb-2">E-MAIL *</label>
-            <input
-              type="email"
-              id="cadastro-email"
-              required
+            <input type="email" id="cadastro-email" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="seu@email.com"
-            />
+              placeholder="seu@email.com" />
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">CONFIRMAR E-MAIL *</label>
-            <input
-              type="email"
-              id="cadastro-email-confirm"
-              required
+            <input type="email" id="cadastro-email-confirm" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="seu@email.com"
-            />
+              placeholder="seu@email.com" />
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">SENHA *</label>
-            <input
-              type="password"
-              id="cadastro-senha"
-              required
-              minlength="6"
+            <input type="password" id="cadastro-senha" required minlength="6"
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="Mínimo 6 caracteres"
-            />
+              placeholder="Mínimo 6 caracteres" />
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">CONFIRMAR SENHA *</label>
-            <input
-              type="password"
-              id="cadastro-senha-confirm"
-              required
+            <input type="password" id="cadastro-senha-confirm" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="••••••••"
-            />
+              placeholder="••••••••" />
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">NOME/NICK *</label>
-            <input
-              type="text"
-              id="cadastro-nome"
-              required
+            <input type="text" id="cadastro-nome" required
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="Seu nome no Star Citizen"
-            />
+              placeholder="Seu nome no Star Citizen" />
             <p class="text-yellow-400 text-xs mt-1">⚠️ Use o mesmo nome registrado no Star Citizen (RSI)</p>
           </div>
-
           <div>
             <label class="block text-gray-400 text-sm mb-2">WHATSAPP (opcional)</label>
-            <input
-              type="tel"
-              id="cadastro-whatsapp"
+            <input type="tel" id="cadastro-whatsapp"
               class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-              placeholder="(00) 00000-0000"
-            />
+              placeholder="(00) 00000-0000" />
           </div>
-
           <div class="flex gap-4 pt-4">
-            <button
-              type="submit"
-              class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-            >
+            <button type="submit"
+              class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
               CONFIRMAR
             </button>
-            <button
-              type="button"
-              onclick="window.fecharModalCadastro()"
-              class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors"
-            >
+            <button type="button" onclick="window.fecharModalCadastro()"
+              class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">
               CANCELAR
             </button>
           </div>
@@ -387,12 +331,10 @@ function abrirModalCadastro() {
       </div>
     `;
     document.body.appendChild(modal);
-
     document
       .getElementById('form-cadastro')
       .addEventListener('submit', realizarCadastro);
   }
-
   modal.classList.remove('hidden');
 }
 
@@ -403,7 +345,6 @@ function fecharModalCadastro() {
 
 async function realizarCadastro(e) {
   e.preventDefault();
-
   const email = document
     .getElementById('cadastro-email')
     .value.trim()
@@ -417,23 +358,19 @@ async function realizarCadastro(e) {
   const nome = document.getElementById('cadastro-nome').value.trim();
   const whatsapp = document.getElementById('cadastro-whatsapp').value.trim();
 
-  // Validações
   if (email !== emailConfirm) {
     alert('⚠️ Os e-mails não conferem!');
     return;
   }
-
   if (senha !== senhaConfirm) {
     alert('⚠️ As senhas não conferem!');
     return;
   }
-
   if (senha.length < 6) {
     alert('⚠️ A senha deve ter no mínimo 6 caracteres!');
     return;
   }
 
-  // Verificar se e-mail já existe
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -460,7 +397,6 @@ async function realizarCadastro(e) {
     }
   }
 
-  // Criar novo usuário
   const novoUsuario = {
     id: Date.now().toString(),
     email,
@@ -474,10 +410,7 @@ async function realizarCadastro(e) {
 
   usuarios.push(novoUsuario);
   localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
-
   fecharModalCadastro();
-
-  // Simular envio de e-mail
   mostrarModalConfirmacaoEmail(novoUsuario);
 }
 
@@ -495,36 +428,25 @@ function mostrarModalConfirmacaoEmail(usuario) {
     <div class="absolute inset-0 bg-black/70"></div>
     <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-md w-full mx-4">
       <h2 class="text-2xl font-bold text-cyan-400 mb-4 text-center">📧 CONFIRME SEU E-MAIL</h2>
-      
       <p class="text-gray-300 mb-6 text-center">
         Enviamos um código de confirmação para<br/>
         <span class="text-cyan-400 font-semibold">${usuario.email}</span>
       </p>
-
       <div class="bg-yellow-900/30 border border-yellow-600 rounded p-4 mb-6">
         <p class="text-yellow-400 text-sm text-center">
           🔐 SIMULAÇÃO DE E-MAIL<br/>
           Código: <span class="font-bold text-xl">${usuario.codigoConfirmacao}</span>
         </p>
       </div>
-
       <form id="form-confirmar-email" class="space-y-4">
         <div>
           <label class="block text-gray-400 text-sm mb-2">DIGITE O CÓDIGO</label>
-          <input
-            type="text"
-            id="codigo-confirmacao"
-            required
-            maxlength="6"
+          <input type="text" id="codigo-confirmacao" required maxlength="6"
             class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 text-center text-2xl tracking-widest focus:outline-none focus:border-cyan-400"
-            placeholder="000000"
-          />
+            placeholder="000000" />
         </div>
-
-        <button
-          type="submit"
-          class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-        >
+        <button type="submit"
+          class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
           CONFIRMAR
         </button>
       </form>
@@ -541,13 +463,11 @@ function mostrarModalConfirmacaoEmail(usuario) {
 
 function confirmarEmail(usuario) {
   const codigoDigitado = document.getElementById('codigo-confirmacao').value;
-
   if (codigoDigitado !== usuario.codigoConfirmacao) {
     alert('⚠️ Código incorreto!');
     return;
   }
 
-  // Atualizar status do usuário
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -557,13 +477,10 @@ function confirmarEmail(usuario) {
     usuarios[index].status = 'aguardando_aprovacao';
     usuarios[index].dataConfirmacao = new Date().toISOString();
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
-
-    // Adicionar à lista de alistamentos pendentes
     adicionarAlistamentoPendente(usuarios[index]);
 
     const modal = document.getElementById('modal-confirmacao-email');
     if (modal) modal.remove();
-
     alert(
       '✅ E-mail confirmado com sucesso!\n\nSeu cadastro está aguardando aprovação da administração.'
     );
@@ -574,7 +491,6 @@ function adicionarAlistamentoPendente(usuario) {
   const pendentes = JSON.parse(
     localStorage.getItem('strykers_alistamentos_pendentes') || '[]'
   );
-
   pendentes.push({
     id: usuario.id,
     nome: usuario.nome,
@@ -583,7 +499,6 @@ function adicionarAlistamentoPendente(usuario) {
     dataSolicitacao: usuario.dataConfirmacao,
     usuarioCompleto: usuario,
   });
-
   localStorage.setItem(
     'strykers_alistamentos_pendentes',
     JSON.stringify(pendentes)
@@ -594,7 +509,6 @@ function adicionarAlistamentoPendente(usuario) {
 function abrirConfiguracoes() {
   if (!usuarioAtual) return;
 
-  // Buscar dados do membro
   const membrosData = JSON.parse(
     localStorage.getItem('strykers_membros') || '[]'
   );
@@ -618,64 +532,45 @@ function abrirConfiguracoes() {
     <div class="absolute inset-0 bg-black/70" onclick="window.fecharConfiguracoes()"></div>
     <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <button onclick="window.fecharConfiguracoes()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
-      
       <h2 class="text-3xl font-bold text-cyan-400 mb-6">⚙️ CONFIGURAÇÕES</h2>
-      
       <form id="form-configuracoes" class="space-y-4">
         <div>
           <label class="block text-gray-400 text-sm mb-2">FOTO (URL)</label>
-          <input
-            type="text"
-            id="config-foto"
-            value="${membro.foto || ''}"
+          <input type="text" id="config-foto" value="${membro.foto || ''}"
             class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-            placeholder="https://..."
-          />
+            placeholder="https://..." />
         </div>
-
         <div>
           <label class="block text-gray-400 text-sm mb-2">FORÇA ESPECIAL</label>
-          <input
-            type="text"
-            id="config-forca-especial"
-            value="${membro.forcaEspecial || ''}"
+          <input type="text" id="config-forca-especial" value="${
+            membro.forcaEspecial || ''
+          }"
             class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-            placeholder="S.T.O.R.M. ou deixe vazio"
-          />
+            placeholder="S.T.O.R.M. ou deixe vazio" />
         </div>
-
         <div>
           <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
-          <textarea
-            id="config-observacoes"
-            rows="4"
+          <textarea id="config-observacoes" rows="4"
             class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
-            placeholder="Suas observações..."
-          >${membro.observacoes || ''}</textarea>
+            placeholder="Suas observações...">${
+              membro.observacoes || ''
+            }</textarea>
         </div>
-
         <div>
           <label class="block text-gray-400 text-sm mb-2">HISTÓRICO</label>
-          <textarea
-            id="config-historico"
-            rows="6"
+          <textarea id="config-historico" rows="6"
             class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
-            placeholder="Seu histórico militar..."
-          >${membro.historico || ''}</textarea>
+            placeholder="Seu histórico militar...">${
+              membro.historico || ''
+            }</textarea>
         </div>
-
         <div class="flex gap-4 pt-4">
-          <button
-            type="submit"
-            class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
+          <button type="submit"
+            class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
             ✓ CONFIRMAR
           </button>
-          <button
-            type="button"
-            onclick="window.fecharConfiguracoes()"
-            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
+          <button type="button" onclick="window.fecharConfiguracoes()"
+            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">
             ✕ CANCELAR
           </button>
         </div>
@@ -684,7 +579,6 @@ function abrirConfiguracoes() {
   `;
 
   modal.classList.remove('hidden');
-
   document
     .getElementById('form-configuracoes')
     .addEventListener('submit', salvarConfiguracoes);
@@ -697,7 +591,6 @@ function fecharConfiguracoes() {
 
 function salvarConfiguracoes(e) {
   e.preventDefault();
-
   if (!usuarioAtual) return;
 
   const foto = document.getElementById('config-foto').value.trim();
@@ -709,7 +602,6 @@ function salvarConfiguracoes(e) {
     .value.trim();
   const historico = document.getElementById('config-historico').value.trim();
 
-  // Atualizar membro
   const membrosData = JSON.parse(
     localStorage.getItem('strykers_membros') || '[]'
   );
@@ -720,13 +612,11 @@ function salvarConfiguracoes(e) {
     membrosData[index].forcaEspecial = forcaEspecial || 'Não';
     membrosData[index].observacoes = observacoes;
     membrosData[index].historico = historico;
-
     localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
 
     fecharConfiguracoes();
     alert('✅ Configurações salvas com sucesso!');
 
-    // Se estiver na página de perfil, recarregar
     if (window.router && window.router.currentPage === 'perfil') {
       window.router.navigate('perfil');
     }

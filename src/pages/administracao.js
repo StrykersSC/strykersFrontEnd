@@ -1,3 +1,6 @@
+import { initMembros } from '../membros.js';
+initMembros();
+
 export const administracaoPage = () => {
   return `
     <main class="relative z-10 container mx-auto px-6 py-16">
@@ -20,9 +23,7 @@ export const administracaoPage = () => {
                 <th class="px-4 py-3 text-center">AÇÕES</th>
               </tr>
             </thead>
-            <tbody id="tbody-pendentes" class="text-gray-300">
-              <!-- Preenchido dinamicamente -->
-            </tbody>
+            <tbody id="tbody-pendentes" class="text-gray-300"></tbody>
           </table>
         </div>
       </div>
@@ -41,9 +42,7 @@ export const administracaoPage = () => {
                 <th class="px-4 py-3 text-center">AÇÕES</th>
               </tr>
             </thead>
-            <tbody id="tbody-recusados" class="text-gray-300">
-              <!-- Preenchido dinamicamente -->
-            </tbody>
+            <tbody id="tbody-recusados" class="text-gray-300"></tbody>
           </table>
         </div>
       </div>
@@ -51,6 +50,32 @@ export const administracaoPage = () => {
       <!-- Membros Registrados -->
       <div class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6">
         <h3 class="text-2xl font-bold text-green-400 mb-4">✅ MEMBROS REGISTRADOS</h3>
+        
+        <!-- Filtros -->
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+          <input type="text" id="admin-search" placeholder="Buscar por nome..."
+            class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          <select id="admin-filter-patente" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2">
+            <option value="">Todas Patentes</option>
+          </select>
+          <select id="admin-filter-situacao" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2">
+            <option value="">Todas Situações</option>
+            <option value="Ativo">Ativo</option>
+            <option value="Reservista">Reservista</option>
+            <option value="Desertor">Desertor</option>
+          </select>
+          <select id="admin-filter-forca" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2">
+            <option value="">Todas Forças</option>
+            <option value="S.T.O.R.M.">S.T.O.R.M.</option>
+            <option value="Não">Não</option>
+          </select>
+          <input type="date" id="admin-filter-data" placeholder="Data Registro"
+            class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          <button id="admin-clear-filters" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2">
+            Limpar
+          </button>
+        </div>
+
         <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table class="w-full">
             <thead class="bg-slate-900 sticky top-0">
@@ -67,15 +92,28 @@ export const administracaoPage = () => {
                 <th class="px-4 py-3">WHATSAPP</th>
                 <th class="px-4 py-3 text-center">OBS</th>
                 <th class="px-4 py-3 text-center">HIST</th>
+                <th class="px-4 py-3 text-center">AÇÕES</th>
               </tr>
             </thead>
-            <tbody id="tbody-membros" class="text-gray-300">
-              <!-- Preenchido dinamicamente -->
-            </tbody>
+            <tbody id="tbody-membros" class="text-gray-300"></tbody>
           </table>
         </div>
       </div>
     </main>
+
+    <!-- Sidebar de Edição (Esquerda) -->
+    <aside id="edit-member-sidebar-admin" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400" id="edit-sidebar-title-admin">EDITAR MEMBRO</h3>
+          <button id="close-edit-sidebar-admin" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <form id="form-membro-admin" class="space-y-4"></form>
+      </div>
+    </aside>
+
+    <!-- Overlay -->
+    <div id="admin-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
   `;
 };
 
@@ -83,6 +121,68 @@ export function initAdministracao() {
   renderizarPendentes();
   renderizarRecusados();
   renderizarMembrosRegistrados();
+  setupAdminFilters();
+}
+
+let membrosRegistradosFiltrados = [];
+
+function setupAdminFilters() {
+  document
+    .getElementById('admin-search')
+    .addEventListener('input', aplicarFiltrosAdmin);
+  document
+    .getElementById('admin-filter-patente')
+    .addEventListener('change', aplicarFiltrosAdmin);
+  document
+    .getElementById('admin-filter-situacao')
+    .addEventListener('change', aplicarFiltrosAdmin);
+  document
+    .getElementById('admin-filter-forca')
+    .addEventListener('change', aplicarFiltrosAdmin);
+  document
+    .getElementById('admin-filter-data')
+    .addEventListener('change', aplicarFiltrosAdmin);
+  document
+    .getElementById('admin-clear-filters')
+    .addEventListener('click', limparFiltrosAdmin);
+  document
+    .getElementById('close-edit-sidebar-admin')
+    .addEventListener('click', fecharSidebarAdmin);
+  document
+    .getElementById('admin-overlay')
+    .addEventListener('click', fecharSidebarAdmin);
+}
+
+function aplicarFiltrosAdmin() {
+  const search = document.getElementById('admin-search').value.toLowerCase();
+  const patente = document.getElementById('admin-filter-patente').value;
+  const situacao = document.getElementById('admin-filter-situacao').value;
+  const forca = document.getElementById('admin-filter-forca').value;
+  const data = document.getElementById('admin-filter-data').value;
+
+  const membros = JSON.parse(localStorage.getItem('strykers_membros') || '[]');
+
+  membrosRegistradosFiltrados = membros.filter((m) => {
+    const matchNome = !search || m.nome.toLowerCase().includes(search);
+    const matchPatente = !patente || m.patente === patente;
+    const matchSituacao = !situacao || m.situacao === situacao;
+    const matchForca = !forca || m.forcaEspecial === forca;
+    const matchData = !data || m.dataRegistro === data;
+    return (
+      matchNome && matchPatente && matchSituacao && matchForca && matchData
+    );
+  });
+
+  renderizarMembrosRegistradosFiltrados();
+}
+
+function limparFiltrosAdmin() {
+  document.getElementById('admin-search').value = '';
+  document.getElementById('admin-filter-patente').value = '';
+  document.getElementById('admin-filter-situacao').value = '';
+  document.getElementById('admin-filter-forca').value = '';
+  document.getElementById('admin-filter-data').value = '';
+  aplicarFiltrosAdmin();
 }
 
 function renderizarPendentes() {
@@ -114,16 +214,10 @@ function renderizarPendentes() {
         <td class="px-4 py-3">${p.whatsapp || '-'}</td>
         <td class="px-4 py-3">${data}</td>
         <td class="px-4 py-3 text-center">
-          <button 
-            onclick="window.aprovarAlistamento('${p.id}')"
-            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded mr-2 transition-colors"
-            title="Aprovar"
-          >✓</button>
-          <button 
-            onclick="window.recusarAlistamento('${p.id}')"
-            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors"
-            title="Recusar"
-          >✕</button>
+          <button onclick="window.aprovarAlistamento('${p.id}')"
+            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded mr-2 transition-colors">✓</button>
+          <button onclick="window.recusarAlistamento('${p.id}')"
+            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors">✕</button>
         </td>
       </tr>
     `;
@@ -160,14 +254,10 @@ function renderizarRecusados() {
         <td class="px-4 py-3">${r.whatsapp || '-'}</td>
         <td class="px-4 py-3">${data}</td>
         <td class="px-4 py-3 text-center">
-          <button 
-            onclick="window.realistarUsuario('${r.id}')"
-            class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2 transition-colors text-sm"
-          >🔄 Realistar</button>
-          <button 
-            onclick="window.excluirAlistamento('${r.id}')"
-            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors text-sm"
-          >🗑️ Excluir</button>
+          <button onclick="window.realistarUsuario('${r.id}')"
+            class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2 transition-colors text-sm">🔄 Realistar</button>
+          <button onclick="window.excluirAlistamento('${r.id}')"
+            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors text-sm">🗑️ Excluir</button>
         </td>
       </tr>
     `;
@@ -176,21 +266,37 @@ function renderizarRecusados() {
 }
 
 function renderizarMembrosRegistrados() {
-  const tbody = document.getElementById('tbody-membros');
   const membros = JSON.parse(localStorage.getItem('strykers_membros') || '[]');
+  membrosRegistradosFiltrados = membros;
+
+  // Popular select de patentes
+  const patentes = [...new Set(membros.map((m) => m.patente))].sort();
+  const selectPatente = document.getElementById('admin-filter-patente');
+  selectPatente.innerHTML = '<option value="">Todas Patentes</option>';
+  patentes.forEach((patente) => {
+    const option = document.createElement('option');
+    option.value = patente;
+    option.textContent = patente;
+    selectPatente.appendChild(option);
+  });
+
+  renderizarMembrosRegistradosFiltrados();
+}
+
+function renderizarMembrosRegistradosFiltrados() {
+  const tbody = document.getElementById('tbody-membros');
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
 
-  if (membros.length === 0) {
+  if (membrosRegistradosFiltrados.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="12" class="text-center py-8 text-gray-400">Nenhum membro registrado</td></tr>';
+      '<tr><td colspan="13" class="text-center py-8 text-gray-400">Nenhum membro encontrado</td></tr>';
     return;
   }
 
-  tbody.innerHTML = membros
+  tbody.innerHTML = membrosRegistradosFiltrados
     .map((m) => {
-      // Buscar dados do usuário correspondente
       const usuario = usuarios.find(
         (u) => u.nome === m.nome && u.status === 'aprovado'
       );
@@ -206,16 +312,18 @@ function renderizarMembrosRegistrados() {
         <td class="px-4 py-3">${m.situacao}</td>
         <td class="px-4 py-3">${m.forcaEspecial || 'Não'}</td>
         <td class="px-4 py-3 text-center">
-          <button 
-            onclick="window.mostrarMedalhasMembro('${m.id}')"
-            class="text-yellow-400 hover:text-yellow-300 cursor-pointer"
-          >${m.medalhas || 0} 👁️</button>
+          <button onclick="window.mostrarMedalhasMembro('${
+            m.id
+          }')" class="text-yellow-400 hover:text-yellow-300">
+            ${m.medalhas || 0} 👁️
+          </button>
         </td>
         <td class="px-4 py-3 text-center">
-          <button 
-            onclick="window.mostrarMissoesMembro('${m.id}')"
-            class="text-cyan-400 hover:text-cyan-300 cursor-pointer"
-          >${totalMissoes} 👁️</button>
+          <button onclick="window.mostrarMissoesMembro('${
+            m.id
+          }')" class="text-cyan-400 hover:text-cyan-300">
+            ${totalMissoes} 👁️
+          </button>
         </td>
         <td class="px-4 py-3">${usuario?.email || '-'}</td>
         <td class="px-4 py-3">${usuario?.whatsapp || '-'}</td>
@@ -243,6 +351,17 @@ function renderizarMembrosRegistrados() {
               : '-'
           }
         </td>
+        <td class="px-4 py-3 text-center">
+          <button onclick="window.editarMembroAdmin('${
+            m.id
+          }')" class="text-blue-400 hover:text-blue-300 mr-2" title="Editar">✏️</button>
+          <button onclick="window.condecorarMembroAdmin('${
+            m.id
+          }')" class="text-yellow-400 hover:text-yellow-300 mr-2" title="Condecorar">⭐</button>
+          <button onclick="window.excluirMembroAdmin('${
+            m.id
+          }')" class="text-red-400 hover:text-red-300" title="Excluir">🗑️</button>
+        </td>
       </tr>
     `;
     })
@@ -257,12 +376,9 @@ function aprovarAlistamento(id) {
     localStorage.getItem('strykers_alistamentos_pendentes') || '[]'
   );
   const index = pendentes.findIndex((p) => p.id === id);
-
   if (index === -1) return;
 
   const alistamento = pendentes[index];
-
-  // Criar membro
   const membrosData = JSON.parse(
     localStorage.getItem('strykers_membros') || '[]'
   );
@@ -290,7 +406,6 @@ function aprovarAlistamento(id) {
   membrosData.push(novoMembro);
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
 
-  // Atualizar status do usuário
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -301,7 +416,6 @@ function aprovarAlistamento(id) {
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
   }
 
-  // Remover dos pendentes
   pendentes.splice(index, 1);
   localStorage.setItem(
     'strykers_alistamentos_pendentes',
@@ -325,25 +439,18 @@ function recusarAlistamento(id) {
     localStorage.getItem('strykers_alistamentos_pendentes') || '[]'
   );
   const index = pendentes.findIndex((p) => p.id === id);
-
   if (index === -1) return;
 
   const alistamento = pendentes[index];
-
-  // Adicionar aos recusados
   const recusados = JSON.parse(
     localStorage.getItem('strykers_alistamentos_recusados') || '[]'
   );
-  recusados.push({
-    ...alistamento,
-    dataRecusa: new Date().toISOString(),
-  });
+  recusados.push({ ...alistamento, dataRecusa: new Date().toISOString() });
   localStorage.setItem(
     'strykers_alistamentos_recusados',
     JSON.stringify(recusados)
   );
 
-  // Atualizar status do usuário
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -354,16 +461,10 @@ function recusarAlistamento(id) {
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
   }
 
-  // Remover dos pendentes
   pendentes.splice(index, 1);
   localStorage.setItem(
     'strykers_alistamentos_pendentes',
     JSON.stringify(pendentes)
-  );
-
-  // Simular envio de e-mail
-  console.log(
-    `📧 E-mail enviado para ${alistamento.email}: Seu cadastro foi recusado. Se não concorda com a decisão, entre em contato via Discord.`
   );
 
   alert('❌ Alistamento recusado! E-mail de notificação enviado.');
@@ -383,25 +484,18 @@ function realistarUsuario(id) {
     localStorage.getItem('strykers_alistamentos_recusados') || '[]'
   );
   const index = recusados.findIndex((r) => r.id === id);
-
   if (index === -1) return;
 
   const alistamento = recusados[index];
-
-  // Adicionar de volta aos pendentes
   const pendentes = JSON.parse(
     localStorage.getItem('strykers_alistamentos_pendentes') || '[]'
   );
-  pendentes.push({
-    ...alistamento,
-    dataSolicitacao: new Date().toISOString(),
-  });
+  pendentes.push({ ...alistamento, dataSolicitacao: new Date().toISOString() });
   localStorage.setItem(
     'strykers_alistamentos_pendentes',
     JSON.stringify(pendentes)
   );
 
-  // Atualizar status do usuário
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -411,7 +505,6 @@ function realistarUsuario(id) {
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
   }
 
-  // Remover dos recusados
   recusados.splice(index, 1);
   localStorage.setItem(
     'strykers_alistamentos_recusados',
@@ -431,7 +524,6 @@ function excluirAlistamento(id) {
   )
     return;
 
-  // Remover dos recusados
   const recusados = JSON.parse(
     localStorage.getItem('strykers_alistamentos_recusados') || '[]'
   );
@@ -441,7 +533,6 @@ function excluirAlistamento(id) {
     JSON.stringify(newRecusados)
   );
 
-  // Remover usuário
   const usuarios = JSON.parse(
     localStorage.getItem('strykers_usuarios') || '[]'
   );
@@ -493,6 +584,590 @@ function gerarIdMembro(nome) {
   );
 }
 
+// ==================== EDIÇÃO DE MEMBROS ====================
+function editarMembroAdmin(membroId) {
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  const formHtml = `
+    <input type="hidden" id="admin-membro-id" value="${membro.id}" />
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">NOME *</label>
+      <input type="text" id="admin-membro-nome" value="${membro.nome}" required
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">FOTO (URL)</label>
+      <input type="text" id="admin-membro-foto" value="${membro.foto || ''}"
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+        placeholder="https://..." />
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">PATENTE *</label>
+      <select id="admin-membro-patente" required
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+        <option value="Recruta" ${
+          membro.patente === 'Recruta' ? 'selected' : ''
+        }>Recruta</option>
+        <option value="Soldado" ${
+          membro.patente === 'Soldado' ? 'selected' : ''
+        }>Soldado</option>
+        <option value="Cabo" ${
+          membro.patente === 'Cabo' ? 'selected' : ''
+        }>Cabo</option>
+        <option value="Terceiro-Sargento" ${
+          membro.patente === 'Terceiro-Sargento' ? 'selected' : ''
+        }>Terceiro-Sargento</option>
+        <option value="Segundo-Sargento" ${
+          membro.patente === 'Segundo-Sargento' ? 'selected' : ''
+        }>Segundo-Sargento</option>
+        <option value="Primeiro-Sargento" ${
+          membro.patente === 'Primeiro-Sargento' ? 'selected' : ''
+        }>Primeiro-Sargento</option>
+        <option value="Sargento-Mor" ${
+          membro.patente === 'Sargento-Mor' ? 'selected' : ''
+        }>Sargento-Mor</option>
+        <option value="Subtenente" ${
+          membro.patente === 'Subtenente' ? 'selected' : ''
+        }>Subtenente</option>
+        <option value="Tenente" ${
+          membro.patente === 'Tenente' ? 'selected' : ''
+        }>Tenente</option>
+        <option value="Capitão" ${
+          membro.patente === 'Capitão' ? 'selected' : ''
+        }>Capitão</option>
+        <option value="Major" ${
+          membro.patente === 'Major' ? 'selected' : ''
+        }>Major</option>
+        <option value="Tenente-Coronel" ${
+          membro.patente === 'Tenente-Coronel' ? 'selected' : ''
+        }>Tenente-Coronel</option>
+        <option value="Coronel" ${
+          membro.patente === 'Coronel' ? 'selected' : ''
+        }>Coronel</option>
+        <option value="Brigadeiro" ${
+          membro.patente === 'Brigadeiro' ? 'selected' : ''
+        }>Brigadeiro</option>
+        <option value="General" ${
+          membro.patente === 'General' ? 'selected' : ''
+        }>General</option>
+        <option value="Marechal" ${
+          membro.patente === 'Marechal' ? 'selected' : ''
+        }>Marechal</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">ATRIBUIÇÃO *</label>
+      <select id="admin-membro-atribuicao" required
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+        <option value="Infantaria" ${
+          membro.atribuicao === 'Infantaria' ? 'selected' : ''
+        }>Infantaria</option>
+        <option value="Força Aérea" ${
+          membro.atribuicao === 'Força Aérea' ? 'selected' : ''
+        }>Força Aérea</option>
+        <option value="Marinha" ${
+          membro.atribuicao === 'Marinha' ? 'selected' : ''
+        }>Marinha</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">DATA DE REGISTRO</label>
+      <input type="date" id="admin-membro-dataRegistro" value="${
+        membro.dataRegistro
+      }"
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">SITUAÇÃO</label>
+      <select id="admin-membro-situacao"
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+        <option value="Ativo" ${
+          membro.situacao === 'Ativo' ? 'selected' : ''
+        }>Ativo</option>
+        <option value="Reservista" ${
+          membro.situacao === 'Reservista' ? 'selected' : ''
+        }>Reservista</option>
+        <option value="Desertor" ${
+          membro.situacao === 'Desertor' ? 'selected' : ''
+        }>Desertor</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">FORÇA ESPECIAL</label>
+      <input type="text" id="admin-membro-forcaEspecial" value="${
+        membro.forcaEspecial || ''
+      }"
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+        placeholder="S.T.O.R.M. ou deixe 'Não'" />
+    </div>
+    <div>
+      <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
+      <textarea id="admin-membro-observacoes" rows="4"
+        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none">${
+          membro.observacoes || ''
+        }</textarea>
+    </div>
+    <div class="border-t border-slate-700 pt-4">
+      <h4 class="text-cyan-400 font-semibold mb-3">📜 HISTÓRICO DE MISSÕES ANTIGAS</h4>
+      <p class="text-gray-500 text-xs mb-3">Use esta seção para registrar missões realizadas antes da criação deste sistema.</p>
+      <div>
+        <label class="block text-gray-400 text-sm mb-2">HISTÓRICO</label>
+        <textarea id="admin-membro-historico" rows="6"
+          class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
+          placeholder="Descreva aqui as missões antigas e eventos relevantes...">${
+            membro.historico || ''
+          }</textarea>
+      </div>
+      <div class="mt-4">
+        <label class="block text-gray-400 text-sm mb-2">VALOR HISTÓRICO (Quantidade de Missões)</label>
+        <input type="number" id="admin-membro-valorHistorico" min="0" value="${
+          membro.valorHistorico || 0
+        }"
+          class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+        <p class="text-gray-500 text-xs mt-1">Este número será somado ao total de missões do membro.</p>
+      </div>
+    </div>
+    <div class="flex gap-4 pt-4">
+      <button type="submit"
+        class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
+        ✓ Salvar
+      </button>
+      <button type="button" onclick="window.fecharSidebarAdmin()"
+        class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">
+        ✕ Cancelar
+      </button>
+    </div>
+  `;
+
+  document.getElementById('form-membro-admin').innerHTML = formHtml;
+  document
+    .getElementById('form-membro-admin')
+    .addEventListener('submit', salvarMembroAdmin);
+
+  document
+    .getElementById('edit-member-sidebar-admin')
+    .classList.remove('-translate-x-full');
+  document.getElementById('admin-overlay').classList.remove('hidden');
+}
+
+function salvarMembroAdmin(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('admin-membro-id').value;
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const index = membrosData.findIndex((m) => m.id === id);
+
+  if (index === -1) return;
+
+  const foto = document.getElementById('admin-membro-foto').value.trim();
+
+  membrosData[index].nome = document
+    .getElementById('admin-membro-nome')
+    .value.trim();
+  if (foto) membrosData[index].foto = foto;
+  membrosData[index].patente = document.getElementById(
+    'admin-membro-patente'
+  ).value;
+  membrosData[index].atribuicao = document.getElementById(
+    'admin-membro-atribuicao'
+  ).value;
+  membrosData[index].dataRegistro = document.getElementById(
+    'admin-membro-dataRegistro'
+  ).value;
+  membrosData[index].situacao = document.getElementById(
+    'admin-membro-situacao'
+  ).value;
+  membrosData[index].forcaEspecial =
+    document.getElementById('admin-membro-forcaEspecial').value.trim() || 'Não';
+  membrosData[index].observacoes = document
+    .getElementById('admin-membro-observacoes')
+    .value.trim();
+  membrosData[index].historico = document
+    .getElementById('admin-membro-historico')
+    .value.trim();
+  membrosData[index].valorHistorico =
+    parseInt(document.getElementById('admin-membro-valorHistorico').value) || 0;
+
+  localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
+
+  fecharSidebarAdmin();
+  aplicarFiltrosAdmin();
+  alert('✅ Membro atualizado com sucesso!');
+}
+
+function excluirMembroAdmin(membroId) {
+  if (
+    !confirm(
+      '⚠️ Tem certeza que deseja excluir este membro?\n\nEsta ação não pode ser desfeita!'
+    )
+  )
+    return;
+
+  let membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  membrosData = membrosData.filter((m) => m.id !== membroId);
+  localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
+
+  aplicarFiltrosAdmin();
+  alert('✅ Membro excluído com sucesso!');
+}
+
+function fecharSidebarAdmin() {
+  document
+    .getElementById('edit-member-sidebar-admin')
+    .classList.add('-translate-x-full');
+
+  const condecoraSidebar = document.getElementById('condecorar-sidebar-admin');
+  if (condecoraSidebar) {
+    condecoraSidebar.classList.add('translate-x-full');
+  }
+
+  const removerMedalhaSidebar = document.getElementById(
+    'remover-medalha-sidebar-admin'
+  );
+  if (removerMedalhaSidebar) {
+    removerMedalhaSidebar.classList.add('translate-x-full');
+  }
+
+  document.getElementById('admin-overlay').classList.add('hidden');
+}
+
+// ==================== SISTEMA DE CONDECORAÇÕES ====================
+
+const MEDALHAS_DISPONIVEIS = {
+  'merito-operacional': {
+    imagem: '/imgMedalhas/medalha_merito_operacional.png',
+    emoji: '🎖️',
+    nome: 'Medalha de Mérito Operacional',
+    descricao:
+      'Concedida a membros que demonstraram excelência em incursões táticas e operações hostis com sucesso.',
+  },
+  'defesa-avancada': {
+    imagem: '/imgMedalhas/medalha_defesa_avancada.png',
+    emoji: '🛡️',
+    nome: 'Medalha de Defesa Avançada',
+    descricao:
+      'Reconhecimento por atuações destacadas na proteção de VIPs, comboios e zonas estratégicas sob ameaça.',
+  },
+  'elite-aerea': {
+    imagem: '/imgMedalhas/medalha_elite_aerea.png',
+    emoji: '🥇',
+    nome: 'Medalha de Elite Aérea',
+    descricao:
+      'Premiação para pilotos que demonstraram superioridade aérea, manobras avançadas e domínio total em combate espacial.',
+  },
+  'infantaria-pesada': {
+    imagem: '/imgMedalhas/medalha_infantaria_pesada.png',
+    emoji: '🥈',
+    nome: 'Medalha de Infantaria Pesada',
+    descricao:
+      'Concedida a soldados de chão que atuaram com coragem, disciplina e precisão em combates terrestres e manobras com veículos.',
+  },
+  'aguia-dourada': {
+    imagem: '/imgMedalhas/medalha_insignia_aguia_dourada.png',
+    emoji: '🦅',
+    nome: 'Insígnia da Águia Dourada',
+    descricao:
+      'Honraria rara, concedida apenas aos que lideraram operações completas com sucesso total, mostrando comando, estratégia e disciplina.',
+  },
+  'honra-logistica': {
+    imagem: '/imgMedalhas/medalha_distintivo_honra_logistica.png',
+    emoji: '🪙',
+    nome: 'Distintivo de Honra Logística',
+    descricao:
+      'Entregue a operadores de logística e transporte que garantiram o sucesso de missões com eficiência e organização impecável.',
+  },
+};
+
+function condecorarMembroAdmin(membroId) {
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  let sidebar = document.getElementById('condecorar-sidebar-admin');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'condecorar-sidebar-admin';
+    sidebar.className =
+      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-cyan-400">CONDECORAR ${
+          membro.nome
+        }</h3>
+        <button onclick="window.fecharCondecoracao()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <form id="form-condecorar-admin" class="space-y-6">
+        <input type="hidden" id="condecorar-membro-id-admin" value="${
+          membro.id
+        }" />
+
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">MEDALHA *</label>
+          <select id="condecorar-medalha-admin" required
+            class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+            onchange="window.atualizarDescricaoMedalhaAdmin()">
+            <option value="">Selecione uma medalha</option>
+            ${Object.entries(MEDALHAS_DISPONIVEIS)
+              .map(
+                ([key, medalha]) =>
+                  `<option value="${key}">${medalha.emoji} ${medalha.nome}</option>`
+              )
+              .join('')}
+          </select>
+        </div>
+
+        <div id="descricao-medalha-container-admin" class="hidden bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <h4 class="text-sm text-gray-400 mb-2 uppercase tracking-wide">Descrição</h4>
+          <p id="descricao-medalha-texto-admin" class="text-gray-300 text-sm leading-relaxed"></p>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
+          <textarea id="condecorar-observacoes-admin" rows="4"
+            class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
+            placeholder="Detalhes sobre a condecoração (opcional)..."></textarea>
+        </div>
+
+        <div class="flex gap-4">
+          <button type="submit"
+            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors">
+            ⭐ Condecorar
+          </button>
+          <button type="button" onclick="window.limparFormCondecorarAdmin()"
+            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">
+            🗑️ Limpar
+          </button>
+        </div>
+      </form>
+
+      ${
+        membro.medalhasDetalhadas && membro.medalhasDetalhadas.length > 0
+          ? `
+        <div class="mt-6 pt-6 border-t border-slate-700">
+          <button onclick="window.abrirRemoverMedalhaAdmin('${membro.id}')"
+            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors">
+            🗑️ Remover Condecoração
+          </button>
+        </div>
+      `
+          : ''
+      }
+    </div>
+  `;
+
+  sidebar.classList.remove('translate-x-full');
+  document.getElementById('admin-overlay').classList.remove('hidden');
+
+  document
+    .getElementById('form-condecorar-admin')
+    .addEventListener('submit', salvarCondecoracaoAdmin);
+}
+
+function atualizarDescricaoMedalhaAdmin() {
+  const select = document.getElementById('condecorar-medalha-admin');
+  const container = document.getElementById(
+    'descricao-medalha-container-admin'
+  );
+  const texto = document.getElementById('descricao-medalha-texto-admin');
+
+  if (select.value) {
+    const medalha = MEDALHAS_DISPONIVEIS[select.value];
+    texto.textContent = medalha.descricao;
+    container.classList.remove('hidden');
+  } else {
+    container.classList.add('hidden');
+  }
+}
+
+function limparFormCondecorarAdmin() {
+  document.getElementById('condecorar-medalha-admin').value = '';
+  document.getElementById('condecorar-observacoes-admin').value = '';
+  document
+    .getElementById('descricao-medalha-container-admin')
+    .classList.add('hidden');
+}
+
+function salvarCondecoracaoAdmin(e) {
+  e.preventDefault();
+
+  const membroId = document.getElementById('condecorar-membro-id-admin').value;
+  const tipoMedalha = document.getElementById('condecorar-medalha-admin').value;
+  const observacoes = document.getElementById(
+    'condecorar-observacoes-admin'
+  ).value;
+
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  if (!membro.medalhasDetalhadas) {
+    membro.medalhasDetalhadas = [];
+  }
+
+  const novaMedalha = {
+    id: Date.now(),
+    tipo: tipoMedalha,
+    data: new Date().toISOString().split('T')[0],
+    observacoes: observacoes,
+  };
+
+  membro.medalhasDetalhadas.push(novaMedalha);
+  membro.medalhas = membro.medalhasDetalhadas.length;
+
+  const index = membrosData.findIndex((m) => m.id === membroId);
+  if (index !== -1) {
+    membrosData[index] = membro;
+  }
+
+  localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
+  fecharCondecoracao();
+
+  const medalhaInfo = MEDALHAS_DISPONIVEIS[tipoMedalha];
+  alert(`✅ ${membro.nome} recebeu a ${medalhaInfo.nome}!`);
+  aplicarFiltrosAdmin();
+}
+
+function fecharCondecoracao() {
+  const sidebar = document.getElementById('condecorar-sidebar-admin');
+  if (sidebar) {
+    sidebar.classList.add('translate-x-full');
+  }
+  document.getElementById('admin-overlay').classList.add('hidden');
+}
+
+function abrirRemoverMedalhaAdmin(membroId) {
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const membro = membrosData.find((m) => m.id === membroId);
+
+  if (
+    !membro ||
+    !membro.medalhasDetalhadas ||
+    membro.medalhasDetalhadas.length === 0
+  )
+    return;
+
+  let sidebar = document.getElementById('remover-medalha-sidebar-admin');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'remover-medalha-sidebar-admin';
+    sidebar.className =
+      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-[60] overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-red-400">REMOVER CONDECORAÇÃO</h3>
+        <button onclick="window.fecharRemoverMedalhaAdmin()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <p class="text-gray-400 mb-4">Selecione a medalha que deseja remover:</p>
+
+      <div class="space-y-2">
+        ${membro.medalhasDetalhadas
+          .map((m) => {
+            const medalhaInfo = MEDALHAS_DISPONIVEIS[m.tipo];
+            const dataFormatada = new Date(
+              m.data + 'T00:00:00'
+            ).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            });
+
+            return `
+            <div 
+              class="bg-slate-800 hover:bg-red-900/30 border border-slate-700 hover:border-red-500 rounded-lg p-4 cursor-pointer transition-all"
+              onclick="window.confirmarRemocaoMedalhaAdmin('${membro.id}', ${
+              m.id
+            })">
+              <div class="flex items-center gap-3">
+                <div class="text-4xl">${medalhaInfo.emoji}</div>
+                <div class="flex-1">
+                  <div class="text-white font-semibold">${
+                    medalhaInfo.nome
+                  }</div>
+                  <div class="text-gray-400 text-sm">${dataFormatada}</div>
+                  ${
+                    m.observacoes
+                      ? `<div class="text-gray-500 text-xs mt-1">${m.observacoes}</div>`
+                      : ''
+                  }
+                </div>
+                <div class="text-red-400 text-xl">×</div>
+              </div>
+            </div>
+          `;
+          })
+          .join('')}
+      </div>
+    </div>
+  `;
+
+  sidebar.classList.remove('translate-x-full');
+}
+
+function fecharRemoverMedalhaAdmin() {
+  const sidebar = document.getElementById('remover-medalha-sidebar-admin');
+  if (sidebar) {
+    sidebar.classList.add('translate-x-full');
+  }
+}
+
+function confirmarRemocaoMedalhaAdmin(membroId, medalhaId) {
+  const membrosData = JSON.parse(
+    localStorage.getItem('strykers_membros') || '[]'
+  );
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  const medalha = membro.medalhasDetalhadas.find((m) => m.id === medalhaId);
+  if (!medalha) return;
+
+  const medalhaInfo = MEDALHAS_DISPONIVEIS[medalha.tipo];
+
+  if (!confirm(`⚠️ Confirma a remoção da ${medalhaInfo.nome}?`)) {
+    return;
+  }
+
+  membro.medalhasDetalhadas = membro.medalhasDetalhadas.filter(
+    (m) => m.id !== medalhaId
+  );
+  membro.medalhas = membro.medalhasDetalhadas.length;
+
+  const index = membrosData.findIndex((m) => m.id === membroId);
+  if (index !== -1) {
+    membrosData[index] = membro;
+  }
+
+  localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
+  fecharRemoverMedalhaAdmin();
+  fecharCondecoracao();
+  aplicarFiltrosAdmin();
+
+  alert(`✅ ${medalhaInfo.nome} removida com sucesso!`);
+}
+
 // Expor funções globalmente
 window.aprovarAlistamento = aprovarAlistamento;
 window.recusarAlistamento = recusarAlistamento;
@@ -500,3 +1175,13 @@ window.realistarUsuario = realistarUsuario;
 window.excluirAlistamento = excluirAlistamento;
 window.mostrarTexto = mostrarTexto;
 window.fecharModalTextoAdmin = fecharModalTextoAdmin;
+window.editarMembroAdmin = editarMembroAdmin;
+window.excluirMembroAdmin = excluirMembroAdmin;
+window.condecorarMembroAdmin = condecorarMembroAdmin;
+window.fecharSidebarAdmin = fecharSidebarAdmin;
+window.atualizarDescricaoMedalhaAdmin = atualizarDescricaoMedalhaAdmin;
+window.limparFormCondecorarAdmin = limparFormCondecorarAdmin;
+window.fecharCondecoracao = fecharCondecoracao;
+window.abrirRemoverMedalhaAdmin = abrirRemoverMedalhaAdmin;
+window.fecharRemoverMedalhaAdmin = fecharRemoverMedalhaAdmin;
+window.confirmarRemocaoMedalhaAdmin = confirmarRemocaoMedalhaAdmin;

@@ -10,17 +10,11 @@ export async function initMembros() {
 async function loadMembros() {
   try {
     showLoading();
-
     const localData = localStorage.getItem('strykers_membros');
-
     if (localData) {
       membrosData = JSON.parse(localData);
-    } else {
-      await loadFromFile();
     }
-
     filteredData = [...membrosData];
-
     document.getElementById(
       'total-membros'
     ).textContent = `Total: ${membrosData.length} membros`;
@@ -34,7 +28,6 @@ async function loadMembros() {
       option.textContent = patente;
       selectPatente.appendChild(option);
     });
-
     hideLoading();
   } catch (error) {
     console.error('Erro ao carregar membros:', error);
@@ -43,81 +36,13 @@ async function loadMembros() {
   }
 }
 
-async function loadFromFile() {
-  try {
-    const response = await fetch('/membros.txt');
-    const text = await response.text();
-    const lines = text.trim().split('\n');
-
-    membrosData = lines.map((line) => {
-      const [
-        nome,
-        patente,
-        medalhas,
-        dataRegistro,
-        situacao,
-        missoes,
-        forcaEspecial,
-        observacoes,
-      ] = line.split('|');
-      return {
-        id: gerarId(nome?.trim() || ''),
-        nome: nome?.trim() || '',
-        foto: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          nome?.trim() || 'User'
-        )}&background=0f172a&color=22d3ee&size=150`,
-        patente: patente?.trim() || 'Recruta',
-        atribuicao: 'Infantaria',
-        medalhas: parseInt(medalhas?.trim()) || 0,
-        dataRegistro:
-          dataRegistro?.trim() || new Date().toISOString().split('T')[0],
-        situacao: situacao?.trim() || 'Ativo',
-        missoes: 0,
-        forcaEspecial: forcaEspecial?.trim() || 'Não',
-        observacoes: observacoes?.trim() || '',
-        eventosParticipados: [],
-        historico: '',
-        valorHistorico: 0,
-      };
-    });
-
-    salvarMembros();
-  } catch (error) {
-    console.error('Erro ao carregar arquivo:', error);
-    membrosData = [];
-  }
-}
-
-function salvarMembros() {
-  localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
-  document.getElementById(
-    'total-membros'
-  ).textContent = `Total: ${membrosData.length} membros`;
-}
-
-function gerarId(nome) {
-  return (
-    nome
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '') +
-    '-' +
-    Date.now()
-  );
-}
-
 function showLoading() {
   const tbody = document.getElementById('membros-tbody');
   tbody.innerHTML =
     '<tr><td colspan="6" class="text-center py-8 text-gray-400">⏳ Carregando membros...</td></tr>';
 }
 
-function hideLoading() {
-  // Removido ao renderizar
-}
+function hideLoading() {}
 
 function showError(message) {
   const tbody = document.getElementById('membros-tbody');
@@ -149,24 +74,10 @@ function setupEventListeners() {
 
   document
     .getElementById('close-sidebar')
-    .addEventListener('click', closeSidebars);
-  document
-    .getElementById('close-edit-sidebar')
-    .addEventListener('click', closeSidebars);
+    .addEventListener('click', closeSidebar);
   document
     .getElementById('sidebar-overlay')
-    .addEventListener('click', closeSidebars);
-
-  document
-    .getElementById('add-membro-btn')
-    .addEventListener('click', () => abrirFormulario(null));
-
-  document
-    .getElementById('form-membro')
-    .addEventListener('submit', salvarMembro);
-  document
-    .getElementById('btn-cancelar-edit')
-    .addEventListener('click', closeSidebars);
+    .addEventListener('click', closeSidebar);
 }
 
 function applyFilters() {
@@ -180,7 +91,6 @@ function applyFilters() {
     const matchSearch = membro.nome.toLowerCase().includes(searchTerm);
     const matchPatente = !patenteFilter || membro.patente === patenteFilter;
     const matchSituacao = !situacaoFilter || membro.situacao === situacaoFilter;
-
     return matchSearch && matchPatente && matchSituacao;
   });
 
@@ -237,9 +147,7 @@ function renderTable(data) {
         situacaoColor[membro.situacao] || 'text-gray-400'
       }">${membro.situacao}</td>
       <td class="px-6 py-4 text-center">
-        <button class="view-details text-cyan-400 hover:text-cyan-300 text-xl" data-index="${index}">
-          📋
-        </button>
+        <button class="view-details text-cyan-400 hover:text-cyan-300 text-xl" data-index="${index}">📋</button>
       </td>
     `;
 
@@ -328,125 +236,248 @@ function showMemberDetails(membro) {
             membro.observacoes
           }</p>
         </div>
-
-        <div class="flex gap-4 pt-4">
-          <button
-            onclick="window.editarMembro('${membro.id}')"
-            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
-            ✏️ Editar
-          </button>
-          <button
-            onclick="window.excluirMembro('${membro.id}')"
-            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
-            🗑 Excluir
-          </button>
-        </div>
       </div>
     </div>
   `;
 
-  openSidebar('details');
+  openSidebar();
 }
 
-function abrirFormulario(membroId) {
-  const titulo = document.getElementById('edit-sidebar-title');
+function openSidebar() {
+  const overlay = document.getElementById('sidebar-overlay');
+  overlay.classList.remove('hidden');
+  document
+    .getElementById('member-details-sidebar')
+    .classList.remove('translate-x-full');
+}
 
-  if (membroId) {
-    const membro = membrosData.find((m) => m.id === membroId);
-    if (!membro) return;
+function closeSidebar() {
+  document
+    .getElementById('member-details-sidebar')
+    .classList.add('translate-x-full');
 
-    titulo.textContent = 'EDITAR MEMBRO';
-    document.getElementById('membro-id').value = membro.id;
-    document.getElementById('membro-nome').value = membro.nome;
-    document.getElementById('membro-foto').value = membro.foto || '';
-    document.getElementById('membro-patente').value = membro.patente;
-    document.getElementById('membro-atribuicao').value =
-      membro.atribuicao || 'Infantaria';
-    document.getElementById('membro-dataRegistro').value = membro.dataRegistro;
-    document.getElementById('membro-situacao').value = membro.situacao;
-    document.getElementById('membro-forcaEspecial').value =
-      membro.forcaEspecial;
-    document.getElementById('membro-observacoes').value = membro.observacoes;
-    document.getElementById('membro-historico').value = membro.historico || '';
-    document.getElementById('membro-valorHistorico').value =
-      membro.valorHistorico || 0;
-  } else {
-    titulo.textContent = 'ADICIONAR MEMBRO';
-    document.getElementById('form-membro').reset();
-    document.getElementById('membro-id').value = '';
-    document.getElementById('membro-dataRegistro').value = new Date()
-      .toISOString()
-      .split('T')[0];
-    document.getElementById('membro-valorHistorico').value = 0;
+  const missoesSidebar = document.getElementById('missoes-membro-sidebar');
+  if (missoesSidebar) {
+    missoesSidebar.classList.add('-translate-x-full');
   }
 
-  openSidebar('edit');
+  const medalhasSidebar = document.getElementById('medalhas-membro-sidebar');
+  if (medalhasSidebar) {
+    medalhasSidebar.classList.add('-translate-x-full');
+  }
+
+  const detalhesMissaoSidebar = document.getElementById(
+    'detalhes-missao-sidebar'
+  );
+  if (detalhesMissaoSidebar) {
+    detalhesMissaoSidebar.classList.add('translate-x-full');
+  }
+
+  const historicoSidebar = document.getElementById('historico-membro-sidebar');
+  if (historicoSidebar) {
+    historicoSidebar.classList.add('translate-x-full');
+  }
+
+  document.getElementById('sidebar-overlay').classList.add('hidden');
 }
 
-function salvarMembro(e) {
-  e.preventDefault();
+// ==================== VISUALIZAÇÃO DE MEDALHAS E MISSÕES ====================
 
-  const id = document.getElementById('membro-id').value;
-  const nome = document.getElementById('membro-nome').value;
-  const foto =
-    document.getElementById('membro-foto').value ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      nome
-    )}&background=0f172a&color=22d3ee&size=150`;
+function mostrarMedalhasMembro(membroId) {
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
 
-  const membroData = {
-    id: id || gerarId(nome),
-    nome: nome,
-    foto: foto,
-    patente: document.getElementById('membro-patente').value,
-    atribuicao: document.getElementById('membro-atribuicao').value,
-    medalhas: id ? membrosData.find((m) => m.id === id)?.medalhas || 0 : 0,
-    dataRegistro: document.getElementById('membro-dataRegistro').value,
-    situacao: document.getElementById('membro-situacao').value,
-    forcaEspecial:
-      document.getElementById('membro-forcaEspecial').value || 'Não',
-    observacoes: document.getElementById('membro-observacoes').value,
-    historico: document.getElementById('membro-historico').value || '',
-    valorHistorico:
-      parseInt(document.getElementById('membro-valorHistorico').value) || 0,
-    eventosParticipados: id
-      ? membrosData.find((m) => m.id === id)?.eventosParticipados || []
-      : [],
-    missoes: id ? membrosData.find((m) => m.id === id)?.missoes || 0 : 0,
-    medalhasDetalhadas: id
-      ? membrosData.find((m) => m.id === id)?.medalhasDetalhadas || []
-      : [],
+  const medalhas = membro.medalhasDetalhadas || [];
+
+  let html = `
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-cyan-400">MEDALHAS DE ${
+          membro.nome
+        }</h3>
+        <button onclick="window.fecharMedalhasSidebar()" class="text-gray-400 hover:text-white text-2xl">×</button>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-gray-400">Total de medalhas: <span class="text-cyan-400 font-bold text-xl">${
+          medalhas.length
+        }</span></p>
+      </div>
+
+      ${
+        medalhas.length > 0
+          ? `
+        <div class="mb-6">
+          <h4 class="text-sm text-gray-400 mb-3 uppercase tracking-wide">Condecorações</h4>
+          <div class="grid grid-cols-2 gap-4">
+            ${medalhas
+              .map((m) => {
+                const medalhaInfo = getMedalhaInfo(m.tipo);
+                return `
+                <div 
+                  class="bg-slate-800 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-700 transition-colors"
+                  onclick="window.mostrarDetalhesMedalha('${membro.id}', ${
+                  m.id
+                })"
+                >
+                  <img src="${medalhaInfo.imagem}" alt="${
+                  medalhaInfo.nome
+                }" class="w-16 h-16 mx-auto mb-2 object-contain" />
+                  <div class="text-white text-sm font-semibold">${medalhaInfo.nome
+                    .split(' ')
+                    .slice(0, 3)
+                    .join(' ')}</div>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+        </div>
+      `
+          : '<p class="text-gray-500 text-center py-8">Nenhuma medalha ainda</p>'
+      }
+    </div>
+  `;
+
+  let sidebar = document.getElementById('medalhas-membro-sidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('aside');
+    sidebar.id = 'medalhas-membro-sidebar';
+    sidebar.className =
+      'fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = html;
+  sidebar.classList.remove('-translate-x-full');
+  document.getElementById('sidebar-overlay').classList.remove('hidden');
+}
+
+function fecharMedalhasSidebar() {
+  const sidebar = document.getElementById('medalhas-membro-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('-translate-x-full');
+  }
+  const detailsSidebar = document.getElementById('member-details-sidebar');
+  if (detailsSidebar.classList.contains('translate-x-full')) {
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+  }
+}
+
+function getMedalhaInfo(tipo) {
+  const MEDALHAS = {
+    'merito-operacional': {
+      imagem: '/imgMedalhas/medalha_merito_operacional.png',
+      emoji: '🎖️',
+      nome: 'Medalha de Mérito Operacional',
+      descricao:
+        'Concedida a membros que demonstraram excelência em incursões táticas e operações hostis com sucesso.',
+    },
+    'defesa-avancada': {
+      imagem: '/imgMedalhas/medalha_defesa_avancada.png',
+      emoji: '🛡️',
+      nome: 'Medalha de Defesa Avançada',
+      descricao:
+        'Reconhecimento por atuações destacadas na proteção de VIPs, comboios e zonas estratégicas sob ameaça.',
+    },
+    'elite-aerea': {
+      imagem: '/imgMedalhas/medalha_elite_aerea.png',
+      emoji: '🥇',
+      nome: 'Medalha de Elite Aérea',
+      descricao:
+        'Premiação para pilotos que demonstraram superioridade aérea, manobras avançadas e domínio total em combate espacial.',
+    },
+    'infantaria-pesada': {
+      imagem: '/imgMedalhas/medalha_infantaria_pesada.png',
+      emoji: '🥈',
+      nome: 'Medalha de Infantaria Pesada',
+      descricao:
+        'Concedida a soldados de chão que atuaram com coragem, disciplina e precisão em combates terrestres e manobras com veículos.',
+    },
+    'aguia-dourada': {
+      imagem: '/imgMedalhas/medalha_insignia_aguia_dourada.png',
+      emoji: '🦅',
+      nome: 'Insígnia da Águia Dourada',
+      descricao:
+        'Honraria rara, concedida apenas aos que lideraram operações completas com sucesso total, mostrando comando, estratégia e disciplina.',
+    },
+    'honra-logistica': {
+      imagem: '/imgMedalhas/medalha_distintivo_honra_logistica.png',
+      emoji: '🪙',
+      nome: 'Distintivo de Honra Logística',
+      descricao:
+        'Entregue a operadores de logística e transporte que garantiram o sucesso de missões com eficiência e organização impecável.',
+    },
   };
 
-  if (id) {
-    const index = membrosData.findIndex((m) => m.id === id);
-    if (index !== -1) {
-      membrosData[index] = membroData;
+  return (
+    MEDALHAS[tipo] || {
+      imagem: '',
+      nome: 'Medalha Desconhecida',
+      descricao: '',
     }
-  } else {
-    membrosData.push(membroData);
-  }
-
-  salvarMembros();
-  closeSidebars();
-  applyFilters();
-
-  alert(id ? '✅ Membro atualizado!' : '✅ Membro adicionado!');
+  );
 }
 
-function excluirMembro(membroId) {
-  if (!confirm('⚠️ Tem certeza que deseja excluir este membro?')) {
-    return;
+function mostrarDetalhesMedalha(membroId, medalhaId) {
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro || !membro.medalhasDetalhadas) return;
+
+  const medalhaDetalhada = membro.medalhasDetalhadas.find(
+    (m) => m.id === medalhaId
+  );
+  if (!medalhaDetalhada) return;
+
+  const medalha = getMedalhaInfo(medalhaDetalhada.tipo);
+  if (!medalha) return;
+
+  let observacoesHtml = '';
+  if (
+    medalhaDetalhada.observacoes &&
+    medalhaDetalhada.observacoes.trim() !== ''
+  ) {
+    observacoesHtml = `
+      <hr class="my-4 border-slate-700" />
+      <div class="text-left">
+        <h4 class="text-xs text-gray-500 mb-1 font-semibold">Observação da condecoração</h4>
+        <p class="text-gray-400 text-sm whitespace-pre-line">${medalhaDetalhada.observacoes}</p>
+      </div>
+    `;
   }
 
-  membrosData = membrosData.filter((m) => m.id !== membroId);
-  salvarMembros();
-  closeSidebars();
-  applyFilters();
+  let modal = document.getElementById('modal-medalha');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-medalha';
+    modal.className =
+      'fixed inset-0 z-[100] flex items-center justify-center hidden';
+    modal.innerHTML = `
+      <div class="absolute inset-0 bg-black/70" onclick="window.fecharModalMedalha()"></div>
+      <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-md mx-4 transform transition-all">
+        <button onclick="window.fecharModalMedalha()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
+        <div id="modal-medalha-content"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
 
-  alert('✅ Membro excluído!');
+  document.getElementById('modal-medalha-content').innerHTML = `
+    <div class="text-center">
+      <img src="${medalha.imagem}" alt="${medalha.nome}" class="w-28 h-28 mx-auto mb-4 object-contain" />
+      <h3 class="text-2xl font-bold text-cyan-400 mb-4">${medalha.nome}</h3>
+      <p class="text-gray-300 leading-relaxed">${medalha.descricao}</p>
+      ${observacoesHtml}
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function fecharModalMedalha() {
+  const modal = document.getElementById('modal-medalha');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
 }
 
 function mostrarMissoesMembro(membroId) {
@@ -454,8 +485,6 @@ function mostrarMissoesMembro(membroId) {
   if (!membro) return;
 
   const eventosParticipados = membro.eventosParticipados || [];
-
-  // Conta missões por categoria
   const stats = {
     treinamento: 0,
     missao: 0,
@@ -481,7 +510,6 @@ function mostrarMissoesMembro(membroId) {
         <button onclick="window.fecharMissoesSidebar()" class="text-gray-400 hover:text-white text-2xl">×</button>
       </div>
 
-      <!-- Estatísticas por Categoria -->
       <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 mb-4">
         <div class="grid grid-cols-3 gap-3">
           <div class="text-center">
@@ -518,7 +546,6 @@ function mostrarMissoesMembro(membroId) {
       <div class="space-y-3">
   `;
 
-  // Adiciona histórico se existir
   if (membro.historico && membro.historico.trim() !== '') {
     html += `
       <div 
@@ -541,7 +568,11 @@ function mostrarMissoesMembro(membroId) {
     eventosParticipados.forEach((ep) => {
       const dataFormatada = new Date(ep.data + 'T00:00:00').toLocaleDateString(
         'pt-BR',
-        { day: '2-digit', month: 'short', year: 'numeric' }
+        {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }
       );
 
       const cores = {
@@ -581,6 +612,17 @@ function mostrarMissoesMembro(membroId) {
   sidebar.innerHTML = html;
   sidebar.classList.remove('-translate-x-full');
   document.getElementById('sidebar-overlay').classList.remove('hidden');
+}
+
+function fecharMissoesSidebar() {
+  const sidebar = document.getElementById('missoes-membro-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('-translate-x-full');
+  }
+  const detailsSidebar = document.getElementById('member-details-sidebar');
+  if (detailsSidebar.classList.contains('translate-x-full')) {
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+  }
 }
 
 function mostrarHistoricoMembro(membroId) {
@@ -633,23 +675,6 @@ function fecharHistoricoMembro() {
   const sidebar = document.getElementById('historico-membro-sidebar');
   if (sidebar) {
     sidebar.classList.add('translate-x-full');
-  }
-}
-
-function fecharMissoesSidebar() {
-  const sidebar = document.getElementById('missoes-membro-sidebar');
-  if (sidebar) {
-    sidebar.classList.add('-translate-x-full');
-  }
-
-  const detailsSidebar = document.getElementById('member-details-sidebar');
-  const editSidebar = document.getElementById('edit-member-sidebar');
-
-  if (
-    detailsSidebar.classList.contains('translate-x-full') &&
-    editSidebar.classList.contains('-translate-x-full')
-  ) {
-    document.getElementById('sidebar-overlay').classList.add('hidden');
   }
 }
 
@@ -795,568 +820,14 @@ function fecharDetalhesMissao() {
   }
 }
 
-function openSidebar(type) {
-  const overlay = document.getElementById('sidebar-overlay');
-  overlay.classList.remove('hidden');
-
-  if (type === 'details') {
-    document
-      .getElementById('member-details-sidebar')
-      .classList.remove('translate-x-full');
-  } else if (type === 'edit') {
-    document
-      .getElementById('edit-member-sidebar')
-      .classList.remove('-translate-x-full');
-  }
-}
-
-function closeSidebars() {
-  document
-    .getElementById('member-details-sidebar')
-    .classList.add('translate-x-full');
-  document
-    .getElementById('edit-member-sidebar')
-    .classList.add('-translate-x-full');
-
-  const missoesSidebar = document.getElementById('missoes-membro-sidebar');
-  if (missoesSidebar) {
-    missoesSidebar.classList.add('-translate-x-full');
-  }
-
-  const medalhasSidebar = document.getElementById('medalhas-membro-sidebar');
-  if (medalhasSidebar) {
-    medalhasSidebar.classList.add('-translate-x-full');
-  }
-
-  const condecoraSidebar = document.getElementById('condecorar-sidebar');
-  if (condecoraSidebar) {
-    condecoraSidebar.classList.add('translate-x-full');
-  }
-
-  const removerMedalhaSidebar = document.getElementById(
-    'remover-medalha-sidebar'
-  );
-  if (removerMedalhaSidebar) {
-    removerMedalhaSidebar.classList.add('translate-x-full');
-  }
-
-  const detalhesMissaoSidebar = document.getElementById(
-    'detalhes-missao-sidebar'
-  );
-  if (detalhesMissaoSidebar) {
-    detalhesMissaoSidebar.classList.add('translate-x-full');
-  }
-
-  const historicoSidebar = document.getElementById('historico-membro-sidebar');
-  if (historicoSidebar) {
-    historicoSidebar.classList.add('translate-x-full');
-  }
-
-  document.getElementById('sidebar-overlay').classList.add('hidden');
-}
-
-// ==================== SISTEMA DE MEDALHAS ====================
-
-const MEDALHAS_DISPONIVEIS = {
-  'merito-operacional': {
-    imagem: '/imgMedalhas/medalha_merito_operacional.png',
-    emoji: '🎖️',
-    nome: 'Medalha de Mérito Operacional',
-    descricao:
-      'Concedida a membros que demonstraram excelência em incursões táticas e operações hostis com sucesso.',
-  },
-  'defesa-avancada': {
-    imagem: '/imgMedalhas/medalha_defesa_avancada.png',
-    emoji: '🛡️',
-    nome: 'Medalha de Defesa Avançada',
-    descricao:
-      'Reconhecimento por atuações destacadas na proteção de VIPs, comboios e zonas estratégicas sob ameaça.',
-  },
-  'elite-aerea': {
-    imagem: '/imgMedalhas/medalha_elite_aerea.png',
-    emoji: '🥇',
-    nome: 'Medalha de Elite Aérea',
-    descricao:
-      'Premiação para pilotos que demonstraram superioridade aérea, manobras avançadas e domínio total em combate espacial.',
-  },
-  'infantaria-pesada': {
-    imagem: '/imgMedalhas/medalha_infantaria_pesada.png',
-    emoji: '🥈',
-    nome: 'Medalha de Infantaria Pesada',
-    descricao:
-      'Concedida a soldados de chão que atuaram com coragem, disciplina e precisão em combates terrestres e manobras com veículos.',
-  },
-  'aguia-dourada': {
-    imagem: '/imgMedalhas/medalha_insignia_aguia_dourada.png',
-    emoji: '🦅',
-    nome: 'Insígnia da Águia Dourada',
-    descricao:
-      'Honraria rara, concedida apenas aos que lideraram operações completas com sucesso total, mostrando comando, estratégia e disciplina.',
-  },
-  'honra-logistica': {
-    imagem: '/imgMedalhas/medalha_distintivo_honra_logistica.png',
-    emoji: '🪙',
-    nome: 'Distintivo de Honra Logística',
-    descricao:
-      'Entregue a operadores de logística e transporte que garantiram o sucesso de missões com eficiência e organização impecável.',
-  },
-};
-
-function mostrarMedalhasMembro(membroId) {
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (!membro) return;
-
-  const medalhas = membro.medalhasDetalhadas || [];
-
-  let html = `
-    <div class="p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-cyan-400">MEDALHAS DE ${
-          membro.nome
-        }</h3>
-        <button onclick="window.fecharMedalhasSidebar()" class="text-gray-400 hover:text-white text-2xl">×</button>
-      </div>
-
-      <div class="mb-4">
-        <p class="text-gray-400">Total de medalhas: <span class="text-cyan-400 font-bold text-xl">${
-          medalhas.length
-        }</span></p>
-      </div>
-
-      <!-- Medalhas Conquistadas -->
-      ${
-        medalhas.length > 0
-          ? `
-        <div class="mb-6">
-          <h4 class="text-sm text-gray-400 mb-3 uppercase tracking-wide">Condecorações</h4>
-          <div class="grid grid-cols-2 gap-4">
-            ${medalhas
-              .map((m) => {
-                const medalhaInfo = MEDALHAS_DISPONIVEIS[m.tipo];
-                return `
-                <div 
-                  class="bg-slate-800 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-700 transition-colors"
-                  onclick="window.mostrarDetalhesMedalha('${membro.id}', ${
-                  m.id
-                })"
-                >
-                  <img src="${medalhaInfo.imagem}" alt="${
-                  medalhaInfo.nome
-                }" class="w-16 h-16 mx-auto mb-2 object-contain" />
-                  <div class="text-white text-sm font-semibold">${medalhaInfo.nome
-                    .split(' ')
-                    .slice(0, 3)
-                    .join(' ')}</div>
-                </div>
-              `;
-              })
-              .join('')}
-          </div>
-        </div>
-      `
-          : ''
-      }
-
-      <!-- Botões de Ação -->
-      <div class="space-y-3 border-t border-slate-700 pt-6">
-        <button
-          onclick="window.abrirCondecoracao('${membro.id}')"
-          class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors flex items-center justify-center gap-2"
-        >
-          ⭐ Condecorar Membro
-        </button>
-        ${
-          medalhas.length > 0
-            ? `
-          <button
-            onclick="window.abrirRemoverMedalha('${membro.id}')"
-            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors flex items-center justify-center gap-2"
-          >
-            🗑 Remover Condecoração
-          </button>
-        `
-            : ''
-        }
-      </div>
-    </div>
-  `;
-
-  let sidebar = document.getElementById('medalhas-membro-sidebar');
-  if (!sidebar) {
-    sidebar = document.createElement('aside');
-    sidebar.id = 'medalhas-membro-sidebar';
-    sidebar.className =
-      'fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
-    document.body.appendChild(sidebar);
-  }
-
-  sidebar.innerHTML = html;
-  sidebar.classList.remove('-translate-x-full');
-  document.getElementById('sidebar-overlay').classList.remove('hidden');
-}
-
-function fecharMedalhasSidebar() {
-  const sidebar = document.getElementById('medalhas-membro-sidebar');
-  if (sidebar) {
-    sidebar.classList.add('-translate-x-full');
-  }
-
-  const detailsSidebar = document.getElementById('member-details-sidebar');
-  const editSidebar = document.getElementById('edit-member-sidebar');
-  const missoesSidebar = document.getElementById('missoes-membro-sidebar');
-  const condecoraSidebar = document.getElementById('condecorar-sidebar');
-
-  if (
-    detailsSidebar.classList.contains('translate-x-full') &&
-    editSidebar.classList.contains('-translate-x-full') &&
-    (!missoesSidebar ||
-      missoesSidebar.classList.contains('-translate-x-full')) &&
-    (!condecoraSidebar ||
-      condecoraSidebar.classList.contains('translate-x-full'))
-  ) {
-    document.getElementById('sidebar-overlay').classList.add('hidden');
-  }
-}
-
-function abrirCondecoracao(membroId) {
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (!membro) return;
-
-  let html = `
-    <div class="p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-cyan-400">CONDECORAR ${
-          membro.nome
-        }</h3>
-        <button onclick="window.fecharCondecoracao()" class="text-gray-400 hover:text-white text-2xl">×</button>
-      </div>
-
-      <form id="form-condecorar" class="space-y-6">
-        <input type="hidden" id="condecorar-membro-id" value="${membro.id}" />
-
-        <div>
-          <label class="block text-gray-400 text-sm mb-2">MEDALHA *</label>
-          <select
-            id="condecorar-medalha"
-            required
-            class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-            onchange="window.atualizarDescricaoMedalha()"
-          >
-            <option value="">Selecione uma medalha</option>
-            ${Object.entries(MEDALHAS_DISPONIVEIS)
-              .map(
-                ([key, medalha]) => `
-              <option value="${key}">${medalha.emoji} ${medalha.nome}</option>
-            `
-              )
-              .join('')}
-          </select>
-        </div>
-
-        <div id="descricao-medalha-container" class="hidden bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h4 class="text-sm text-gray-400 mb-2 uppercase tracking-wide">Descrição</h4>
-          <p id="descricao-medalha-texto" class="text-gray-300 text-sm leading-relaxed"></p>
-        </div>
-
-        <div>
-          <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
-          <textarea
-            id="condecorar-observacoes"
-            rows="4"
-            class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none"
-            placeholder="Detalhes sobre a condecoração (opcional)..."
-          ></textarea>
-        </div>
-
-        <div class="flex gap-4">
-          <button
-            type="submit"
-            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
-            ⭐ Condecorar
-          </button>
-          <button
-            type="button"
-            onclick="window.limparFormCondecorar()"
-            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors"
-          >
-            🗑 Limpar
-          </button>
-        </div>
-      </form>
-    </div>
-  `;
-
-  let sidebar = document.getElementById('condecorar-sidebar');
-  if (!sidebar) {
-    sidebar = document.createElement('aside');
-    sidebar.id = 'condecorar-sidebar';
-    sidebar.className =
-      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
-    document.body.appendChild(sidebar);
-  }
-
-  sidebar.innerHTML = html;
-  sidebar.classList.remove('translate-x-full');
-
-  document
-    .getElementById('form-condecorar')
-    .addEventListener('submit', salvarCondecoracao);
-}
-
-function fecharCondecoracao() {
-  const sidebar = document.getElementById('condecorar-sidebar');
-  if (sidebar) {
-    sidebar.classList.add('translate-x-full');
-  }
-}
-
-function atualizarDescricaoMedalha() {
-  const select = document.getElementById('condecorar-medalha');
-  const container = document.getElementById('descricao-medalha-container');
-  const texto = document.getElementById('descricao-medalha-texto');
-
-  if (select.value) {
-    const medalha = MEDALHAS_DISPONIVEIS[select.value];
-    texto.textContent = medalha.descricao;
-    container.classList.remove('hidden');
-  } else {
-    container.classList.add('hidden');
-  }
-}
-
-function limparFormCondecorar() {
-  document.getElementById('condecorar-medalha').value = '';
-  document.getElementById('condecorar-observacoes').value = '';
-  document
-    .getElementById('descricao-medalha-container')
-    .classList.add('hidden');
-}
-
-function salvarCondecoracao(e) {
-  e.preventDefault();
-
-  const membroId = document.getElementById('condecorar-membro-id').value;
-  const tipoMedalha = document.getElementById('condecorar-medalha').value;
-  const observacoes = document.getElementById('condecorar-observacoes').value;
-
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (!membro) return;
-
-  if (!membro.medalhasDetalhadas) {
-    membro.medalhasDetalhadas = [];
-  }
-
-  const novaMedalha = {
-    id: Date.now(),
-    tipo: tipoMedalha,
-    data: new Date().toISOString().split('T')[0],
-    observacoes: observacoes,
-  };
-
-  membro.medalhasDetalhadas.push(novaMedalha);
-  membro.medalhas = membro.medalhasDetalhadas.length;
-
-  const index = membrosData.findIndex((m) => m.id === membroId);
-  if (index !== -1) {
-    membrosData[index] = membro;
-  }
-
-  salvarMembros();
-  fecharCondecoracao();
-
-  const medalhaInfo = MEDALHAS_DISPONIVEIS[tipoMedalha];
-  alert(`✅ ${membro.nome} recebeu a ${medalhaInfo.nome}!`);
-
-  mostrarMedalhasMembro(membroId);
-}
-
-function mostrarDetalhesMedalha(membroId, medalhaId) {
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (!membro || !membro.medalhasDetalhadas) return;
-
-  const medalhaDetalhada = membro.medalhasDetalhadas.find(
-    (m) => m.id === medalhaId
-  );
-  if (!medalhaDetalhada) return;
-
-  const medalha = MEDALHAS_DISPONIVEIS[medalhaDetalhada.tipo];
-  if (!medalha) return;
-
-  let observacoesHtml = '';
-  if (
-    medalhaDetalhada.observacoes &&
-    medalhaDetalhada.observacoes.trim() !== ''
-  ) {
-    observacoesHtml = `
-      <hr class="my-4 border-slate-700" />
-      <div class="text-left">
-        <h4 class="text-xs text-gray-500 mb-1 font-semibold">Observação da condecoração</h4>
-        <p class="text-gray-400 text-sm whitespace-pre-line">${medalhaDetalhada.observacoes}</p>
-      </div>
-    `;
-  }
-
-  let modal = document.getElementById('modal-medalha');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'modal-medalha';
-    modal.className =
-      'fixed inset-0 z-[100] flex items-center justify-center hidden';
-    modal.innerHTML = `
-      <div class="absolute inset-0 bg-black/70" onclick="window.fecharModalMedalha()"></div>
-      <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-md mx-4 transform transition-all">
-        <button onclick="window.fecharModalMedalha()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
-        <div id="modal-medalha-content"></div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-
-  document.getElementById('modal-medalha-content').innerHTML = `
-    <div class="text-center">
-      <img src="${medalha.imagem}" alt="${medalha.nome}" class="w-28 h-28 mx-auto mb-4 object-contain" />
-      <h3 class="text-2xl font-bold text-cyan-400 mb-4">${medalha.nome}</h3>
-      <p class="text-gray-300 leading-relaxed">${medalha.descricao}</p>
-      ${observacoesHtml}
-    </div>
-  `;
-
-  modal.classList.remove('hidden');
-}
-
-function fecharModalMedalha() {
-  const modal = document.getElementById('modal-medalha');
-  if (modal) {
-    modal.classList.add('hidden');
-  }
-}
-
-function abrirRemoverMedalha(membroId) {
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (
-    !membro ||
-    !membro.medalhasDetalhadas ||
-    membro.medalhasDetalhadas.length === 0
-  )
-    return;
-
-  let html = `
-    <div class="p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-red-400">REMOVER CONDECORAÇÃO</h3>
-        <button onclick="window.fecharRemoverMedalha()" class="text-gray-400 hover:text-white text-2xl">×</button>
-      </div>
-
-      <p class="text-gray-400 mb-4">Selecione a medalha que deseja remover:</p>
-
-      <div class="space-y-2">
-        ${membro.medalhasDetalhadas
-          .map((m) => {
-            const medalhaInfo = MEDALHAS_DISPONIVEIS[m.tipo];
-            const dataFormatada = new Date(
-              m.data + 'T00:00:00'
-            ).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            });
-
-            return `
-            <div 
-              class="bg-slate-800 hover:bg-red-900/30 border border-slate-700 hover:border-red-500 rounded-lg p-4 cursor-pointer transition-all"
-              onclick="window.confirmarRemocaoMedalha('${membro.id}', ${m.id})"
-            >
-              <div class="flex items-center gap-3">
-                <div class="text-4xl">${medalhaInfo.emoji}</div>
-                <div class="flex-1">
-                  <div class="text-white font-semibold">${
-                    medalhaInfo.nome
-                  }</div>
-                  <div class="text-gray-400 text-sm">${dataFormatada}</div>
-                  ${
-                    m.observacoes
-                      ? `<div class="text-gray-500 text-xs mt-1">${m.observacoes}</div>`
-                      : ''
-                  }
-                </div>
-                <div class="text-red-400 text-xl">×</div>
-              </div>
-            </div>
-          `;
-          })
-          .join('')}
-      </div>
-    </div>
-  `;
-
-  let sidebar = document.getElementById('remover-medalha-sidebar');
-  if (!sidebar) {
-    sidebar = document.createElement('aside');
-    sidebar.id = 'remover-medalha-sidebar';
-    sidebar.className =
-      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
-    document.body.appendChild(sidebar);
-  }
-
-  sidebar.innerHTML = html;
-  sidebar.classList.remove('translate-x-full');
-}
-
-function fecharRemoverMedalha() {
-  const sidebar = document.getElementById('remover-medalha-sidebar');
-  if (sidebar) {
-    sidebar.classList.add('translate-x-full');
-  }
-}
-
-function confirmarRemocaoMedalha(membroId, medalhaId) {
-  const membro = membrosData.find((m) => m.id === membroId);
-  if (!membro) return;
-
-  const medalha = membro.medalhasDetalhadas.find((m) => m.id === medalhaId);
-  if (!medalha) return;
-
-  const medalhaInfo = MEDALHAS_DISPONIVEIS[medalha.tipo];
-
-  if (!confirm(`⚠️ Confirma a remoção da ${medalhaInfo.nome}?`)) {
-    return;
-  }
-
-  membro.medalhasDetalhadas = membro.medalhasDetalhadas.filter(
-    (m) => m.id !== medalhaId
-  );
-  membro.medalhas = membro.medalhasDetalhadas.length;
-
-  const index = membrosData.findIndex((m) => m.id === membroId);
-  if (index !== -1) {
-    membrosData[index] = membro;
-  }
-
-  salvarMembros();
-  fecharRemoverMedalha();
-  mostrarMedalhasMembro(membroId);
-
-  alert(`✅ ${medalhaInfo.nome} removida com sucesso!`);
-}
-
-// Expõe funções globalmente
-window.editarMembro = abrirFormulario;
-window.excluirMembro = excluirMembro;
+// Expor funções globalmente
 window.mostrarMissoesMembro = mostrarMissoesMembro;
 window.fecharMissoesSidebar = fecharMissoesSidebar;
 window.mostrarDetalhesMissaoDoEvento = mostrarDetalhesMissaoDoEvento;
 window.fecharDetalhesMissao = fecharDetalhesMissao;
 window.mostrarMedalhasMembro = mostrarMedalhasMembro;
 window.fecharMedalhasSidebar = fecharMedalhasSidebar;
-window.abrirCondecoracao = abrirCondecoracao;
-window.fecharCondecoracao = fecharCondecoracao;
-window.atualizarDescricaoMedalha = atualizarDescricaoMedalha;
-window.limparFormCondecorar = limparFormCondecorar;
 window.mostrarDetalhesMedalha = mostrarDetalhesMedalha;
 window.fecharModalMedalha = fecharModalMedalha;
-window.abrirRemoverMedalha = abrirRemoverMedalha;
-window.fecharRemoverMedalha = fecharRemoverMedalha;
-window.confirmarRemocaoMedalha = confirmarRemocaoMedalha;
 window.mostrarHistoricoMembro = mostrarHistoricoMembro;
 window.fecharHistoricoMembro = fecharHistoricoMembro;
