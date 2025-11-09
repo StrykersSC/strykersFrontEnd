@@ -121,8 +121,7 @@ export const forcasEspeciaisPage = () => {
           <!-- lema strom -->
           
             <p class="pt-3 text-sm text-gray-400 italic">
-              "Este não é apenas um treinamento.
-              É um compromisso vitalício com a excelência, a disciplina e o fogo."
+              "Os primeiros a entrar. Os últimos a sair."
             </p>
             <p class="text-sm text-cyan-400 font-semibold mt-2">
               - Lema da S.T.O.R.M.
@@ -139,17 +138,19 @@ export const forcasEspeciaisPage = () => {
 
           <div class=" text-gray-300 leading-relaxed">
             <p>
-              A <span class="text-cyan-400 font-semibold">S.T.O.R.M.</span>
-              <span class="italic text-cyan-400 font-semibold">— Strykers Tactical Operations & Response Marines —</span> não é uma força convencional.
+              A <span class="text-cyan-400 font-semibold">G.H.O.S.T.</span>
+              <span class="italic text-cyan-400 font-semibold">— Group for Hidden Operations & Stealth Tactics —</span> prioriza o efeito estratégico: nossa presença raramente é percebida, apenas os resultados importam.
             </p>
             <p>
-              Ela é uma <span class="text-cyan-400 font-semibold">força terrestre de elite</span>, atuando nas 
-              <span class="text-cyan-400 font-semibold">operações mais críticas e perigosas</span> da Strykers, onde 
-              <span class="text-cyan-400 font-semibold">a margem de erro é zero</span> e o 
-              <span class="text-cyan-400 font-semibold">comprometimento é absoluto</span>.
+              Como Força Especial Anticapital da Marinha, nossa missão principal é <span class="text-cyan-400 font-semibold">neutralizar</span> Naves Grandes, Subcapitais e 
+              Capitais inimigas, removendo-as do campo de operações com máxima eficiência e exposição reduzida. Para isso 
+              empregamos uma <span class="text-cyan-400 font-semibold">combinação de métodos táticos</span> adaptados ao alvo e ao cenário: <span class="text-cyan-400 font-semibold">ataques de precisão</span> com utilização 
+              de torpedos e mísseis, <span class="text-cyan-400 font-semibold">sabotagem</span> e/ou <span class="text-cyan-400 font-semibold">destruição de sistemas vitais</span> (motores, reatores, propulsores, componentes 
+              expostos etc), <span class="text-cyan-400 font-semibold">hacking</span> para desabilitar defesas e comunicações, <span class="text-cyan-400 font-semibold">ações oportunistas</span> que exploram falhas táticas e 
+              <span class="text-cyan-400 font-semibold">infiltração</span> quando necessária.
             </p>
           </div>
-          <!-- Info storm -->
+          <!-- Info ghost -->
           <div class="mt-8 pt-6 border-t border-slate-700 text-sm text-gray-300">
             <p class="underline text-lg text-cyan-400 font-semibold mt-2">
               REQUISITOS DE ENTRADA:
@@ -158,36 +159,39 @@ export const forcasEspeciaisPage = () => {
               🔸 Existência de <span class="text-cyan-400 font-semibold">vaga disponível</span>
             </p>
             <p>
-              🔸 Kit completo de <span class="text-cyan-400 font-semibold">armadura pesada S.T.O.R.M.</span>
+              🔸 Demonstração de <span class="text-cyan-400 font-semibold">competência</span> durante os treinamentos
             </p>
             <p>
-              🔸 Mínimo de patente: <span class="text-cyan-400 font-semibold">3º Sargento</span>
+              🔸 Conclusão dos treinamentos designados pela unidade
             </p>
             <p>
-              🔸 Obrigatório <span class="text-cyan-400 font-semibold">TODOS</span> os Treinamentos de Infantaria
+              🔸 Seleção direta por parte do <span class="text-cyan-400 font-semibold">Comandante</span> da Unidade
             </p>
           </div>
            <div class="mt-8 pt-6 border-t border-slate-700 text-sm text-gray-300">
             <p class="underline text-lg text-cyan-400 font-semibold mt-2">
-              MISSÕES PRINCIPAIS DA S.T.O.R.M.:
+              MISSÕES PRINCIPAIS DA G.H.O.S.T.:
             </p>
             <p class="pt-3">
-              🔸 Infiltração e reconhecimento em zonas hostis
+              🔸 Ataques Incisivos a Capitais → A doutrina central da G.H.O.S.T., empregando precisão e coordenação para neutralizar naves capitais de forma rápida e definitiva.
             </p>
             <p>
-              🔸 Resgate de reféns e extração de pessoal
+              🔸 Infiltrações em Capitais → Operações discretas em naves estacionadas ou em movimento, garantindo acesso e controle da capital inimiga.
             </p>
             <p>
-              🔸 Neutralização de <span class="text-cyan-400 font-semibold">alvos de alto valor (HVT)</span>
+              🔸 Sabotagens Interna → Destruição de componentes expostos, remoção de fusíveis críticos e autodestruição .
             </p>
             <p>
-              🔸 Sabotagem de infraestrutura crítica
+              🔸 Aquisição de dados → Coleta de inteligência inimiga e informações estratégicas do terreno e da missão.
             </p>
             <p>
-              🔸 Resposta rápida a ameaças emergentes
+              🔸 Hacking e sabotagem de Satélites → Desativação de satélite local quando conveniente e hacking de sistemas inimigos (mecânica futura).
             </p>
             <p>
-              🔸 Segurança avançada de instalações e operações sensíveis
+              🔸 Apoio aéreo e reconhecimento avançado → Desde a função de batedores (reconhecimento e abertura de rotas seguras) até suporte especializado à Força Aérea quando solicitado, empregando naves stealth especializadas como caças de neutralização rápida (Firebird), de supressão (F7 Ghost), dogfighters (Sabre), suporte a transporte de tropas terrestres (Prowler) e interceptação aérea (Mantis).
+            </p>
+            <p>
+              🔸 CQB em Capitais → Domínio de corredores, salas e pontos de controle.
             </p>
           </div>
           <div class="mt-8 pt-6 border-t border-slate-700 text-sm text-gray-300">
@@ -195,25 +199,24 @@ export const forcasEspeciaisPage = () => {
               COMO SE APRESENTAR:
             </p>
             <p class="pt-3">
-              Os interessados deverão formalizar sua candidatura <span class="text-cyan-400 font-semibold">diretamente com o Comando S.T.O.R.M.</span>
+              Os interessados deverão formalizar sua candidatura <span class="text-cyan-400 font-semibold">diretamente com o Comando G.H.O.S.T.</span>
             </p>          
           </div>
           <!--link manual operativo-->
           <div class="mt-8 pt-6 border-t border-slate-700 text-sm text-gray-300">
             <p class="text-sm text-cyan-400 font-semibold mt-2">              
-              <a href="https://docs.google.com/document/d/1N9cSjiXRvVkfvfCOhEsUlpEfLMa1soEC/edit?tab=t.0" class="text-cyan-400 hover:text-cyan-300">
-              MANUAL OPERATIVO: 📋
+              <a href="https://cdn.discordapp.com/attachments/1381625646194622574/1416836794372198510/MANUAL_DE_OPERACOES_GHOST_-_Invasao_de_naves_capitais.pdf?ex=691176d7&is=69102557&hm=13b3a21bc0c8e30926c4f15c0db87065400c28047aba66fb1568549fce9467a6&" class="text-cyan-400 hover:text-cyan-300">
+              MANUAL DE OPERAÇÕES G.H.O.S.T.: 📋
               </a>
             </p>         
           </div>
           <!-- lema strom -->
           
             <p class="pt-3 text-sm text-gray-400 italic">
-              "Este não é apenas um treinamento.
-              É um compromisso vitalício com a excelência, a disciplina e o fogo."
+              "O silêncio é nossa arma. As sombras, nosso lar."
             </p>
             <p class="text-sm text-cyan-400 font-semibold mt-2">
-              - Lema da S.T.O.R.M.
+              - Lema da G.H.O.S.T.
             </p>
         </div>
   `;
