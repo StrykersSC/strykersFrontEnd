@@ -19,7 +19,7 @@ export const eventosPage = () => {
       <!-- Botão Cadastrar Evento -->
       <div class="mb-6 flex justify-between items-center">
         <h3 class="text-2xl font-bold text-white">Calendário</h3>
-        <button id="btn-novo-evento" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
+        <button id="btn-novo-evento" class="hidden">
           ➕ Cadastrar Evento
         </button>
       </div>

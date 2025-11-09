@@ -1,12 +1,25 @@
-import { initMembros } from '../membros.js';
-initMembros();
+import {
+  mostrarMedalhasMembro,
+  fecharMedalhasSidebar,
+  getMedalhaInfo,
+  mostrarDetalhesMedalha,
+  fecharModalMedalha,
+  mostrarMissoesMembro,
+  fecharMissoesSidebar,
+  mostrarHistoricoMembro,
+  fecharHistoricoMembro,
+  mostrarDetalhesMissaoDoEvento,
+  fecharDetalhesMissao,
+} from '../components/membros-utils.js';
 
 export const administracaoPage = () => {
   return `
     <main class="relative z-10 container mx-auto px-6 py-16">
-      <div class="mb-8">
-        <h2 class="text-4xl font-bold text-white mb-2 tracking-wide">ADMINISTRAÇÃO</h2>
-        <p class="text-gray-400">Gerenciamento de alistamentos e membros</p>
+      <div class="mb-8 flex justify-between items-center">
+        <div>
+          <h2 class="text-4xl font-bold text-white mb-2 tracking-wide">ADMINISTRAÇÃO</h2>
+        </div>
+        <button id="btn-novo-evento" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">➕ Cadastrar Evento</button>
       </div>
 
       <!-- Alistamentos Pendentes -->
@@ -151,6 +164,11 @@ function setupAdminFilters() {
   document
     .getElementById('admin-overlay')
     .addEventListener('click', fecharSidebarAdmin);
+  document.getElementById('btn-novo-evento').addEventListener('click', () => {
+    window.router.navigate('eventos', () => {
+      if (window.abrirFormularioEvento) window.abrirFormularioEvento();
+    });
+  });
 }
 
 function aplicarFiltrosAdmin() {
@@ -804,19 +822,59 @@ function salvarMembroAdmin(e) {
 function excluirMembroAdmin(membroId) {
   if (
     !confirm(
-      '⚠️ Tem certeza que deseja excluir este membro?\n\nEsta ação não pode ser desfeita!'
+      '⚠️ Tem certeza que deseja remover este membro?\n\nEle será movido para a lista de alistamentos recusados.'
     )
   )
     return;
 
+  // Buscar membro
   let membrosData = JSON.parse(
     localStorage.getItem('strykers_membros') || '[]'
   );
+  const membro = membrosData.find((m) => m.id === membroId);
+  if (!membro) return;
+
+  // Buscar usuário correspondente
+  const usuarios = JSON.parse(
+    localStorage.getItem('strykers_usuarios') || '[]'
+  );
+  const usuario = usuarios.find((u) => u.nome === membro.nome);
+
+  // Adicionar à lista de recusados
+  const recusados = JSON.parse(
+    localStorage.getItem('strykers_alistamentos_recusados') || '[]'
+  );
+  recusados.push({
+    id: usuario?.id || membro.id,
+    nome: membro.nome,
+    email: usuario?.email || '',
+    whatsapp: usuario?.whatsapp || '',
+    dataSolicitacao: membro.dataRegistro,
+    dataRecusa: new Date().toISOString(),
+    usuarioCompleto: usuario,
+  });
+  localStorage.setItem(
+    'strykers_alistamentos_recusados',
+    JSON.stringify(recusados)
+  );
+
+  // Atualizar status do usuário
+  if (usuario) {
+    const userIndex = usuarios.findIndex((u) => u.id === usuario.id);
+    if (userIndex !== -1) {
+      usuarios[userIndex].status = 'recusado';
+      usuarios[userIndex].dataRecusa = new Date().toISOString();
+      localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
+    }
+  }
+
+  // Remover da lista de membros
   membrosData = membrosData.filter((m) => m.id !== membroId);
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
 
   aplicarFiltrosAdmin();
-  alert('✅ Membro excluído com sucesso!');
+  renderizarRecusados();
+  alert('âœ… Membro removido e movido para alistamentos recusados!');
 }
 
 function fecharSidebarAdmin() {

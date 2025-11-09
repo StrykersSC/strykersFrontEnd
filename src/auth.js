@@ -28,15 +28,12 @@ export function getUsuarioAtual() {
 }
 
 export function renderizarBotaoAuth() {
-  // Procura o container do menu
   const menuContainer = document.querySelector('.flex.items-center.space-x-8');
   if (!menuContainer) return;
 
-  // Remove botão existente se houver
   const existingAuth = document.getElementById('auth-container');
   if (existingAuth) existingAuth.remove();
 
-  // Remove dropdown antigo se houver
   const oldDropdown = document.getElementById('user-dropdown');
   if (oldDropdown) oldDropdown.remove();
 
@@ -48,8 +45,7 @@ export function renderizarBotaoAuth() {
     authContainer.innerHTML = `
       <div class="relative">
         <button id="user-menu-btn" type="button"
-          class="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors pb-1 flex items-center gap-2"
-        >
+          class="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors pb-1 flex items-center gap-2">
           ${usuarioAtual.nome}
           <span class="text-sm">▼</span>
         </button>
@@ -97,6 +93,10 @@ function toggleDropdown(btn) {
         class="w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700">
         ⚙️ Configurações
       </button>
+      <button id="btn-config-conta"
+        class="w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700">
+        🔐 Configuração de Conta
+      </button>
       <button id="btn-logout"
         class="w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-red-400 transition-colors">
         🚪 Sair
@@ -104,16 +104,31 @@ function toggleDropdown(btn) {
     `;
     document.body.appendChild(dropdown);
 
-    // Eventos dos botões do dropdown
     document
       .getElementById('btn-configuracoes')
-      .addEventListener('click', abrirConfiguracoes);
+      .addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        abrirConfiguracoes();
+        fecharDropdownManual();
+      });
+
     document
-      .getElementById('btn-logout')
-      .addEventListener('click', realizarLogout);
+      .getElementById('btn-config-conta')
+      .addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        abrirConfigConta();
+        fecharDropdownManual();
+      });
+
+    document.getElementById('btn-logout').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      realizarLogout();
+    });
   }
 
-  // Posiciona o dropdown logo abaixo do botão, alinhado à direita
   const rect = btn.getBoundingClientRect();
   dropdown.style.position = 'fixed';
   dropdown.style.top = `${rect.bottom + 4}px`;
@@ -124,10 +139,17 @@ function toggleDropdown(btn) {
   dropdown.style.display = isVisible ? 'none' : 'block';
 
   if (!isVisible) {
-    // Fecha ao clicar fora
     setTimeout(() => {
       document.addEventListener('click', fecharDropdownAoClicarFora);
     }, 0);
+  }
+}
+
+function fecharDropdownManual() {
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown) {
+    dropdown.style.display = 'none';
+    document.removeEventListener('click', fecharDropdownAoClicarFora);
   }
 }
 
@@ -150,6 +172,211 @@ function realizarLogout() {
     const dropdown = document.getElementById('user-dropdown');
     if (dropdown) dropdown.remove();
   }
+}
+
+// ==================== CONFIGURAÇÃO DE CONTA ====================
+function abrirConfigConta() {
+  if (!usuarioAtual) {
+    alert('⚠️ Você precisa estar logado!');
+    return;
+  }
+
+  let modal = document.getElementById('modal-config-conta');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-config-conta';
+    modal.className = 'fixed inset-0 z-[100] flex items-center justify-center';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="absolute inset-0 bg-black/70" onclick="window.fecharConfigConta()"></div>
+    <div class="relative bg-slate-900 border-2 border-cyan-400 rounded-lg p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <button onclick="window.fecharConfigConta()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">×</button>
+      <h2 class="text-3xl font-bold text-cyan-400 mb-6 text-center">🔐 CONFIGURAÇÃO DE CONTA</h2>
+      
+      <div class="mb-6 pb-6 border-b border-slate-700">
+        <h3 class="text-xl font-bold text-white mb-4">Alterar Senha</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">SENHA ATUAL</label>
+            <input type="password" id="senha-atual-config"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="••••••••" />
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">NOVA SENHA</label>
+            <input type="password" id="nova-senha-config"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="Mínimo 6 caracteres" />
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">REPETIR NOVA SENHA</label>
+            <input type="password" id="repetir-nova-senha-config"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="••••••••" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-xl font-bold text-white mb-4">Alterar E-mail</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">E-MAIL ATUAL</label>
+            <input type="email" disabled value="${usuarioAtual.email}"
+              class="w-full bg-slate-800 text-gray-500 border border-slate-700 rounded px-4 py-2" />
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">NOVO E-MAIL</label>
+            <input type="email" id="novo-email-config"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="novo@email.com" />
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">REPETIR NOVO E-MAIL</label>
+            <input type="email" id="repetir-novo-email-config"
+              class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
+              placeholder="novo@email.com" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <button onclick="window.confirmarAlteracoes()" type="button"
+          class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">
+          ✓ CONFIRMAR
+        </button>
+        <button onclick="window.fecharConfigConta()" type="button"
+          class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">
+          ✕ CANCELAR
+        </button>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function confirmarAlteracoes() {
+  const senhaAtual = document.getElementById('senha-atual-config')?.value || '';
+  const novaSenha = document.getElementById('nova-senha-config')?.value || '';
+  const repetirNovaSenha =
+    document.getElementById('repetir-nova-senha-config')?.value || '';
+
+  const novoEmail =
+    document.getElementById('novo-email-config')?.value.trim().toLowerCase() ||
+    '';
+  const repetirNovoEmail =
+    document
+      .getElementById('repetir-novo-email-config')
+      ?.value.trim()
+      .toLowerCase() || '';
+
+  let alteracoes = [];
+
+  if (senhaAtual || novaSenha || repetirNovaSenha) {
+    if (!senhaAtual) {
+      alert('⚠️ Digite a senha atual!');
+      return;
+    }
+    if (!novaSenha || !repetirNovaSenha) {
+      alert('⚠️ Preencha todos os campos de senha!');
+      return;
+    }
+    if (novaSenha !== repetirNovaSenha) {
+      alert('⚠️ As senhas não conferem!');
+      return;
+    }
+    if (novaSenha.length < 6) {
+      alert('⚠️ A nova senha deve ter no mínimo 6 caracteres!');
+      return;
+    }
+    alteracoes.push('senha');
+  }
+
+  if (novoEmail || repetirNovoEmail) {
+    if (!novoEmail || !repetirNovoEmail) {
+      alert('⚠️ Preencha todos os campos de e-mail!');
+      return;
+    }
+    if (novoEmail !== repetirNovoEmail) {
+      alert('⚠️ Os e-mails não conferem!');
+      return;
+    }
+    if (novoEmail === usuarioAtual.email) {
+      alert('⚠️ O novo e-mail não pode ser igual ao atual!');
+      return;
+    }
+    alteracoes.push('email');
+  }
+
+  if (alteracoes.length === 0) {
+    alert('⚠️ Nenhuma alteração foi detectada!');
+    return;
+  }
+
+  const usuarios = JSON.parse(
+    localStorage.getItem('strykers_usuarios') || '[]'
+  );
+  const usuarioIndex = usuarios.findIndex((u) => u.id === usuarioAtual.id);
+
+  if (usuarioIndex === -1) {
+    alert('❌ Erro: Usuário não encontrado!');
+    return;
+  }
+
+  if (alteracoes.includes('senha')) {
+    if (usuarios[usuarioIndex].senha !== senhaAtual) {
+      alert('⚠️ Senha atual incorreta!');
+      return;
+    }
+    if (novaSenha === senhaAtual) {
+      alert('⚠️ A nova senha não pode ser igual à atual!');
+      return;
+    }
+  }
+
+  if (alteracoes.includes('email')) {
+    const emailExistente = usuarios.find(
+      (u) => u.email === novoEmail && u.id !== usuarioAtual.id
+    );
+    if (emailExistente) {
+      alert('⚠️ Este e-mail já está em uso!');
+      return;
+    }
+  }
+
+  if (alteracoes.includes('senha')) {
+    usuarios[usuarioIndex].senha = novaSenha;
+    usuarios[usuarioIndex].dataAlteracaoSenha = new Date().toISOString();
+    alert(
+      '✅ Senha alterada com sucesso!\n\n📧 E-mail de confirmação enviado para ' +
+        usuarioAtual.email
+    );
+  }
+
+  if (alteracoes.includes('email')) {
+    const emailAntigo = usuarios[usuarioIndex].email;
+    usuarios[usuarioIndex].email = novoEmail;
+    usuarios[usuarioIndex].dataAlteracaoEmail = new Date().toISOString();
+
+    usuarioAtual.email = novoEmail;
+    salvarSessao(usuarioAtual);
+
+    alert(
+      '✅ E-mail alterado com sucesso!\n\n📧 E-mail de confirmação enviado para ' +
+        emailAntigo
+    );
+  }
+
+  localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
+  fecharConfigConta();
+}
+
+function fecharConfigConta() {
+  const modal = document.getElementById('modal-config-conta');
+  if (modal) modal.style.display = 'none';
 }
 
 // ==================== MODAL DE LOGIN ====================
@@ -628,3 +855,5 @@ window.fecharModalLogin = fecharModalLogin;
 window.abrirModalCadastro = abrirModalCadastro;
 window.fecharModalCadastro = fecharModalCadastro;
 window.fecharConfiguracoes = fecharConfiguracoes;
+window.fecharConfigConta = fecharConfigConta;
+window.confirmarAlteracoes = confirmarAlteracoes;

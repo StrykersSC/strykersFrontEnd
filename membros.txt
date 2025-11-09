@@ -1,15 +1,20 @@
-João Silva|Marechal|0|2023-01-15|Ativo|0|S.T.O.R.M.|Comandante experiente
-Maria Santos|General|0|2023-02-20|Ativo|0|S.T.O.R.M.|Líder de operações especiais
-Pedro Oliveira|Tenente-Coronel|0|2023-03-10|Ativo|0|Não|Piloto de caças espaciais
-Ana Costa|Major|0|2023-04-05|Reservista|0|Não|Especialista em logística
-Carlos Ferreira|Capitão|0|2023-05-12|Ativo|0|Não|Comandante de esquadrão
-Julia Rodrigues|Tenente|0|2023-06-08|Ativo|0|Não|Oficial de comunicações
-Ricardo Alves|Subtenente|0|2023-07-14|Ativo|0|Não|Líder de pelotão
-Fernanda Lima|Sargento-Mor|0|2023-08-20|Ativo|0|Não|Instrutora de combate
-Paulo Martins|Primeiro-Sargento|0|2023-09-15|Desertor|0|Não|Ausente há 3 meses
-Camila Souza|Segundo-Sargento|0|2023-10-10|Ativo|0|Não|Especialista em explosivos
-Lucas Pereira|Terceiro-Sargento|0|2023-11-05|Ativo|0|Não|Atirador de elite
-Amanda Barbosa|Cabo|0|2023-12-01|Reservista|0|Não|Médica de combate
-Bruno Cardoso|Soldado|0|2024-01-08|Ativo|0|Não|Recruta promissor
-Juliana Mendes|Soldado|0|2024-01-20|Ativo|0|Não|Operadora de drones
-Gabriel Rocha|Recruta|0|2024-02-15|Ativo|0|Não|Em treinamento básico
+https://ui-avatars.com/api/?name=Commander&background=0f172a&color=22d3ee&size=150 | Commander Stryker | General | Força Aérea | 15 | 2024-01-15 | Ativo | 0 | S.T.O.R.M. | Líder fundador da organização
+https://ui-avatars.com/api/?name=Shadow&background=0f172a&color=22d3ee&size=150 | Shadow Wolf | Coronel | Infantaria | 12 | 2024-02-01 | Ativo | 0 | S.T.O.R.M. | Especialista em operações noturnas
+https://ui-avatars.com/api/?name=Phoenix&background=0f172a&color=22d3ee&size=150 | Phoenix Blade | Tenente-Coronel | Força Aérea | 10 | 2024-02-15 | Ativo | 0 | S.T.O.R.M. | Piloto de elite
+https://ui-avatars.com/api/?name=Ghost&background=0f172a&color=22d3ee&size=150 | Ghost Recon | Major | Infantaria | 8 | 2024-03-01 | Ativo | 0 | Não | Especialista em reconhecimento
+https://ui-avatars.com/api/?name=Viper&background=0f172a&color=22d3ee&size=150 | Viper Strike | Capitão | Força Aérea | 7 | 2024-03-15 | Ativo | 0 | Não | Piloto de caça
+https://ui-avatars.com/api/?name=Thunder&background=0f172a&color=22d3ee&size=150 | Thunder Storm | Capitão | Marinha | 6 | 2024-04-01 | Ativo | 0 | Não | Comandante naval
+https://ui-avatars.com/api/?name=Hammer&background=0f172a&color=22d3ee&size=150 | Hammer Force | Tenente | Infantaria | 5 | 2024-04-15 | Ativo | 0 | Não | Especialista em infantaria pesada
+https://ui-avatars.com/api/?name=Eagle&background=0f172a&color=22d3ee&size=150 | Eagle Eye | Tenente | Força Aérea | 4 | 2024-05-01 | Ativo | 0 | Não | Observador aéreo
+https://ui-avatars.com/api/?name=Falcon&background=0f172a&color=22d3ee&size=150 | Falcon Hunter | Subtenente | Força Aérea | 3 | 2024-05-15 | Ativo | 0 | Não | Piloto de interceptação
+https://ui-avatars.com/api/?name=Steel&background=0f172a&color=22d3ee&size=150 | Steel Warrior | Sargento-Mor | Infantaria | 4 | 2024-06-01 | Ativo | 0 | Não | Veterano de combate
+https://ui-avatars.com/api/?name=Titan&background=0f172a&color=22d3ee&size=150 | Titan Guard | Primeiro-Sargento | Infantaria | 3 | 2024-06-15 | Ativo | 0 | Não | Especialista em defesa
+https://ui-avatars.com/api/?name=Raven&background=0f172a&color=22d3ee&size=150 | Raven Dark | Segundo-Sargento | Infantaria | 2 | 2024-07-01 | Ativo | 0 | Não | Operador tático
+https://ui-avatars.com/api/?name=Wolf&background=0f172a&color=22d3ee&size=150 | Wolf Pack | Terceiro-Sargento | Infantaria | 2 | 2024-07-15 | Ativo | 0 | Não | Especialista em trabalho em equipe
+https://ui-avatars.com/api/?name=Hawk&background=0f172a&color=22d3ee&size=150 | Hawk Vision | Cabo | Força Aérea | 1 | 2024-08-01 | Ativo | 0 | Não | Observador em treinamento
+https://ui-avatars.com/api/?name=Blade&background=0f172a&color=22d3ee&size=150 | Blade Runner | Soldado | Infantaria | 1 | 2024-08-15 | Ativo | 0 | Não | Soldado de linha de frente
+https://ui-avatars.com/api/?name=Storm&background=0f172a&color=22d3ee&size=150 | Storm Chaser | Soldado | Marinha | 1 | 2024-09-01 | Ativo | 0 | Não | Marinheiro
+https://ui-avatars.com/api/?name=Nova&background=0f172a&color=22d3ee&size=150 | Nova Star | Recruta | Força Aérea | 0 | 2024-10-01 | Ativo | 0 | Não | Recruta em treinamento
+https://ui-avatars.com/api/?name=Ace&background=0f172a&color=22d3ee&size=150 | Ace Pilot | Recruta | Força Aérea | 0 | 2024-10-15 | Ativo | 0 | Não | Aspirante a piloto
+https://ui-avatars.com/api/?name=Titan&background=0f172a&color=22d3ee&size=150 | Titan Legacy | Major | Infantaria | 9 | 2023-12-01 | Reservista | 0 | Não | Veterano aposentado
+https://ui-avatars.com/api/?name=Shadow&background=0f172a&color=22d3ee&size=150 | Shadow Past | Tenente | Força Aérea | 5 | 2023-06-01 | Desertor | 0 | Não | Abandonou missão crítica

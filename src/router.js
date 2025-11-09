@@ -23,7 +23,7 @@ export const router = {
     this.contentContainer = document.getElementById('app-content');
   },
 
-  navigate(pageName) {
+  navigate(pageName, afterRender) {
     if (this.currentPage === pageName) return;
 
     const pageFunction = this.pages[pageName];
@@ -33,7 +33,7 @@ export const router = {
     }
 
     this.updateActiveLink(pageName);
-    this.render(pageFunction, pageName);
+    this.render(pageFunction, pageName, afterRender); // Passe o callback!
     this.currentPage = pageName;
   },
 
@@ -49,7 +49,7 @@ export const router = {
     });
   },
 
-  async render(pageFunction, pageName) {
+  async render(pageFunction, pageName, afterRender) {
     const content = await pageFunction();
     this.contentContainer.innerHTML = content;
 
@@ -71,6 +71,11 @@ export const router = {
     } else if (pageName === 'administracao') {
       const { initAdministracao } = await import('./pages/administracao.js');
       initAdministracao();
+    }
+
+    // Chame o callback se existir
+    if (typeof afterRender === 'function') {
+      afterRender();
     }
   },
 };
