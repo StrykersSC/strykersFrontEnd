@@ -1,4 +1,5 @@
-// Cores das categorias
+import { renderCalendario } from './components/calendario.js';
+
 // Cores das categorias
 const CATEGORIAS_CORES = {
   treinamento: {
@@ -43,16 +44,16 @@ let eventos = [];
 let mesAtual = new Date().getMonth();
 let anoAtual = new Date().getFullYear();
 let eventoAtual = null;
-let modoEdicao = false; // NOVO
+let modoEdicao = false;
 
 export function initEventos() {
   carregarEventos();
   renderizarProximoEvento();
-  renderizarCalendario();
   setupEventListeners();
+  renderCalendario({ modo: 'visualizacao' });
 }
 
-function carregarEventos() {
+export function carregarEventos() {
   const eventosStorage = localStorage.getItem('strykers_eventos');
   if (eventosStorage) eventos = JSON.parse(eventosStorage);
 }
@@ -63,19 +64,24 @@ function salvarEventos() {
 
 // Utilitários para sidebars
 function abrirSidebar(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
   if (id === 'participantes-evento-sidebar') {
-    document.getElementById(id).classList.remove('-translate-x-full');
+    el.classList.remove('-translate-x-full');
   } else {
-    document.getElementById(id).classList.remove('translate-x-full');
+    el.classList.remove('translate-x-full');
   }
-  document.getElementById('eventos-overlay').classList.remove('hidden');
+  const overlay = document.getElementById('eventos-overlay');
+  if (overlay) overlay.classList.remove('hidden');
 }
 
 function fecharSidebar(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
   if (id === 'participantes-evento-sidebar') {
-    document.getElementById(id).classList.add('-translate-x-full');
+    el.classList.add('-translate-x-full');
   } else {
-    document.getElementById(id).classList.add('translate-x-full');
+    el.classList.add('translate-x-full');
   }
 }
 
@@ -83,102 +89,151 @@ function fecharSidebars() {
   fecharSidebar('evento-sidebar');
   fecharSidebar('detalhes-evento-sidebar');
   fecharSidebar('participantes-evento-sidebar');
-  document.getElementById('eventos-overlay').classList.add('hidden');
+  const overlay = document.getElementById('eventos-overlay');
+  if (overlay) overlay.classList.add('hidden');
 }
 
 function setupEventListeners() {
-  document
-    .getElementById('btn-novo-evento')
-    .addEventListener('click', abrirFormularioEvento);
-  document.getElementById('btn-mes-anterior').addEventListener('click', () => {
-    mesAtual--;
-    if (mesAtual < 0) {
-      mesAtual = 11;
-      anoAtual--;
-    }
-    renderizarCalendario();
-  });
-  document.getElementById('btn-mes-proximo').addEventListener('click', () => {
-    mesAtual++;
-    if (mesAtual > 11) {
-      mesAtual = 0;
-      anoAtual++;
-    }
-    renderizarCalendario();
-  });
+  const btnNovoEvento = document.getElementById('btn-novo-evento');
+  if (btnNovoEvento) {
+    btnNovoEvento.addEventListener('click', abrirFormularioEvento);
+  }
 
-  // Handler único!
-  document
-    .getElementById('form-evento')
-    .addEventListener('submit', handleSubmitEvento);
-
-  document
-    .getElementById('btn-limpar-form')
-    .addEventListener('click', limparFormulario);
-
-  // Fechar sidebars individualmente
-  document
-    .getElementById('close-evento-sidebar')
-    .addEventListener('click', () => {
-      fecharSidebar('evento-sidebar');
-      document.getElementById('eventos-overlay').classList.add('hidden');
+  const btnMesAnterior = document.getElementById('btn-mes-anterior');
+  if (btnMesAnterior) {
+    btnMesAnterior.addEventListener('click', () => {
+      mesAtual--;
+      if (mesAtual < 0) {
+        mesAtual = 11;
+        anoAtual--;
+      }
+      renderizarCalendario();
     });
-  document
-    .getElementById('close-detalhes-sidebar')
-    .addEventListener('click', () => {
+  }
+
+  const btnMesProximo = document.getElementById('btn-mes-proximo');
+  if (btnMesProximo) {
+    btnMesProximo.addEventListener('click', () => {
+      mesAtual++;
+      if (mesAtual > 11) {
+        mesAtual = 0;
+        anoAtual++;
+      }
+      renderizarCalendario();
+    });
+  }
+
+  const formEvento = document.getElementById('form-evento');
+  if (formEvento) {
+    formEvento.addEventListener('submit', handleSubmitEvento);
+  }
+
+  const btnLimparForm = document.getElementById('btn-limpar-form');
+  if (btnLimparForm) {
+    btnLimparForm.addEventListener('click', limparFormulario);
+  }
+
+  const closeEventoSidebar = document.getElementById('close-evento-sidebar');
+  if (closeEventoSidebar) {
+    closeEventoSidebar.addEventListener('click', () => {
+      fecharSidebar('evento-sidebar');
+      const overlay = document.getElementById('eventos-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      // Resetar modo
+      modoEdicao = false;
+      eventoAtual = null;
+      const titulo = document.getElementById('sidebar-titulo');
+      const botao = document.querySelector(
+        '#form-evento button[type="submit"]'
+      );
+      if (titulo) titulo.textContent = 'CADASTRAR EVENTO';
+      if (botao) botao.textContent = '✔ Registrar';
+    });
+  }
+
+  const closeDetalhesSidebar = document.getElementById(
+    'close-detalhes-sidebar'
+  );
+  if (closeDetalhesSidebar) {
+    closeDetalhesSidebar.addEventListener('click', () => {
       fecharSidebar('detalhes-evento-sidebar');
       if (
         document
           .getElementById('participantes-evento-sidebar')
-          .classList.contains('-translate-x-full')
+          ?.classList.contains('-translate-x-full')
       ) {
-        document.getElementById('eventos-overlay').classList.add('hidden');
+        const overlay = document.getElementById('eventos-overlay');
+        if (overlay) overlay.classList.add('hidden');
       }
     });
-  document
-    .getElementById('close-participantes-sidebar')
-    .addEventListener('click', () => {
+  }
+
+  const closeParticipantesSidebar = document.getElementById(
+    'close-participantes-sidebar'
+  );
+  if (closeParticipantesSidebar) {
+    closeParticipantesSidebar.addEventListener('click', () => {
       fecharSidebar('participantes-evento-sidebar');
       if (
         document
           .getElementById('detalhes-evento-sidebar')
-          .classList.contains('translate-x-full')
+          ?.classList.contains('translate-x-full')
       ) {
-        document.getElementById('eventos-overlay').classList.add('hidden');
+        const overlay = document.getElementById('eventos-overlay');
+        if (overlay) overlay.classList.add('hidden');
       }
     });
+  }
 
-  // Overlay fecha TODOS os sidebars
-  document
-    .getElementById('eventos-overlay')
-    .addEventListener('click', fecharSidebars);
+  const eventosOverlay = document.getElementById('eventos-overlay');
+  if (eventosOverlay) {
+    eventosOverlay.addEventListener('click', fecharSidebars);
+  }
 
-  // Participantes
-  document
-    .getElementById('search-membro-participante')
-    .addEventListener('input', filtrarMembrosParticipantes);
+  const searchMembroParticipante = document.getElementById(
+    'search-membro-participante'
+  );
+  if (searchMembroParticipante) {
+    searchMembroParticipante.addEventListener(
+      'input',
+      filtrarMembrosParticipantes
+    );
+  }
 }
 
 function abrirFormularioEvento() {
   fecharSidebars();
-  limparFormulario();
-  modoEdicao = false; // Modo cadastro
+  modoEdicao = false;
   eventoAtual = null;
-  document.getElementById('sidebar-titulo').textContent = 'CADASTRAR EVENTO';
+
+  const titulo = document.getElementById('sidebar-titulo');
+  const botao = document.querySelector('#form-evento button[type="submit"]');
+
+  if (titulo) titulo.textContent = 'CADASTRAR EVENTO';
+  if (botao) botao.textContent = '✔ Registrar';
+
   abrirSidebar('evento-sidebar');
-  document.querySelector('#form-evento button[type="submit"]').textContent =
-    '✓ Registrar';
+
+  // Limpa os campos após abrir o sidebar
+  setTimeout(() => {
+    limparFormulario();
+  }, 100);
 }
 
 function limparFormulario() {
-  document.getElementById('evento-nome').value = '';
-  document.getElementById('evento-categoria').value = '';
-  document.getElementById('evento-data').value = '';
-  document.getElementById('evento-horario').value = '';
-  document.getElementById('evento-descricao').value = '';
+  const nomeInput = document.getElementById('evento-nome');
+  const categoriaInput = document.getElementById('evento-categoria');
+  const dataInput = document.getElementById('evento-data');
+  const horarioInput = document.getElementById('evento-horario');
+  const descricaoInput = document.getElementById('evento-descricao');
+
+  if (nomeInput) nomeInput.value = '';
+  if (categoriaInput) categoriaInput.value = '';
+  if (dataInput) dataInput.value = '';
+  if (horarioInput) horarioInput.value = '';
+  if (descricaoInput) descricaoInput.value = '';
 }
 
-// Handler único para submit do formulário!
 function handleSubmitEvento(e) {
   e.preventDefault();
 
@@ -195,9 +250,19 @@ function handleSubmitEvento(e) {
 
     salvarEventos();
     fecharSidebars();
-    renderizarCalendario();
-    renderizarProximoEvento();
-    alert('✅ Evento atualizado com sucesso!');
+
+    // Recarregar página se estiver na administração
+    if (
+      window.location.hash === '#administracao' ||
+      document.getElementById('admin-calendario-eventos')
+    ) {
+      alert('✅ Evento atualizado com sucesso!');
+      window.location.reload();
+    } else {
+      renderizarCalendario();
+      renderizarProximoEvento();
+      alert('✅ Evento atualizado com sucesso!');
+    }
   } else {
     // Criar novo evento
     const evento = {
@@ -223,11 +288,13 @@ function handleSubmitEvento(e) {
   eventoAtual = null;
   document.getElementById('sidebar-titulo').textContent = 'CADASTRAR EVENTO';
   document.querySelector('#form-evento button[type="submit"]').textContent =
-    '✓ Registrar';
+    '✔ Registrar';
 }
 
 function renderizarProximoEvento() {
   const container = document.getElementById('proximo-evento-card');
+  if (!container) return;
+
   const agora = new Date();
   const eventosFuturos = eventos
     .filter((e) => new Date(`${e.data}T${e.horario}`) > agora)
@@ -293,12 +360,17 @@ function renderizarCalendario() {
     'Novembro',
     'Dezembro',
   ];
-  document.getElementById(
-    'calendario-titulo'
-  ).textContent = `${meses[mesAtual]} ${anoAtual}`;
+
+  const tituloCalendario = document.getElementById('calendario-titulo');
+  if (tituloCalendario) {
+    tituloCalendario.textContent = `${meses[mesAtual]} ${anoAtual}`;
+  }
+
   const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
   const ultimoDia = new Date(anoAtual, mesAtual + 1, 0).getDate();
   const container = document.getElementById('calendario-dias');
+  if (!container) return;
+
   container.innerHTML = '';
 
   for (let i = 0; i < primeiroDia; i++) {
@@ -356,16 +428,13 @@ function renderizarCalendario() {
   }
 }
 
-function mostrarDetalhesEvento(eventoId) {
+export function mostrarDetalhesEvento(eventoId, modo = 'visualizacao') {
   const evento = eventos.find((e) => e.id === eventoId);
   if (!evento) return;
 
   eventoAtual = evento;
-
   const cores = CATEGORIAS_CORES[evento.categoria];
-
   const dataEvento = new Date(evento.data + 'T00:00:00');
-
   const dataFormatada = dataEvento.toLocaleDateString('pt-BR', {
     weekday: 'long',
     day: '2-digit',
@@ -373,64 +442,79 @@ function mostrarDetalhesEvento(eventoId) {
     year: 'numeric',
   });
 
-  const content = document.getElementById('detalhes-evento-content');
+  let botoes = '';
+  if (modo === 'edicao') {
+    if (!evento.finalizado) {
+      botoes = `
+        <button onclick="window.finalizarEvento(${evento.id})" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors mb-2">✔ Finalizar Evento</button>
+        <button onclick="window.editarEvento(${evento.id})" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded px-6 py-3 transition-colors mb-2">✏️ Editar Evento</button>
+        <button onclick="window.excluirEvento(${evento.id})" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors">🗑 Excluir Evento</button>
+      `;
+    } else {
+      botoes = `
+        <button onclick="window.reabrirEvento(${evento.id})" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded px-6 py-3 transition-colors">🔓 Reabrir Evento</button>
+      `;
+    }
+  }
 
-  content.innerHTML = `<div class="space-y-6">
-<div>
-<span class="inline-block px-3 py-1 ${
-    cores.bg
-  } text-slate-900 text-sm font-semibold rounded mb-3">${cores.nome}</span>
-${
-  evento.finalizado
-    ? '<span class="ml-2 inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded">✓ FINALIZADO</span>'
-    : ''
-}
-<h3 class="text-3xl font-bold text-white">${evento.nome}</h3>
-</div>
-<div class="border-t border-slate-700 pt-4">
-<div class="flex items-center gap-2 mb-2"><span class="text-cyan-400">📅</span><span class="text-gray-300 capitalize">${dataFormatada}</span></div>
-<div class="flex items-center gap-2"><span class="text-cyan-400">🕐</span><span class="text-gray-300">${
-    evento.horario
-  }</span></div>
-</div>
-<div class="border-t border-slate-700 pt-4">
-<h4 class="text-sm text-gray-400 mb-2">DESCRIÇÃO</h4>
-<p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${
-    evento.descricao
-  }</p>
-</div>
-<div class="border-t border-slate-700 pt-4">
-<div class="flex justify-between items-center mb-3">
-<h4 class="text-sm text-gray-400">PARTICIPANTES (${
-    evento.participantes?.length || 0
-  })</h4>
-${
-  !evento.finalizado
-    ? `<button onclick="window.abrirGerenciarParticipantes(${evento.id})" class="bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded px-3 py-1 transition-colors">+ Gerenciar</button>`
-    : ''
-}
-</div>
-<div class="space-y-2 max-h-40 overflow-y-auto">
-${
-  evento.participantes && evento.participantes.length > 0
-    ? evento.participantes
-        .map(
-          (p) =>
-            `<div class="bg-slate-800 rounded px-3 py-2 text-gray-300 text-sm">${p.nome}</div>`
-        )
-        .join('')
-    : '<p class="text-gray-500 text-sm">Nenhum participante registrado</p>'
-}
-</div>
-</div>
-${
-  !evento.finalizado
-    ? `<button onclick="window.finalizarEvento(${evento.id})" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors">✓ Finalizar Evento</button>
-<button onclick="window.editarEvento(${evento.id})" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded px-6 py-3 transition-colors mb-2">✏️ Editar Evento</button>
-<button onclick="window.excluirEvento(${evento.id})" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors">🗑 Excluir Evento</button>`
-    : `<button onclick="window.reabrirEvento(${evento.id})" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded px-6 py-3 transition-colors">🔓 Reabrir Evento</button>`
-}
-</div>`;
+  const content = document.getElementById('detalhes-evento-content');
+  if (!content) return;
+
+  content.innerHTML = `
+    <div class="space-y-6">
+      <div>
+        <span class="inline-block px-3 py-1 ${
+          cores.bg
+        } text-slate-900 text-sm font-semibold rounded mb-3">${
+    cores.nome
+  }</span>
+        ${
+          evento.finalizado
+            ? '<span class="ml-2 inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded">✔ FINALIZADO</span>'
+            : ''
+        }
+        <h3 class="text-3xl font-bold text-white">${evento.nome}</h3>
+      </div>
+      <div class="border-t border-slate-700 pt-4">
+        <div class="flex items-center gap-2 mb-2"><span class="text-cyan-400">📅</span><span class="text-gray-300 capitalize">${dataFormatada}</span></div>
+        <div class="flex items-center gap-2"><span class="text-cyan-400">🕐</span><span class="text-gray-300">${
+          evento.horario
+        }</span></div>
+      </div>
+      <div class="border-t border-slate-700 pt-4">
+        <h4 class="text-sm text-gray-400 mb-2">DESCRIÇÃO</h4>
+        <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">${
+          evento.descricao
+        }</p>
+      </div>
+      <div class="border-t border-slate-700 pt-4">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="text-sm text-gray-400">PARTICIPANTES (${
+            evento.participantes?.length || 0
+          })</h4>
+          ${
+            !evento.finalizado && modo === 'edicao'
+              ? `<button onclick="window.abrirGerenciarParticipantes(${evento.id})" class="bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded px-3 py-1 transition-colors">+ Gerenciar</button>`
+              : ''
+          }
+        </div>
+        <div class="space-y-2 max-h-40 overflow-y-auto">
+          ${
+            evento.participantes && evento.participantes.length > 0
+              ? evento.participantes
+                  .map(
+                    (p) =>
+                      `<div class="bg-slate-800 rounded px-3 py-2 text-gray-300 text-sm">${p.nome}</div>`
+                  )
+                  .join('')
+              : '<p class="text-gray-500 text-sm">Nenhum participante registrado</p>'
+          }
+        </div>
+      </div>
+      ${botoes}
+    </div>
+  `;
+
   fecharSidebars();
   abrirSidebar('detalhes-evento-sidebar');
 }
@@ -448,23 +532,53 @@ function abrirGerenciarParticipantes(eventoId) {
 function editarEvento(eventoId) {
   const evento = eventos.find((e) => e.id === eventoId);
   if (!evento) return;
+
   eventoAtual = evento;
   modoEdicao = true;
 
-  // Preenche os campos do formulário com os dados do evento
-  document.getElementById('evento-nome').value = evento.nome;
-  document.getElementById('evento-categoria').value = evento.categoria;
-  document.getElementById('evento-data').value = evento.data;
-  document.getElementById('evento-horario').value = evento.horario;
-  document.getElementById('evento-descricao').value = evento.descricao;
-
-  // Muda o título e o botão do formulário
-  document.getElementById('sidebar-titulo').textContent = 'EDITAR EVENTO';
-  document.querySelector('#form-evento button[type="submit"]').textContent =
-    '✏️ Atualizar';
-
   fecharSidebars();
   abrirSidebar('evento-sidebar');
+
+  setTimeout(() => {
+    const nomeInput = document.getElementById('evento-nome');
+    const categoriaInput = document.getElementById('evento-categoria');
+    const dataInput = document.getElementById('evento-data');
+    const horarioInput = document.getElementById('evento-horario');
+    const descricaoInput = document.getElementById('evento-descricao');
+    const titulo = document.getElementById('sidebar-titulo');
+    const botao = document.querySelector('#form-evento button[type="submit"]');
+
+    if (nomeInput) nomeInput.value = evento.nome;
+    if (categoriaInput) categoriaInput.value = evento.categoria;
+    if (dataInput) dataInput.value = evento.data;
+    if (horarioInput) horarioInput.value = evento.horario;
+    if (descricaoInput) descricaoInput.value = evento.descricao;
+    if (titulo) titulo.textContent = 'EDITAR EVENTO';
+    if (botao) botao.textContent = '✏️ Atualizar';
+
+    // Reatribuir listeners
+    const formEvento = document.getElementById('form-evento');
+    if (formEvento) {
+      formEvento.onsubmit = handleSubmitEvento;
+    }
+    const btnLimparForm = document.getElementById('btn-limpar-form');
+    if (btnLimparForm) {
+      btnLimparForm.onclick = limparFormulario;
+    }
+    const closeEventoSidebar = document.getElementById('close-evento-sidebar');
+    if (closeEventoSidebar) {
+      closeEventoSidebar.onclick = () => {
+        fecharSidebar('evento-sidebar');
+        const overlay = document.getElementById('eventos-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        modoEdicao = false;
+        eventoAtual = null;
+        if (titulo) titulo.textContent = 'CADASTRAR EVENTO';
+        if (botao) botao.textContent = '✔ Registrar';
+        limparFormulario();
+      };
+    }
+  }, 100);
 }
 
 function renderizarParticipantes() {
@@ -477,50 +591,54 @@ function renderizarParticipantes() {
   const membrosDisponiveis = membrosAtivos.filter(
     (m) => !participantesIds.includes(m.id)
   );
-  // Lista de membros disponíveis
+
   const listaMembros = document.getElementById('lista-membros-disponiveis');
-  listaMembros.innerHTML =
-    membrosDisponiveis
-      .map(
-        (membro) => `
-      <div class="membro-item bg-slate-800 hover:bg-slate-700 rounded px-4 py-3 cursor-pointer transition-colors flex items-center gap-3" onclick="window.adicionarParticipante('${
-        membro.id
-      }')" data-nome="${membro.nome.toLowerCase()}">
-        <img src="${membro.foto}" alt="${
-          membro.nome
-        }" class="w-10 h-10 rounded-full" />
-        <div>
-          <div class="text-white font-semibold">${membro.nome}</div>
-          <div class="text-gray-400 text-sm">${membro.patente}</div>
+  if (listaMembros) {
+    listaMembros.innerHTML =
+      membrosDisponiveis
+        .map(
+          (membro) => `
+        <div class="membro-item bg-slate-800 hover:bg-slate-700 rounded px-4 py-3 cursor-pointer transition-colors flex items-center gap-3" onclick="window.adicionarParticipante('${
+          membro.id
+        }')" data-nome="${membro.nome.toLowerCase()}">
+          <img src="${membro.foto}" alt="${
+            membro.nome
+          }" class="w-10 h-10 rounded-full" />
+          <div>
+            <div class="text-white font-semibold">${membro.nome}</div>
+            <div class="text-gray-400 text-sm">${membro.patente}</div>
+          </div>
         </div>
-      </div>
-    `
-      )
-      .join('') ||
-    '<p class="text-gray-500 text-center py-4">Todos os membros ativos já foram adicionados</p>';
-  // Lista de participantes
+      `
+        )
+        .join('') ||
+      '<p class="text-gray-500 text-center py-4">Todos os membros ativos já foram adicionados</p>';
+  }
+
   const listaParticipantes = document.getElementById(
     'lista-participantes-evento'
   );
-  listaParticipantes.innerHTML =
-    eventoAtual.participantes && eventoAtual.participantes.length > 0
-      ? eventoAtual.participantes
-          .map(
-            (p) => `
-        <div class="bg-slate-800 rounded px-4 py-3 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <img src="${p.foto}" alt="${p.nome}" class="w-10 h-10 rounded-full" />
-            <div>
-              <div class="text-white font-semibold">${p.nome}</div>
-              <div class="text-gray-400 text-sm">${p.patente}</div>
+  if (listaParticipantes) {
+    listaParticipantes.innerHTML =
+      eventoAtual.participantes && eventoAtual.participantes.length > 0
+        ? eventoAtual.participantes
+            .map(
+              (p) => `
+          <div class="bg-slate-800 rounded px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${p.foto}" alt="${p.nome}" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="text-white font-semibold">${p.nome}</div>
+                <div class="text-gray-400 text-sm">${p.patente}</div>
+              </div>
             </div>
+            <button onclick="window.removerParticipante('${p.id}')" class="text-red-400 hover:text-red-300 text-xl">×</button>
           </div>
-          <button onclick="window.removerParticipante('${p.id}')" class="text-red-400 hover:text-red-300 text-xl">×</button>
-        </div>
-      `
-          )
-          .join('')
-      : '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
+        `
+            )
+            .join('')
+        : '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
+  }
 }
 
 function filtrarMembrosParticipantes() {
@@ -552,7 +670,8 @@ function adicionarParticipante(membroId) {
   if (index !== -1) eventos[index] = eventoAtual;
   salvarEventos();
   renderizarParticipantes();
-  document.getElementById('search-membro-participante').value = '';
+  const searchInput = document.getElementById('search-membro-participante');
+  if (searchInput) searchInput.value = '';
 }
 
 function removerParticipante(membroId) {
@@ -597,14 +716,28 @@ function finalizarEvento(eventoId) {
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
   salvarEventos();
   fecharSidebars();
-  renderizarCalendario();
-  alert('✅ Evento finalizado! Missões contabilizadas para os participantes.');
+
+  // Recarregar página se estiver na administração
+  if (
+    window.location.hash === '#administracao' ||
+    document.getElementById('admin-calendario-eventos')
+  ) {
+    alert(
+      '✅ Evento finalizado! Missões contabilizadas para os participantes.'
+    );
+    window.location.reload();
+  } else {
+    renderizarCalendario();
+    alert(
+      '✅ Evento finalizado! Missões contabilizadas para os participantes.'
+    );
+  }
 }
 
 function reabrirEvento(eventoId) {
   if (
     !confirm(
-      '⚠️ Tem certeza que deseja REABRIR este evento?\n\n❌ As missões contabilizadas serão REMOVIDAS dos participantes\n✓ Será possível editar novamente'
+      '⚠️ Tem certeza que deseja REABRIR este evento?\n\n❌ As missões contabilizadas serão REMOVIDAS dos participantes\n✔ Será possível editar novamente'
     )
   )
     return;
@@ -627,8 +760,18 @@ function reabrirEvento(eventoId) {
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
   salvarEventos();
   fecharSidebars();
-  renderizarCalendario();
-  alert('✅ Evento reaberto! Missões removidas dos participantes.');
+
+  // Recarregar página se estiver na administração
+  if (
+    window.location.hash === '#administracao' ||
+    document.getElementById('admin-calendario-eventos')
+  ) {
+    alert('✅ Evento reaberto! Missões removidas dos participantes.');
+    window.location.reload();
+  } else {
+    renderizarCalendario();
+    alert('✅ Evento reaberto! Missões removidas dos participantes.');
+  }
 }
 
 function excluirEvento(eventoId) {
@@ -636,9 +779,19 @@ function excluirEvento(eventoId) {
   eventos = eventos.filter((e) => e.id !== eventoId);
   salvarEventos();
   fecharSidebars();
-  renderizarCalendario();
-  renderizarProximoEvento();
-  alert('✅ Evento excluído com sucesso!');
+
+  // Recarregar página se estiver na administração
+  if (
+    window.location.hash === '#administracao' ||
+    document.getElementById('admin-calendario-eventos')
+  ) {
+    alert('✅ Evento excluído com sucesso!');
+    window.location.reload();
+  } else {
+    renderizarCalendario();
+    renderizarProximoEvento();
+    alert('✅ Evento excluído com sucesso!');
+  }
 }
 
 // Expõe funções globalmente
@@ -651,3 +804,71 @@ window.adicionarParticipante = adicionarParticipante;
 window.removerParticipante = removerParticipante;
 window.abrirFormularioEvento = abrirFormularioEvento;
 window.editarEvento = editarEvento;
+
+// Função para inicializar sidebars e listeners em qualquer página SPA
+export function initSidebarsEventos() {
+  // Expor funções globais
+  window.mostrarDetalhesEvento = mostrarDetalhesEvento;
+  window.excluirEvento = excluirEvento;
+  window.finalizarEvento = finalizarEvento;
+  window.reabrirEvento = reabrirEvento;
+  window.abrirGerenciarParticipantes = abrirGerenciarParticipantes;
+  window.adicionarParticipante = adicionarParticipante;
+  window.removerParticipante = removerParticipante;
+  window.abrirFormularioEvento = abrirFormularioEvento;
+  window.editarEvento = editarEvento;
+
+  // Adiciona listeners para fechar sidebars se existirem no DOM
+  setTimeout(() => {
+    const closeDetalhes = document.getElementById('close-detalhes-sidebar');
+    if (closeDetalhes) {
+      closeDetalhes.onclick = () => {
+        fecharSidebar('detalhes-evento-sidebar');
+        const overlay = document.getElementById('eventos-overlay');
+        if (overlay) overlay.classList.add('hidden');
+      };
+    }
+
+    const closeParticipantes = document.getElementById(
+      'close-participantes-sidebar'
+    );
+    if (closeParticipantes) {
+      closeParticipantes.onclick = () => {
+        fecharSidebar('participantes-evento-sidebar');
+        if (
+          document
+            .getElementById('detalhes-evento-sidebar')
+            ?.classList.contains('translate-x-full')
+        ) {
+          document.getElementById('eventos-overlay')?.classList.add('hidden');
+        }
+      };
+    }
+
+    const closeEvento = document.getElementById('close-evento-sidebar');
+    if (closeEvento) {
+      closeEvento.onclick = () => {
+        fecharSidebar('evento-sidebar');
+        const overlay = document.getElementById('eventos-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        // Resetar modo
+        modoEdicao = false;
+        eventoAtual = null;
+        const titulo = document.getElementById('sidebar-titulo');
+        const botao = document.querySelector(
+          '#form-evento button[type="submit"]'
+        );
+        if (titulo) titulo.textContent = 'CADASTRAR EVENTO';
+        if (botao) botao.textContent = '✔ Registrar';
+      };
+    }
+
+    const overlay = document.getElementById('eventos-overlay');
+    if (overlay) overlay.onclick = fecharSidebars;
+  }, 0);
+}
+
+export function initEventosGlobais() {
+  carregarEventos();
+  initSidebarsEventos();
+}

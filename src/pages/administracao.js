@@ -11,6 +11,8 @@ import {
   mostrarDetalhesMissaoDoEvento,
   fecharDetalhesMissao,
 } from '../components/membros-utils.js';
+import { renderCalendario } from '../components/calendario.js';
+import { initSidebarsEventos, initEventosGlobais } from '../eventos.js';
 
 export const administracaoPage = () => {
   return `
@@ -63,11 +65,9 @@ export const administracaoPage = () => {
       <!-- Membros Registrados -->
       <div class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6">
         <h3 class="text-2xl font-bold text-green-400 mb-4">✅ MEMBROS REGISTRADOS</h3>
-        
         <!-- Filtros -->
         <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
-          <input type="text" id="admin-search" placeholder="Buscar por nome..."
-            class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          <input type="text" id="admin-search" placeholder="Buscar por nome..." class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
           <select id="admin-filter-patente" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2">
             <option value="">Todas Patentes</option>
           </select>
@@ -82,13 +82,9 @@ export const administracaoPage = () => {
             <option value="S.T.O.R.M.">S.T.O.R.M.</option>
             <option value="Não">Não</option>
           </select>
-          <input type="date" id="admin-filter-data" placeholder="Data Registro"
-            class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
-          <button id="admin-clear-filters" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2">
-            Limpar
-          </button>
+          <input type="date" id="admin-filter-data" placeholder="Data Registro" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          <button id="admin-clear-filters" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2"> Limpar </button>
         </div>
-
         <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table class="w-full">
             <thead class="bg-slate-900 sticky top-0">
@@ -111,22 +107,96 @@ export const administracaoPage = () => {
             <tbody id="tbody-membros" class="text-gray-300"></tbody>
           </table>
         </div>
-      </div>
+
+         <!-- Calendário de Eventos da Administração -->
+      <div id="admin-calendario-eventos" class="bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mt-8"></div>
     </main>
 
-    <!-- Sidebar de Edição (Esquerda) -->
-    <aside id="edit-member-sidebar-admin" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+    <!-- Aside para Cadastrar/Editar Evento -->
+    <aside id="evento-sidebar" class="fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-[70] overflow-y-auto">
       <div class="p-6">
         <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-bold text-cyan-400" id="edit-sidebar-title-admin">EDITAR MEMBRO</h3>
-          <button id="close-edit-sidebar-admin" class="text-gray-400 hover:text-white text-2xl">×</button>
+          <h3 class="text-2xl font-bold text-cyan-400" id="sidebar-titulo">CADASTRAR EVENTO</h3>
+          <button id="close-evento-sidebar" class="text-gray-400 hover:text-white text-2xl">×</button>
         </div>
-        <form id="form-membro-admin" class="space-y-4"></form>
+        <form id="form-evento" class="space-y-6">
+          <!-- Nome do Evento -->
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">NOME DO EVENTO *</label>
+            <input type="text" id="evento-nome" required class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" placeholder="Ex: Treinamento de Combate CQB" />
+          </div>
+          <!-- Categoria -->
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">CATEGORIA *</label>
+            <select id="evento-categoria" required class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+              <option value="">Selecione uma categoria</option>
+              <option value="treinamento">Treinamento</option>
+              <option value="missao">Missão</option>
+              <option value="operacao">Operação</option>
+              <option value="mega-operacao">Mega Operação</option>
+              <option value="campanha">Campanha</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <!-- Data -->
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">DATA *</label>
+            <input type="date" id="evento-data" required class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          </div>
+          <!-- Horário -->
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">HORÁRIO *</label>
+            <input type="time" id="evento-horario" required class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
+          </div>
+          <!-- Descrição -->
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">DESCRIÇÃO *</label>
+            <textarea id="evento-descricao" required rows="6" class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 resize-none" placeholder="Descreva os detalhes do evento..."></textarea>
+          </div>
+          <!-- Botões -->
+          <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors">✓ Registrar</button>
+            <button type="button" id="btn-limpar-form" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors">🗑 Limpar</button>
+          </div>
+        </form>
       </div>
     </aside>
 
-    <!-- Overlay -->
-    <div id="admin-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+    <!-- Aside para Ver Detalhes do Evento -->
+    <aside id="detalhes-evento-sidebar" class="fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-[70] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400">DETALHES DO EVENTO</h3>
+          <button id="close-detalhes-sidebar" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <div id="detalhes-evento-content" class="space-y-6"></div>
+      </div>
+    </aside>
+
+    <!-- Aside para Gerenciar Participantes -->
+    <aside id="participantes-evento-sidebar" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-[70] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400">GERENCIAR PARTICIPANTES</h3>
+          <button id="close-participantes-sidebar" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <!-- Participantes Adicionados -->
+        <div class="mb-6">
+          <h4 class="text-sm text-gray-400 mb-3">PARTICIPANTES ADICIONADOS</h4>
+          <div id="lista-participantes-evento" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+        <!-- Adicionar Participante -->
+        <div>
+          <h4 class="text-sm text-gray-400 mb-3">ADICIONAR MEMBRO</h4>
+          <input type="text" id="search-membro-participante" placeholder="Buscar membro ativo..." class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 mb-3 focus:outline-none focus:border-cyan-400"/>
+          <div id="lista-membros-disponiveis" class="space-y-2 max-h-96 overflow-y-auto"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay para sidebars e eventos -->
+    <div id="admin-overlay" class="fixed inset-0 bg-black/50 hidden z-[55]"></div>
+    <div id="eventos-overlay" class="fixed inset-0 bg-black/50 hidden z-[65]"></div>
   `;
 };
 
@@ -135,11 +205,31 @@ export function initAdministracao() {
   renderizarRecusados();
   renderizarMembrosRegistrados();
   setupAdminFilters();
+  renderCalendario({ modo: 'edicao', containerId: 'admin-calendario-eventos' });
+  initEventosGlobais();
 }
 
 let membrosRegistradosFiltrados = [];
 
 function setupAdminFilters() {
+  const ids = [
+    'admin-search',
+    'admin-filter-patente',
+    'admin-filter-situacao',
+    'admin-filter-forca',
+    'admin-filter-data',
+    'admin-clear-filters',
+    'close-edit-sidebar-admin',
+    'admin-overlay',
+    'btn-novo-evento',
+  ];
+  for (const id of ids) {
+    if (!document.getElementById(id)) {
+      console.error(`Elemento #${id} não encontrado no DOM!`);
+      return;
+    }
+  }
+
   document
     .getElementById('admin-search')
     .addEventListener('input', aplicarFiltrosAdmin);

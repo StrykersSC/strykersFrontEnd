@@ -21,6 +21,9 @@ export const router = {
 
   init() {
     this.contentContainer = document.getElementById('app-content');
+    if (!this.contentContainer) {
+      throw new Error('Elemento #app-content não encontrado no DOM!');
+    }
   },
 
   navigate(pageName, afterRender) {
