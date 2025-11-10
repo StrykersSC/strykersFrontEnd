@@ -123,11 +123,6 @@ function setupEventListeners() {
     });
   }
 
-  const formEvento = document.getElementById('form-evento');
-  if (formEvento) {
-    formEvento.addEventListener('submit', handleSubmitEvento);
-  }
-
   const btnLimparForm = document.getElementById('btn-limpar-form');
   if (btnLimparForm) {
     btnLimparForm.addEventListener('click', limparFormulario);
@@ -238,31 +233,21 @@ function handleSubmitEvento(e) {
   e.preventDefault();
 
   if (modoEdicao && eventoAtual) {
-    // Atualizar evento existente
-    eventoAtual.nome = document.getElementById('evento-nome').value;
-    eventoAtual.categoria = document.getElementById('evento-categoria').value;
-    eventoAtual.data = document.getElementById('evento-data').value;
-    eventoAtual.horario = document.getElementById('evento-horario').value;
-    eventoAtual.descricao = document.getElementById('evento-descricao').value;
-
     const index = eventos.findIndex((e) => e.id === eventoAtual.id);
-    if (index !== -1) eventos[index] = eventoAtual;
-
+    if (index !== -1) {
+      eventos[index] = {
+        ...eventos[index],
+        nome: document.getElementById('evento-nome').value,
+        categoria: document.getElementById('evento-categoria').value,
+        data: document.getElementById('evento-data').value,
+        horario: document.getElementById('evento-horario').value,
+        descricao: document.getElementById('evento-descricao').value,
+      };
+    }
     salvarEventos();
     fecharSidebars();
-
-    // Recarregar página se estiver na administração
-    if (
-      window.location.hash === '#administracao' ||
-      document.getElementById('admin-calendario-eventos')
-    ) {
-      alert('✅ Evento atualizado com sucesso!');
-      window.location.reload();
-    } else {
-      renderizarCalendario();
-      renderizarProximoEvento();
-      alert('✅ Evento atualizado com sucesso!');
-    }
+    atualizarCalendarioAdmin();
+    alert('✅ Evento atualizado com sucesso!');
   } else {
     // Criar novo evento
     const evento = {
@@ -278,12 +263,10 @@ function handleSubmitEvento(e) {
     eventos.push(evento);
     salvarEventos();
     fecharSidebars();
-    renderizarCalendario();
-    renderizarProximoEvento();
+    atualizarCalendarioAdmin();
     alert('✅ Evento cadastrado com sucesso!');
   }
 
-  // Sempre volta para modo cadastro
   modoEdicao = false;
   eventoAtual = null;
   document.getElementById('sidebar-titulo').textContent = 'CADASTRAR EVENTO';
@@ -557,10 +540,7 @@ function editarEvento(eventoId) {
     if (botao) botao.textContent = '✏️ Atualizar';
 
     // Reatribuir listeners
-    const formEvento = document.getElementById('form-evento');
-    if (formEvento) {
-      formEvento.onsubmit = handleSubmitEvento;
-    }
+    atribuirListenerFormEvento();
     const btnLimparForm = document.getElementById('btn-limpar-form');
     if (btnLimparForm) {
       btnLimparForm.onclick = limparFormulario;
@@ -716,18 +696,25 @@ function finalizarEvento(eventoId) {
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
   salvarEventos();
   fecharSidebars();
+  atualizarCalendarioAdmin();
+
+  if (typeof window.aplicarFiltrosAdmin === 'function') {
+    window.aplicarFiltrosAdmin();
+  }
 
   // Recarregar página se estiver na administração
   if (
     window.location.hash === '#administracao' ||
     document.getElementById('admin-calendario-eventos')
   ) {
+    renderizarCalendario();
+    renderizarProximoEvento();
     alert(
       '✅ Evento finalizado! Missões contabilizadas para os participantes.'
     );
-    window.location.reload();
   } else {
     renderizarCalendario();
+    renderizarProximoEvento();
     alert(
       '✅ Evento finalizado! Missões contabilizadas para os participantes.'
     );
@@ -760,16 +747,23 @@ function reabrirEvento(eventoId) {
   localStorage.setItem('strykers_membros', JSON.stringify(membrosData));
   salvarEventos();
   fecharSidebars();
+  atualizarCalendarioAdmin();
+
+  if (typeof window.aplicarFiltrosAdmin === 'function') {
+    window.aplicarFiltrosAdmin();
+  }
 
   // Recarregar página se estiver na administração
   if (
     window.location.hash === '#administracao' ||
     document.getElementById('admin-calendario-eventos')
   ) {
+    renderizarCalendario();
+    renderizarProximoEvento();
     alert('✅ Evento reaberto! Missões removidas dos participantes.');
-    window.location.reload();
   } else {
     renderizarCalendario();
+    renderizarProximoEvento();
     alert('✅ Evento reaberto! Missões removidas dos participantes.');
   }
 }
@@ -779,18 +773,33 @@ function excluirEvento(eventoId) {
   eventos = eventos.filter((e) => e.id !== eventoId);
   salvarEventos();
   fecharSidebars();
+  atualizarCalendarioAdmin();
 
   // Recarregar página se estiver na administração
   if (
     window.location.hash === '#administracao' ||
     document.getElementById('admin-calendario-eventos')
   ) {
+    renderizarCalendario();
+    renderizarProximoEvento();
     alert('✅ Evento excluído com sucesso!');
-    window.location.reload();
   } else {
     renderizarCalendario();
     renderizarProximoEvento();
     alert('✅ Evento excluído com sucesso!');
+  }
+}
+
+function atualizarCalendarioAdmin() {
+  if (document.getElementById('admin-calendario-eventos')) {
+    renderCalendario({
+      modo: 'edicao',
+      containerId: 'admin-calendario-eventos',
+    });
+    renderizarProximoEvento && renderizarProximoEvento();
+  } else {
+    renderizarCalendario();
+    renderizarProximoEvento && renderizarProximoEvento();
   }
 }
 
@@ -865,10 +874,28 @@ export function initSidebarsEventos() {
 
     const overlay = document.getElementById('eventos-overlay');
     if (overlay) overlay.onclick = fecharSidebars;
+
+    atribuirListenerFormEvento();
   }, 0);
 }
 
 export function initEventosGlobais() {
   carregarEventos();
   initSidebarsEventos();
+}
+
+window.initSidebarsEventos = initSidebarsEventos;
+
+if (typeof window !== 'undefined') {
+  window.initSidebarsEventos = initSidebarsEventos;
+}
+
+function atribuirListenerFormEvento() {
+  const formEvento = document.getElementById('form-evento');
+  if (formEvento) {
+    // Remove todos os listeners antigos
+    formEvento.onsubmit = null;
+    // Adiciona o novo
+    formEvento.onsubmit = handleSubmitEvento;
+  }
 }

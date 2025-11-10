@@ -12,7 +12,7 @@ import {
   fecharDetalhesMissao,
 } from '../components/membros-utils.js';
 import { renderCalendario } from '../components/calendario.js';
-import { initSidebarsEventos, initEventosGlobais } from '../eventos.js';
+import { initEventosGlobais } from '../eventos.js';
 
 export const administracaoPage = () => {
   return `
@@ -230,6 +230,11 @@ export function initAdministracao() {
   setupAdminFilters();
   renderCalendario({ modo: 'edicao', containerId: 'admin-calendario-eventos' });
   initEventosGlobais();
+
+  setTimeout(() => {
+    // Garante que listeners dos sidebars e formulário de evento sejam reatribuídos
+    window.initSidebarsEventos && window.initSidebarsEventos();
+  }, 0);
 }
 
 let membrosRegistradosFiltrados = [];
@@ -278,9 +283,7 @@ function setupAdminFilters() {
     .getElementById('admin-overlay')
     .addEventListener('click', fecharSidebarAdmin);
   document.getElementById('btn-novo-evento').addEventListener('click', () => {
-    window.router.navigate('eventos', () => {
-      if (window.abrirFormularioEvento) window.abrirFormularioEvento();
-    });
+    window.abrirFormularioEvento && window.abrirFormularioEvento();
   });
 }
 
@@ -1371,3 +1374,4 @@ window.abrirRemoverMedalhaAdmin = abrirRemoverMedalhaAdmin;
 window.fecharRemoverMedalhaAdmin = fecharRemoverMedalhaAdmin;
 window.confirmarRemocaoMedalhaAdmin = confirmarRemocaoMedalhaAdmin;
 window.abrirRemoverMedalhaComFechamento = abrirRemoverMedalhaComFechamento;
+window.aplicarFiltrosAdmin = aplicarFiltrosAdmin;
