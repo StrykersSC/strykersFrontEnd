@@ -173,25 +173,25 @@ export const forcasEspeciaisPage = () => {
               MISSÕES PRINCIPAIS DA G.H.O.S.T.:
             </p>
             <p class="pt-3">
-              🔸 Ataques Incisivos a Capitais → A doutrina central da G.H.O.S.T., empregando precisão e coordenação para neutralizar naves capitais de forma rápida e definitiva.
+              🔸 <span class="underline text-cyan-400 font-semibold">Ataques Incisivos a Capitais</span> <span class="text-cyan-400 font-semibold">→</span> A doutrina central da G.H.O.S.T., empregando precisão e coordenação para neutralizar naves capitais de forma rápida e definitiva.
             </p>
             <p>
-              🔸 Infiltrações em Capitais → Operações discretas em naves estacionadas ou em movimento, garantindo acesso e controle da capital inimiga.
+              🔸 <span class="underline text-cyan-400 font-semibold">Infiltrações em Capitais</span> <span class="text-cyan-400 font-semibold">→</span> Operações discretas em naves estacionadas ou em movimento, garantindo acesso e controle da capital inimiga.
             </p>
             <p>
-              🔸 Sabotagens Interna → Destruição de componentes expostos, remoção de fusíveis críticos e autodestruição .
+              🔸 <span class="underline text-cyan-400 font-semibold">Sabotagens Interna</span> <span class="text-cyan-400 font-semibold">→</span> Destruição de componentes expostos, remoção de fusíveis críticos e autodestruição .
             </p>
             <p>
-              🔸 Aquisição de dados → Coleta de inteligência inimiga e informações estratégicas do terreno e da missão.
+              🔸 <span class="underline text-cyan-400 font-semibold">Aquisição de dados</span> <span class="text-cyan-400 font-semibold">→</span> Coleta de inteligência inimiga e informações estratégicas do terreno e da missão.
             </p>
             <p>
-              🔸 Hacking e sabotagem de Satélites → Desativação de satélite local quando conveniente e hacking de sistemas inimigos (mecânica futura).
-            </p>
+              🔸 <span class="underline text-cyan-400 font-semibold">Hacking e sabotagem de Satélites</span> <span class="text-cyan-400 font-semibold">→</span> Desativação de satélite local quando conveniente e hacking de sistemas inimigos (mecânica futura).
+              </p>
+              <p>
+                🔸 <span class="underline text-cyan-400 font-semibold">CQB em Capitais</span> <span class="text-cyan-400 font-semibold">→</span> Domínio de corredores, salas e pontos de controle.
+              </p>
             <p>
-              🔸 Apoio aéreo e reconhecimento avançado → Desde a função de batedores (reconhecimento e abertura de rotas seguras) até suporte especializado à Força Aérea quando solicitado, empregando naves stealth especializadas como caças de neutralização rápida (Firebird), de supressão (F7 Ghost), dogfighters (Sabre), suporte a transporte de tropas terrestres (Prowler) e interceptação aérea (Mantis).
-            </p>
-            <p>
-              🔸 CQB em Capitais → Domínio de corredores, salas e pontos de controle.
+              🔸 <span class="underline text-cyan-400 font-semibold">Apoio aéreo e reconhecimento avançado</span> <span class="text-cyan-400 font-semibold">→</span> Desde a função de batedores (reconhecimento e abertura de rotas seguras) até suporte especializado à Força Aérea quando solicitado, empregando naves stealth especializadas como caças de neutralização rápida (Firebird), de supressão (F7 Ghost), dogfighters (Sabre), suporte a transporte de tropas terrestres (Prowler) e interceptação aérea (Mantis).
             </p>
           </div>
           <div class="mt-8 pt-6 border-t border-slate-700 text-sm text-gray-300">

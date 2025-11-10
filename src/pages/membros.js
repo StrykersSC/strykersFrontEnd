@@ -41,9 +41,11 @@ export const membrosPage = () => {
                 <th class="px-6 py-4 cursor-pointer hover:text-cyan-300" data-sort="patente">PATENTE</th>
                 <th class="px-6 py-4 cursor-pointer hover:text-cyan-300" data-sort="nome">NOME</th>
                 <th class="px-6 py-4 text-center">MEDALHAS</th>
+                <th class="px-6 py-4 text-center">MISSÕES</th>
+                <th class="px-6 py-4 text-center">FORÇA ESPECIAL</th>
                 <th class="px-6 py-4 cursor-pointer hover:text-cyan-300" data-sort="dataRegistro">DATA REGISTRO</th>
                 <th class="px-6 py-4 cursor-pointer hover:text-cyan-300" data-sort="situacao">SITUAÇÃO</th>
-                <th class="px-6 py-4 text-center">AÇÕES</th>
+                <th class="px-6 py-4 text-center">DETALHES</th>
               </tr>
             </thead>
             <tbody id="membros-tbody" class="text-gray-300">

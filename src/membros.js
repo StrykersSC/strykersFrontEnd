@@ -152,10 +152,15 @@ function renderTable(data) {
       Desertor: 'text-red-400',
     };
 
+    const totalMissoes =
+      (membro.eventosParticipados?.length || 0) + (membro.valorHistorico || 0);
+
     tr.innerHTML = `
       <td class="px-6 py-4 font-semibold">${membro.patente}</td>
       <td class="px-6 py-4">${membro.nome}</td>
       <td class="px-6 py-4 text-center">${membro.medalhas}</td>
+      <td class="px-6 py-4 text-center">${totalMissoes}</td>
+      <td class="px-6 py-4 text-center">${membro.forcaEspecial}</td>
       <td class="px-6 py-4">${membro.dataRegistro}</td>
       <td class="px-6 py-4 ${
         situacaoColor[membro.situacao] || 'text-gray-400'

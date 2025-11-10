@@ -65,9 +65,6 @@ export const router = {
     } else if (pageName === 'eventos') {
       const { initEventos } = await import('./eventos.js');
       initEventos();
-    } else if (pageName === 'forcasespeciais') {
-      const { initForcasEspeciais } = await import('./forcasespeciais.js');
-      initForcasEspeciais();
     } else if (pageName === 'perfil') {
       const { initPerfil } = await import('./pages/perfil.js');
       initPerfil();

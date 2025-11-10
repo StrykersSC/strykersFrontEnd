@@ -80,6 +80,7 @@ export const administracaoPage = () => {
           <select id="admin-filter-forca" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2">
             <option value="">Todas Forças</option>
             <option value="S.T.O.R.M.">S.T.O.R.M.</option>
+            <option value="G.H.O.S.T.">G.H.O.S.T.</option>
             <option value="Não">Não</option>
           </select>
           <input type="date" id="admin-filter-data" placeholder="Data Registro" class="bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400" />
@@ -194,11 +195,33 @@ export const administracaoPage = () => {
       </div>
     </aside>
 
+        <!-- Sidebar de Edição de Membro (Admin) -->
+    <aside id="edit-member-sidebar-admin" class="fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transform -translate-x-full transition-transform duration-300 z-[80] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-cyan-400" id="edit-sidebar-title-admin">EDITAR MEMBRO</h3>
+          <button id="close-edit-sidebar-admin" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <form id="form-membro-admin" class="space-y-4">
+          <!-- O conteúdo do formulário será preenchido dinamicamente -->
+        </form>
+      </div>
+    </aside>
+
     <!-- Overlay para sidebars e eventos -->
     <div id="admin-overlay" class="fixed inset-0 bg-black/50 hidden z-[55]"></div>
     <div id="eventos-overlay" class="fixed inset-0 bg-black/50 hidden z-[65]"></div>
   `;
 };
+
+function getForcaEspecialOptions() {
+  const select = document.getElementById('admin-filter-forca');
+  if (!select) return [];
+  // Ignora a primeira opção ("Todas Forças")
+  return Array.from(select.options)
+    .filter((opt) => opt.value !== '')
+    .map((opt) => opt.value);
+}
 
 export function initAdministracao() {
   renderizarPendentes();
@@ -700,6 +723,8 @@ function editarMembroAdmin(membroId) {
   const membro = membrosData.find((m) => m.id === membroId);
   if (!membro) return;
 
+  const forcaEspecialOptions = getForcaEspecialOptions();
+
   const formHtml = `
     <input type="hidden" id="admin-membro-id" value="${membro.id}" />
     <div>
@@ -805,13 +830,20 @@ function editarMembroAdmin(membroId) {
       </select>
     </div>
     <div>
-      <label class="block text-gray-400 text-sm mb-2">FORÇA ESPECIAL</label>
-      <input type="text" id="admin-membro-forcaEspecial" value="${
-        membro.forcaEspecial || ''
-      }"
-        class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400"
-        placeholder="S.T.O.R.M. ou deixe 'Não'" />
-    </div>
+  <label class="block text-gray-400 text-sm mb-2">FORÇA ESPECIAL</label>
+  <select id="admin-membro-forcaEspecial"
+    class="w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+    ${forcaEspecialOptions
+      .map(
+        (opt) => `
+      <option value="${opt}" ${
+          membro.forcaEspecial === opt ? 'selected' : ''
+        }>${opt}</option>
+    `
+      )
+      .join('')}
+  </select>
+</div>
     <div>
       <label class="block text-gray-400 text-sm mb-2">OBSERVAÇÕES</label>
       <textarea id="admin-membro-observacoes" rows="4"
@@ -892,7 +924,7 @@ function salvarMembroAdmin(e) {
     'admin-membro-situacao'
   ).value;
   membrosData[index].forcaEspecial =
-    document.getElementById('admin-membro-forcaEspecial').value.trim() || 'Não';
+    document.getElementById('admin-membro-forcaEspecial').value || 'Não';
   membrosData[index].observacoes = document
     .getElementById('admin-membro-observacoes')
     .value.trim();
@@ -1046,7 +1078,7 @@ function condecorarMembroAdmin(membroId) {
     sidebar = document.createElement('aside');
     sidebar.id = 'condecorar-sidebar-admin';
     sidebar.className =
-      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto';
+      'fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-[99] overflow-y-auto';
     document.body.appendChild(sidebar);
   }
 
@@ -1107,7 +1139,7 @@ function condecorarMembroAdmin(membroId) {
         membro.medalhasDetalhadas && membro.medalhasDetalhadas.length > 0
           ? `
         <div class="mt-6 pt-6 border-t border-slate-700">
-          <button onclick="window.abrirRemoverMedalhaAdmin('${membro.id}')"
+          <button onclick="window.abrirRemoverMedalhaComFechamento('${membro.id}')"
             class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors">
             🗑️ Remover Condecoração
           </button>
@@ -1316,6 +1348,11 @@ function confirmarRemocaoMedalhaAdmin(membroId, medalhaId) {
   alert(`✅ ${medalhaInfo.nome} removida com sucesso!`);
 }
 
+function abrirRemoverMedalhaComFechamento(membroId) {
+  fecharCondecoracao(); // Fecha o aside de condecoração
+  abrirRemoverMedalhaAdmin(membroId); // Abre o aside de remoção
+}
+
 // Expor funções globalmente
 window.aprovarAlistamento = aprovarAlistamento;
 window.recusarAlistamento = recusarAlistamento;
@@ -1333,3 +1370,4 @@ window.fecharCondecoracao = fecharCondecoracao;
 window.abrirRemoverMedalhaAdmin = abrirRemoverMedalhaAdmin;
 window.fecharRemoverMedalhaAdmin = fecharRemoverMedalhaAdmin;
 window.confirmarRemocaoMedalhaAdmin = confirmarRemocaoMedalhaAdmin;
+window.abrirRemoverMedalhaComFechamento = abrirRemoverMedalhaComFechamento;
