@@ -10,94 +10,13 @@
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/src/style.css" rel="stylesheet" />
+    <link href="/src/index.css" rel="stylesheet" />
     <title>Strykers Star Citizen</title>
   </head>
   <body
     class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen"
   >
-    <!-- Marca d'água -->
-    <div
-      class="fixed inset-0 pointer-events-none z-0 flex items-center justify-center"
-    >
-      <img
-        src="/STRYKERS-Logo.png"
-        alt="Logo da Strykers"
-        class="opacity-20 w-full h-full object-contain"
-      />
-    </div>
-
-    <!-- Navbar -->
-    <nav
-      class="relative z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700"
-    >
-      <div class="container mx-auto px-6 py-4">
-        <div class="flex items-center justify-between">
-          <!-- Logo/Nome -->
-          <div class="flex items-center space-x-3">
-            <div
-              class="w-10 h-10 bg-slate-700 rounded flex items-center justify-center"
-            >
-              <span class="text-cyan-400 font-bold text-xl">S</span>
-            </div>
-            <h1 class="text-2xl font-bold text-white tracking-wider">
-              STRYKERS
-            </h1>
-          </div>
-
-          <!-- Menu Links -->
-          <div class="flex items-center space-x-8">
-            <a
-              href="#home"
-              data-page="home"
-              class="nav-link text-cyan-400 font-semibold hover:text-cyan-300 transition-colors border-b-2 border-cyan-400 pb-1"
-            >
-              HOME
-            </a>
-            <a
-              href="#membros"
-              data-page="membros"
-              class="nav-link text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
-            >
-              MEMBROS
-            </a>
-            <a
-              href="#eventos"
-              data-page="eventos"
-              class="nav-link text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
-            >
-              EVENTOS
-            </a>
-            <a
-              href="#recrutamento"
-              data-page="recrutamento"
-              class="nav-link text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
-            >
-              RECRUTAMENTO
-            </a>
-            <a
-              href="#forcasespeciais"
-              data-page="forcasespeciais"
-              class="nav-link text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
-            >
-              FORÇAS ESPECIAIS
-            </a>
-            <a
-              href="#administracao"
-              data-page="administracao"
-              class="nav-link text-gray-300 font-semibold hover:text-cyan-400 transition-colors pb-1"
-            >
-              ADMINISTRAÇÃO
-            </a>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Container principal do SPA -->
-    <div id="app-content"></div>
-
-    <script type="module" src="/src/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

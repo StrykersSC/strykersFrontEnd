@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* custom font family from original project */
+body {
+  font-family: 'Orbitron', 'Arial', 'Helvetica', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+}
+
+/* keep any small custom utility that was in style.css */

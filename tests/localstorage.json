@@ -1,0 +1,90 @@
+{
+  "strykers_usuarios": [
+    {
+      "id": "1764514584151354",
+      "email": "test1@example.com",
+      "senha": "senha123",
+      "nome": "Test User One",
+      "whatsapp": "",
+      "status": "aprovado",
+      "dataCadastro": "2025-11-30T14:56:24.151Z",
+      "codigoConfirmacao": "336624",
+      "dataConfirmacao": "2025-11-30T14:56:24.152Z",
+      "dataAprovacao": "2025-11-30T14:56:24.154Z"
+    },
+    {
+      "id": "1764514584154875",
+      "email": "test2@example.com",
+      "senha": "senha123",
+      "nome": "Reject User",
+      "whatsapp": "",
+      "status": "aguardando_aprovacao",
+      "dataCadastro": "2025-11-30T14:56:24.154Z",
+      "codigoConfirmacao": "836054",
+      "dataRecusa": "2025-11-30T14:56:24.156Z"
+    }
+  ],
+  "strykers_alistamentos_pendentes": [
+    {
+      "id": "1764514584154875",
+      "nome": "Reject User",
+      "email": "test2@example.com",
+      "whatsapp": "",
+      "dataSolicitacao": "2025-11-30T14:56:24.156Z",
+      "usuarioCompleto": {
+        "id": "1764514584154875",
+        "email": "test2@example.com",
+        "senha": "senha123",
+        "nome": "Reject User",
+        "whatsapp": "",
+        "status": "aguardando_confirmacao",
+        "dataCadastro": "2025-11-30T14:56:24.154Z",
+        "codigoConfirmacao": "836054"
+      }
+    }
+  ],
+  "strykers_membros": [
+    {
+      "id": "1764514584151354-1764514584153",
+      "nome": "Test User One",
+      "foto": "https://ui-avatars.com/api/?name=Test%20User%20One&background=0f172a&color=22d3ee&size=150",
+      "patente": "Recruta",
+      "atribuicao": "Infantaria",
+      "medalhas": 0,
+      "dataRegistro": "2025-11-30",
+      "situacao": "Ativo",
+      "missoes": 0,
+      "forcaEspecial": "Não",
+      "observacoes": "",
+      "eventosParticipados": [
+        {
+          "eventoId": "1764514584158362",
+          "nome": "Evento Teste",
+          "data": "2025-11-30"
+        }
+      ],
+      "historico": "",
+      "valorHistorico": 0,
+      "medalhasDetalhadas": []
+    }
+  ],
+  "strykers_alistamentos_recusados": [],
+  "strykers_eventos": [
+    {
+      "id": "1764514584158362",
+      "nome": "Evento Teste",
+      "categoria": "treinamento",
+      "data": "2025-11-30",
+      "horario": "20:00",
+      "descricao": "Descrição de teste",
+      "participantes": [
+        {
+          "id": "1764514584151354-1764514584153",
+          "nome": "Test User One",
+          "foto": "https://ui-avatars.com/api/?name=Test%20User%20One&background=0f172a&color=22d3ee&size=150"
+        }
+      ],
+      "finalizado": false
+    }
+  ]
+}

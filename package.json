@@ -6,13 +6,22 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:flows": "node ./tests/testFlows.cjs",
+    "test:e2e:setup": "npx playwright install --with-deps",
+    "test:e2e": "npx playwright test --project=chromium"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
     "vite": "^7.1.7"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.16",
-    "tailwindcss": "^4.1.16"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.14.1",
+    "tailwindcss": "^3.3.2"
   }
 }
