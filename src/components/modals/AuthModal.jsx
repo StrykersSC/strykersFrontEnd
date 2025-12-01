@@ -40,6 +40,12 @@ export default function AuthModal({
         }, 300);
       } else {
         setError(result.error);
+        // If the backend indicates the user still needs to confirm their email,
+        // open the confirmation modal and provide the user object so the
+        // confirmation component can show the code and the input.
+        if (result.needsConfirmation && onShowEmailConfirmation) {
+          onShowEmailConfirmation(result.user);
+        }
       }
     } finally {
       setLoading(false);

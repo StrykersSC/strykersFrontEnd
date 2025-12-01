@@ -60,6 +60,8 @@ export function useAuth() {
         return {
           success: false,
           error: '⚠️ Você precisa confirmar seu e-mail antes de fazer login.',
+          needsConfirmation: true,
+          user: usuario,
         };
       }
 
