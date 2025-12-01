@@ -1,3 +1,6 @@
+// IMPORTANTE: Este arquivo apenas re-exporta as funções de MembrosUtils.jsx
+// NÃO registra novamente no window para evitar duplicação
+
 import {
   mostrarMedalhasMembro as mostrarMedalhasMembroReact,
   fecharMedalhasSidebar as fecharMedalhasSidebarReact,
@@ -27,20 +30,6 @@ export const fecharDetalhesMissao = fecharDetalhesMissaoReact;
 export const mostrarDetalhesMedalhaPublic = mostrarDetalhesMedalhaPublicReact;
 export const fecharModalMedalhaPublic = fecharModalMedalhaPublicReact;
 
-// Expor funções globalmente
-if (typeof window !== 'undefined') {
-  window.mostrarMissoesMembro = mostrarMissoesMembroReact;
-  window.fecharMissoesSidebar = fecharMissoesSidebarReact;
-  window.mostrarDetalhesMissaoDoEvento = mostrarDetalhesMissaoDoEventoReact;
-  window.fecharDetalhesMissao = fecharDetalhesMissaoReact;
-  window.mostrarMedalhasMembro = mostrarMedalhasMembroReact;
-  window.fecharMedalhasSidebar = fecharMedalhasSidebarReact;
-  window.mostrarDetalhesMedalha = mostrarDetalhesMedalhaReact;
-  window.fecharModalMedalha = fecharModalMedalhaReact;
-  window.mostrarHistoricoMembro = mostrarHistoricoMembroReact;
-  window.fecharHistoricoMembro = fecharHistoricoMembroReact;
-  // public perfil usage
-  window.mostrarDetalhesMedalhaNoPerfilPublic =
-    mostrarDetalhesMedalhaPublicReact;
-  window.fecharModalMedalhaPublic = fecharModalMedalhaPublicReact;
-}
+// NÃO expor funções globalmente aqui - isso já é feito em MembrosUtils.jsx
+// Remover esta seção para evitar duplicação:
+// if (typeof window !== 'undefined') { ... }
