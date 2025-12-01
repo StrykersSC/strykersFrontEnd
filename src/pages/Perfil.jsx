@@ -275,49 +275,35 @@ export default function Perfil() {
           🏅 CONDECORAÇÕES
         </h2>
         {membro.medalhasDetalhadas && membro.medalhasDetalhadas.length > 0 ? (
-          <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-            <h2 className='text-2xl font-bold text-cyan-400 mb-6'>
-              🏅 CONDECORAÇÕES
-            </h2>
-            {membro.medalhasDetalhadas &&
-            membro.medalhasDetalhadas.length > 0 ? (
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-                {membro.medalhasDetalhadas.map((m) => {
-                  const medalhaInfo = getMedalhaInfo(m.tipo);
-                  return (
-                    <div
-                      key={m.id}
-                      className='bg-slate-900/50 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-700/50 transition-all transform hover:scale-105'
-                      onClick={() =>
-                        window.mostrarDetalhesMedalhaNoPerfilPublic &&
-                        window.mostrarDetalhesMedalhaNoPerfilPublic(
-                          m.tipo,
-                          m.observacoes || ''
-                        )
-                      }
-                    >
-                      <img
-                        src={medalhaInfo.imagem}
-                        alt={medalhaInfo.nome}
-                        className='w-20 h-20 mx-auto mb-3 object-contain'
-                      />
-                      <h3 className='text-white font-semibold text-sm mb-1'>
-                        {medalhaInfo.nome}
-                      </h3>
-                      <p className='text-gray-400 text-xs'>
-                        {new Date(m.data + 'T00:00:00').toLocaleDateString(
-                          'pt-BR'
-                        )}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className='text-gray-400 text-center py-8'>
-                Nenhuma condecoração ainda
-              </p>
-            )}
+          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+            {membro.medalhasDetalhadas.map((m) => {
+              const medalhaInfo = getMedalhaInfo(m.tipo);
+              return (
+                <div
+                  key={m.id}
+                  className='bg-slate-900/50 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-700/50 transition-all transform hover:scale-105'
+                  onClick={() =>
+                    window.mostrarDetalhesMedalhaNoPerfilPublic &&
+                    window.mostrarDetalhesMedalhaNoPerfilPublic(
+                      m.tipo,
+                      m.observacoes || ''
+                    )
+                  }
+                >
+                  <img
+                    src={medalhaInfo.imagem}
+                    alt={medalhaInfo.nome}
+                    className='w-20 h-20 mx-auto mb-3 object-contain'
+                  />
+                  <h3 className='text-white font-semibold text-sm mb-1'>
+                    {medalhaInfo.nome}
+                  </h3>
+                  <p className='text-gray-400 text-xs'>
+                    {new Date(m.data + 'T00:00:00').toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className='text-gray-400 text-center py-8'>
