@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { mostrarMedalhasMembro } from '../components/ui/MembrosUtils.jsx';
+import { mostrarMissoesMembro } from '../components/ui/MembrosUtils.jsx';
 import Calendario from '../components/ui/Calendario.jsx';
 import {
   medalhas as MEDALHAS_DISPONIVEIS,
@@ -610,12 +612,18 @@ export default function Administracao() {
                       <td className='px-4 py-3'>{m.situacao}</td>
                       <td className='px-4 py-3'>{m.forcaEspecial || 'Não'}</td>
                       <td className='px-4 py-3 text-center'>
-                        <button className='text-yellow-400 hover:text-yellow-300'>
+                        <button
+                          className='text-yellow-400 hover:text-yellow-300'
+                          onClick={() => mostrarMedalhasMembro(m.id)}
+                        >
                           {m.medalhas || 0} 👁️
                         </button>
                       </td>
                       <td className='px-4 py-3 text-center'>
-                        <button className='text-cyan-400 hover:text-cyan-300'>
+                        <button
+                          className='text-cyan-400 hover:text-cyan-300'
+                          onClick={() => mostrarMissoesMembro(m.id)}
+                        >
                           {totalMissoes} 👁️
                         </button>
                       </td>
