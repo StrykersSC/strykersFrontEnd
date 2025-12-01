@@ -3,6 +3,7 @@
 ## Problema Identificado
 
 Quando um administrador alterava o nome de um membro registrado via página de administração, ocorria a seguinte situação:
+
 - ✅ O membro conseguia fazer login (pois a validação ocorre contra `strykers_usuarios`)
 - ❌ O membro NÃO conseguia acessar seu perfil (exibia "Você não tem registro de membro na organização ainda")
 - ❌ O nome no dropdown do Sign In não era atualizado
@@ -36,7 +37,7 @@ function salvarMembroEdicao(e) {
       })
     );
   }
-  
+
   setEditingMember(null);
   alert('✅ Membro atualizado com sucesso!');
 }
@@ -77,9 +78,7 @@ useEffect(() => {
     const usuarios = JSON.parse(
       localStorage.getItem('strykers_usuarios') || '[]'
     );
-    const usuarioAtualizado = usuarios.find(
-      (u) => u.id === usuarioAtual.id
-    );
+    const usuarioAtualizado = usuarios.find((u) => u.id === usuarioAtual.id);
 
     if (usuarioAtualizado && usuarioAtualizado.nome !== usuarioAtual.nome) {
       const sessaoAtualizada = {
@@ -95,6 +94,7 @@ useEffect(() => {
 ```
 
 **Como funciona**:
+
 1. Verifica a cada 1 segundo se há alterações no nome do usuário em `strykers_usuarios`
 2. Se houver, atualiza a sessão do usuário (`strykers_user_session`)
 3. Isso causa re-renderização do componente `App.jsx` que exibe o nome no dropdown
@@ -123,11 +123,13 @@ useEffect(() => {
 ### Teste Unitário: `tests/testNameSync.cjs`
 
 Executa com:
+
 ```bash
 node tests/testNameSync.cjs
 ```
 
 **Resultado**:
+
 ```
 ✅ SUCCESS: Profile can find member with new name
    Member found: João Silva Atualizado
@@ -142,7 +144,7 @@ Valida o fluxo completo via Playwright (requer servidor rodando).
 ✅ **Resolvido**: Acesso ao perfil após alteração de nome  
 ✅ **Resolvido**: Dropdown mostra nome atualizado  
 ✅ **Resolvido**: Sincronização entre `strykers_usuarios` e `strykers_membros`  
-✅ **Resolvido**: Status do usuário atualizado quando membro é deletado  
+✅ **Resolvido**: Status do usuário atualizado quando membro é deletado
 
 ## Requisitos de Compatibilidade
 

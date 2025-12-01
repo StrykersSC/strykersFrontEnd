@@ -15,6 +15,17 @@ export function useAuth() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Função para salvar sessão (definida primeiro para evitar problemas de dependência)
+  const salvarSessao = useCallback((usuario) => {
+    localStorage.setItem('strykers_user_session', JSON.stringify(usuario));
+    setUsuarioAtual(usuario);
+  }, []);
+
+  const limparSessao = useCallback(() => {
+    localStorage.removeItem('strykers_user_session');
+    setUsuarioAtual(null);
+  }, []);
+
   // Sincronizar com mudanças no localStorage de outras abas/windows
   useEffect(() => {
     const handleStorageChange = () => {
@@ -43,31 +54,23 @@ export function useAuth() {
       const usuarios = JSON.parse(
         localStorage.getItem('strykers_usuarios') || '[]'
       );
-      const usuarioAtualizado = usuarios.find(
-        (u) => u.id === usuarioAtual.id
-      );
+      const usuarioAtualizado = usuarios.find((u) => u.id === usuarioAtual.id);
 
       if (usuarioAtualizado && usuarioAtualizado.nome !== usuarioAtual.nome) {
         const sessaoAtualizada = {
           ...usuarioAtual,
           nome: usuarioAtualizado.nome,
         };
-        salvarSessao(sessaoAtualizada);
+        localStorage.setItem(
+          'strykers_user_session',
+          JSON.stringify(sessaoAtualizada)
+        );
+        setUsuarioAtual(sessaoAtualizada);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [usuarioAtual, salvarSessao]);
-
-  const salvarSessao = useCallback((usuario) => {
-    localStorage.setItem('strykers_user_session', JSON.stringify(usuario));
-    setUsuarioAtual(usuario);
-  }, []);
-
-  const limparSessao = useCallback(() => {
-    localStorage.removeItem('strykers_user_session');
-    setUsuarioAtual(null);
-  }, []);
+  }, [usuarioAtual]); // Removido salvarSessao das dependências
 
   const login = useCallback(
     (email, senha) => {

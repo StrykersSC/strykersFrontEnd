@@ -220,7 +220,7 @@ export default function Administracao() {
   function salvarMembroEdicao(e) {
     e.preventDefault();
     if (!editingMember) return;
-    
+
     // Atualizar membro em strykers_membros
     setMembros((prev) =>
       prev.map((m) => (m.id === editingMember.id ? editingMember : m))
@@ -238,7 +238,7 @@ export default function Administracao() {
         })
       );
     }
-    
+
     setEditingMember(null);
     alert('✅ Membro atualizado com sucesso!');
   }
@@ -259,7 +259,7 @@ export default function Administracao() {
     };
     setRecusados((prev) => [...prev, rec]);
     setMembros((prev) => prev.filter((x) => x.id !== membroId));
-    
+
     // Atualizar status do usuário para 'recusado'
     if (usuario) {
       setUsuarios((prev) =>
@@ -275,7 +275,7 @@ export default function Administracao() {
         })
       );
     }
-    
+
     alert('✅ Membro removido e movido para alistamentos recusados!');
   }
 
