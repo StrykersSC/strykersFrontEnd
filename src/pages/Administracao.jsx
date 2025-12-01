@@ -740,7 +740,7 @@ export default function Administracao() {
 
       {/* Drawer Condecorar */}
       {openCondecorar && (
-        <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-50 overflow-y-auto p-6'>
+        <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-60 overflow-y-auto p-6'>
           <div className='flex justify-between items-center mb-6'>
             <h3 className='text-2xl font-bold text-cyan-400'>CONDECORAR</h3>
             <button
@@ -835,7 +835,7 @@ export default function Administracao() {
 
       {/* Drawer Remover Medalha */}
       {removeCondecoracaoMembro && (
-        <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-40 overflow-y-auto p-6'>
+        <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-70 overflow-y-auto p-6'>
           <div className='flex justify-between items-center mb-6'>
             <h3 className='text-2xl font-bold text-red-400'>
               REMOVER CONDECORAÇÃO
