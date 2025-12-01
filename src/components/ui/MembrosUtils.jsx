@@ -559,3 +559,7 @@ export function mostrarDetalhesMedalhaPublic(tipo, observacoes) {
 export function fecharModalMedalhaPublic() {
   unmount('modal-medalha-perfil-root');
 }
+
+if (typeof window !== 'undefined') {
+  window.mostrarHistoricoMembro = mostrarHistoricoMembro;
+}
