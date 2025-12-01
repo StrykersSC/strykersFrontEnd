@@ -285,26 +285,44 @@ export default function Administracao() {
     setCondecorarObs('');
   }
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   function salvarCondecoracao(e) {
     e.preventDefault();
-    if (!openCondecorar || !condecorarTipo)
+    if (isSubmitting) return; // previne duplo submit
+    setIsSubmitting(true);
+
+    if (!openCondecorar || !condecorarTipo) {
+      setIsSubmitting(false);
       return alert('Selecione uma medalha');
+    }
     setMembros((prev) =>
       prev.map((m) => {
         if (m.id !== openCondecorar) return m;
         const nova = { ...m };
         if (!nova.medalhasDetalhadas) nova.medalhasDetalhadas = [];
-        nova.medalhasDetalhadas.push({
-          id: Date.now(),
-          tipo: condecorarTipo,
-          data: new Date().toISOString().split('T')[0],
-          observacoes: condecorarObs,
-        });
+        // Evita duplicidade exata
+        const jaExiste = nova.medalhasDetalhadas.some(
+          (md) =>
+            md.tipo === condecorarTipo &&
+            md.observacoes === condecorarObs &&
+            md.data === new Date().toISOString().split('T')[0]
+        );
+        if (!jaExiste) {
+          nova.medalhasDetalhadas.push({
+            id: Date.now() + Math.floor(Math.random() * 10000),
+            tipo: condecorarTipo,
+            data: new Date().toISOString().split('T')[0],
+            observacoes: condecorarObs,
+          });
+        }
+        // Sempre atualiza o número de medalhas
         nova.medalhas = nova.medalhasDetalhadas.length;
         return nova;
       })
     );
     setOpenCondecorar(null);
+    setIsSubmitting(false);
     alert('✅ Condecoração aplicada!');
   }
 
@@ -770,6 +788,7 @@ export default function Administracao() {
             <div className='flex gap-4'>
               <button
                 type='submit'
+                disabled={isSubmitting}
                 className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors'
               >
                 ⭐ Condecorar

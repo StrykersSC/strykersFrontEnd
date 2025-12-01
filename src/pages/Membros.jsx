@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   mostrarMedalhasMembro,
   mostrarMissoesMembro,
-} from '../components/membros-utils.js';
+} from '../components/ui/MembrosUtils.jsx';
 
 function formatDate(d) {
   if (!d) return '';

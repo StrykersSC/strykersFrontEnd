@@ -291,8 +291,8 @@ export default function Perfil() {
                       onClick={() =>
                         window.mostrarDetalhesMedalhaNoPerfilPublic &&
                         window.mostrarDetalhesMedalhaNoPerfilPublic(
-                          m.tipo, // ✅ CORRETO: tipo primeiro
-                          m.observacoes || '' // ✅ CORRETO: observações segundo
+                          m.tipo,
+                          m.observacoes || ''
                         )
                       }
                     >
