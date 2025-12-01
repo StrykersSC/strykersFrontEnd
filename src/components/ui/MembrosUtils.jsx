@@ -549,7 +549,7 @@ export function mostrarDetalhesMedalhaPublic(tipo, observacoes) {
       <MedalModal
         medalha={medalha}
         observacoes={observacoes}
-        onClose={() => fecharModalMedalha()}
+        onClose={() => fecharModalMedalhaPublic()}
       />
     ),
     'modal-medalha-perfil-root'

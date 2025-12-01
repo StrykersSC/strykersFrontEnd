@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { mostrarMedalhasMembro } from '../components/ui/MembrosUtils.jsx';
-import { mostrarMissoesMembro } from '../components/ui/MembrosUtils.jsx';
+import {
+  mostrarMedalhasMembro,
+  mostrarMissoesMembro,
+} from '../components/ui/MembrosUtils.jsx';
 import Calendario from '../components/ui/Calendario.jsx';
 import {
   medalhas as MEDALHAS_DISPONIVEIS,

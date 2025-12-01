@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import medalhas from '../constants/medalhas.js';
+import { mostrarDetalhesMedalhaPublic } from '../components/ui/MembrosUtils.jsx';
 
 function getMedalhaInfo(tipo) {
   return (
@@ -240,11 +241,7 @@ export default function Perfil() {
                   key={m.id}
                   className='bg-slate-900/50 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-700/50 transition-all transform hover:scale-105'
                   onClick={() =>
-                    window.mostrarDetalhesMedalhaNoPerfilPublic &&
-                    window.mostrarDetalhesMedalhaNoPerfilPublic(
-                      m.tipo,
-                      m.observacoes || ''
-                    )
+                    mostrarDetalhesMedalhaPublic(m.tipo, m.observacoes || '')
                   }
                 >
                   <img
