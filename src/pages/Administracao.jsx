@@ -220,9 +220,25 @@ export default function Administracao() {
   function salvarMembroEdicao(e) {
     e.preventDefault();
     if (!editingMember) return;
+    
+    // Atualizar membro em strykers_membros
     setMembros((prev) =>
       prev.map((m) => (m.id === editingMember.id ? editingMember : m))
     );
+
+    // Atualizar usuário em strykers_usuarios se o nome foi alterado
+    const membroAnterior = membros.find((m) => m.id === editingMember.id);
+    if (membroAnterior && membroAnterior.nome !== editingMember.nome) {
+      setUsuarios((prev) =>
+        prev.map((u) => {
+          if (u.nome === membroAnterior.nome && u.status === 'aprovado') {
+            return { ...u, nome: editingMember.nome };
+          }
+          return u;
+        })
+      );
+    }
+    
     setEditingMember(null);
     alert('✅ Membro atualizado com sucesso!');
   }
@@ -243,6 +259,23 @@ export default function Administracao() {
     };
     setRecusados((prev) => [...prev, rec]);
     setMembros((prev) => prev.filter((x) => x.id !== membroId));
+    
+    // Atualizar status do usuário para 'recusado'
+    if (usuario) {
+      setUsuarios((prev) =>
+        prev.map((u) => {
+          if (u.id === usuario.id) {
+            return {
+              ...u,
+              status: 'recusado',
+              dataRecusa: new Date().toISOString(),
+            };
+          }
+          return u;
+        })
+      );
+    }
+    
     alert('✅ Membro removido e movido para alistamentos recusados!');
   }
 

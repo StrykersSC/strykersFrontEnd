@@ -35,6 +35,30 @@ export function useAuth() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Sincronizar nome do usuário se for alterado na tabela de usuários
+  useEffect(() => {
+    if (!usuarioAtual) return;
+
+    const interval = setInterval(() => {
+      const usuarios = JSON.parse(
+        localStorage.getItem('strykers_usuarios') || '[]'
+      );
+      const usuarioAtualizado = usuarios.find(
+        (u) => u.id === usuarioAtual.id
+      );
+
+      if (usuarioAtualizado && usuarioAtualizado.nome !== usuarioAtual.nome) {
+        const sessaoAtualizada = {
+          ...usuarioAtual,
+          nome: usuarioAtualizado.nome,
+        };
+        salvarSessao(sessaoAtualizada);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [usuarioAtual, salvarSessao]);
+
   const salvarSessao = useCallback((usuario) => {
     localStorage.setItem('strykers_user_session', JSON.stringify(usuario));
     setUsuarioAtual(usuario);
@@ -54,6 +78,11 @@ export function useAuth() {
 
       if (!usuario) {
         return { success: false, error: '⚠️ E-mail não cadastrado!' };
+      }
+
+      // Check password first (so confirmation modal only shows if email AND password match)
+      if (usuario.senha !== senha) {
+        return { success: false, error: '⚠️ Senha incorreta!' };
       }
 
       if (usuario.status === 'aguardando_confirmacao') {
@@ -79,10 +108,6 @@ export function useAuth() {
           error:
             '❌ Seu cadastro foi recusado. Se não concorda com a decisão, entre em contato via Discord com os responsáveis.',
         };
-      }
-
-      if (usuario.senha !== senha) {
-        return { success: false, error: '⚠️ Senha incorreta!' };
       }
 
       const sessionUser = {
