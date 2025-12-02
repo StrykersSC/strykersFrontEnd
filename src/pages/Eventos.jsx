@@ -619,7 +619,7 @@ export default function Eventos() {
               </span>
               {evento.finalizado ? (
                 <span className='ml-2 inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded'>
-                  ✔ FINALIZADO
+                  ✓ FINALIZADO
                 </span>
               ) : null}
               <h3 className='text-3xl font-bold text-white'>{evento.nome}</h3>
@@ -647,16 +647,6 @@ export default function Eventos() {
                 <h4 className='text-sm text-gray-400'>
                   PARTICIPANTES ({evento.participantes?.length || 0})
                 </h4>
-                {!evento.finalizado ? (
-                  <button
-                    onClick={() =>
-                      window.abrirGerenciarParticipantes(evento.id)
-                    }
-                    className='bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded px-3 py-1'
-                  >
-                    + Gerenciar
-                  </button>
-                ) : null}
               </div>
               <div className='space-y-2 max-h-40 overflow-y-auto'>
                 {evento.participantes && evento.participantes.length > 0 ? (
@@ -675,41 +665,7 @@ export default function Eventos() {
                 )}
               </div>
             </div>
-            <div className='pt-4'>
-              {evento ? (
-                <div className='space-y-2'>
-                  {!evento.finalizado ? (
-                    <>
-                      <button
-                        onClick={() => window.finalizarEvento(evento.id)}
-                        className='w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                      >
-                        ✔ Finalizar Evento
-                      </button>
-                      <button
-                        onClick={() => window.editarEvento(evento.id)}
-                        className='w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded px-6 py-3 transition-colors'
-                      >
-                        ✏️ Editar Evento
-                      </button>
-                      <button
-                        onClick={() => window.excluirEvento(evento.id)}
-                        className='w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                      >
-                        🗑 Excluir Evento
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => window.reabrirEvento(evento.id)}
-                      className='w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                    >
-                      🔓 Reabrir Evento
-                    </button>
-                  )}
-                </div>
-              ) : null}
-            </div>
+            {/* REMOVIDO: Todos os botões de ação (Finalizar, Editar, Excluir, Reabrir, Gerenciar) */}
           </div>
         </div>
       </aside>

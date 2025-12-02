@@ -79,7 +79,6 @@ export default function Calendario({
   }, []);
 
   useEffect(() => {
-    // propagate month change to legacy module if it needs to keep state in sync
     if (typeof onChangeMonth === 'function') onChangeMonth(mes, ano);
   }, [mes, ano, onChangeMonth]);
 
@@ -200,7 +199,10 @@ export default function Calendario({
                           onClick={(e) => {
                             e.stopPropagation();
                             if (window.mostrarDetalhesEvento)
-                              window.mostrarDetalhesEvento(evento.id, modo);
+                              window.mostrarDetalhesEvento(
+                                evento.id,
+                                admin ? 'edicao' : 'visualizacao'
+                              );
                           }}
                         >
                           <div className='font-semibold truncate'>
