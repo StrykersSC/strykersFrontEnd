@@ -112,9 +112,10 @@ export default function EventDetailsSidebar({
               </h4>
               {adminMode && !evento.finalizado && (
                 <button
-                  onClick={() =>
-                    window.abrirGerenciarParticipantes?.(evento.id)
-                  }
+                  onClick={() => {
+                    window.abrirGerenciarParticipantes?.(evento.id);
+                    onClose();
+                  }}
                   className='bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded px-3 py-1'
                 >
                   + Gerenciar
