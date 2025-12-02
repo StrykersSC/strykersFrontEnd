@@ -32,7 +32,7 @@ function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
   );
 }
 
-function DetailsSidebarAdmin({ open, evento, onClose }) {
+function DetailsSidebarAdmin({ open, evento, onClose, onEdit }) {
   if (!open || !evento) return null;
 
   const CATEGORIAS_CORES = {
@@ -169,7 +169,7 @@ function DetailsSidebarAdmin({ open, evento, onClose }) {
                     ✓ Finalizar Evento
                   </button>
                   <button
-                    onClick={() => window.editarEvento(evento.id)}
+                    onClick={() => onEdit(evento)}
                     className='w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded px-6 py-3 transition-colors'
                   >
                     ✏️ Editar Evento
@@ -223,6 +223,8 @@ export default function Administracao() {
   const [filteredMembros, setFilteredMembros] = useState(membros);
   const [selectedEvento, setSelectedEvento] = useState(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [editingEvento, setEditingEvento] = useState(null);
 
   const [editingMember, setEditingMember] = useState(null);
   const [openCondecorar, setOpenCondecorar] = useState(null);
@@ -361,34 +363,6 @@ export default function Administracao() {
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       setSelectedEvento(updated.find((ev) => ev.id === id));
       alert('✅ Evento reaberto! Missões removidas dos participantes.');
-    };
-
-    window.editarEvento = (id) => {
-      const eventos = JSON.parse(
-        localStorage.getItem('strykers_eventos') || '[]'
-      );
-      const evento = eventos.find((ev) => ev.id === id);
-      if (!evento) return;
-
-      // Preencher o formulário
-      document.getElementById('evento-nome').value = evento.nome;
-      document.getElementById('evento-categoria').value = evento.categoria;
-      document.getElementById('evento-data').value = evento.data;
-      document.getElementById('evento-horario').value = evento.horario;
-      document.getElementById('evento-descricao').value = evento.descricao;
-
-      // Atualizar título
-      document.getElementById('sidebar-titulo').textContent = 'EDITAR EVENTO';
-
-      // Modificar o form para modo edição
-      const form = document.getElementById('form-evento');
-      form.dataset.editId = id;
-
-      // Abrir sidebar
-      document
-        .getElementById('evento-sidebar')
-        .classList.remove('translate-x-full');
-      setShowEventDetails(false);
     };
 
     window.excluirEvento = (id) => {
@@ -545,7 +519,6 @@ export default function Administracao() {
     return () => {
       delete window.finalizarEvento;
       delete window.reabrirEvento;
-      delete window.editarEvento;
       delete window.excluirEvento;
       delete window.abrirGerenciarParticipantes;
       delete window.adicionarParticipanteAdmin;
@@ -824,6 +797,18 @@ export default function Administracao() {
       );
   }, []);
 
+  function abrirFormularioEvento() {
+    setEditingEvento(null);
+    setShowEventForm(true);
+    setShowEventDetails(false);
+  }
+
+  function editarEvento(evento) {
+    setEditingEvento(evento);
+    setShowEventForm(true);
+    setShowEventDetails(false);
+  }
+
   return (
     <div className='relative z-10 container mx-auto px-6 py-16'>
       <div className='mb-8 flex justify-between items-center'>
@@ -833,10 +818,7 @@ export default function Administracao() {
           </h2>
         </div>
         <button
-          onClick={() => {
-            const el = document.getElementById('evento-sidebar');
-            if (el) el.classList.remove('translate-x-full');
-          }}
+          onClick={abrirFormularioEvento}
           className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors'
         >
           ➕ Cadastrar Evento
@@ -1360,46 +1342,56 @@ export default function Administracao() {
         </aside>
       )}
 
-      {/* Sidebar de Eventos */}
-      <aside
-        id='evento-sidebar'
-        className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 z-[70] overflow-y-auto'
-      >
-        <div className='p-6'>
-          <div className='flex justify-between items-center mb-6'>
-            <h3
-              className='text-2xl font-bold text-cyan-400'
-              id='sidebar-titulo'
-            >
-              CADASTRAR EVENTO
-            </h3>
-            <button
-              id='close-evento-sidebar'
-              onClick={() => {
-                document
-                  .getElementById('evento-sidebar')
-                  .classList.add('translate-x-full');
+      {/* Sidebar de Formulário de Eventos */}
+      {showEventForm && (
+        <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-[70] overflow-y-auto'>
+          <div className='p-6'>
+            <div className='flex justify-between items-center mb-6'>
+              <h3 className='text-2xl font-bold text-cyan-400'>
+                {editingEvento ? 'EDITAR EVENTO' : 'CADASTRAR EVENTO'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEventForm(false);
+                  setEditingEvento(null);
+                }}
+                className='text-gray-400 hover:text-white text-2xl'
+              >
+                ×
+              </button>
+            </div>
+            <EventForm
+              evento={editingEvento}
+              onClose={() => {
+                setShowEventForm(false);
+                setEditingEvento(null);
               }}
-              className='text-gray-400 hover:text-white text-2xl'
-            >
-              ×
-            </button>
+            />
           </div>
-          <EventForm />
-        </div>
-      </aside>
+        </aside>
+      )}
+
+      {/* Sidebar de Detalhes do Evento */}
       <DetailsSidebarAdmin
         open={showEventDetails}
         evento={selectedEvento}
         onClose={() => setShowEventDetails(false)}
+        onEdit={editarEvento}
       />
 
-      {showEventDetails && (
+      {/* Overlay */}
+      {(showEventDetails || showEventForm) && (
         <div
-          className='fixed inset-0 bg-black/50 z-[70]'
-          onClick={() => setShowEventDetails(false)}
+          className='fixed inset-0 bg-black/50 z-[60]'
+          onClick={() => {
+            setShowEventDetails(false);
+            setShowEventForm(false);
+            setEditingEvento(null);
+          }}
         />
       )}
+
+      {/* Sidebar de Participantes */}
       <aside
         id='participantes-evento-sidebar-admin'
         className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 -translate-x-full transition-transform duration-300 z-[70] overflow-y-auto'
@@ -1633,12 +1625,24 @@ function EditarMembroForm({ membro, onChange, onSave, onCancel }) {
   );
 }
 
-function EventForm() {
-  const [nome, setNome] = useState('');
-  const [categoria, setCategoria] = useState('treinamento');
-  const [data, setData] = useState('');
-  const [horario, setHorario] = useState('20:00');
-  const [descricao, setDescricao] = useState('');
+function EventForm({ evento, onClose }) {
+  const [nome, setNome] = useState(evento?.nome || '');
+  const [categoria, setCategoria] = useState(
+    evento?.categoria || 'treinamento'
+  );
+  const [data, setData] = useState(evento?.data || '');
+  const [horario, setHorario] = useState(evento?.horario || '20:00');
+  const [descricao, setDescricao] = useState(evento?.descricao || '');
+
+  useEffect(() => {
+    if (evento) {
+      setNome(evento.nome);
+      setCategoria(evento.categoria);
+      setData(evento.data);
+      setHorario(evento.horario);
+      setDescricao(evento.descricao);
+    }
+  }, [evento]);
 
   function salvar(e) {
     e.preventDefault();
@@ -1646,12 +1650,10 @@ function EventForm() {
       localStorage.getItem('strykers_eventos') || '[]'
     );
 
-    const editId = e.target.dataset.editId;
-
-    if (editId) {
+    if (evento) {
       // Modo edição
       const updated = eventos.map((ev) => {
-        if (ev.id === parseInt(editId)) {
+        if (ev.id === evento.id) {
           return {
             ...ev,
             nome,
@@ -1664,9 +1666,6 @@ function EventForm() {
         return ev;
       });
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
-      delete e.target.dataset.editId;
-      document.getElementById('sidebar-titulo').textContent =
-        'CADASTRAR EVENTO';
       alert('✅ Evento atualizado com sucesso!');
     } else {
       // Modo criação
@@ -1685,16 +1684,11 @@ function EventForm() {
       alert('✅ Evento cadastrado com sucesso!');
     }
 
-    setNome('');
-    setDescricao('');
-    setData('');
-    setHorario('20:00');
-    setCategoria('treinamento');
-    document.getElementById('evento-sidebar').classList.add('translate-x-full');
+    onClose();
   }
 
   return (
-    <form id='form-evento' onSubmit={salvar} className='space-y-4'>
+    <form onSubmit={salvar} className='space-y-4'>
       <div>
         <label className='block text-gray-400 text-sm mb-2'>
           NOME DO EVENTO *
@@ -1753,16 +1747,16 @@ function EventForm() {
           type='submit'
           className='flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors'
         >
-          ✓ Registrar
+          {evento ? '✏️ Atualizar' : '✓ Registrar'}
         </button>
         <button
           type='button'
-          id='btn-limpar-form'
           onClick={() => {
             setNome('');
             setDescricao('');
             setData('');
             setHorario('20:00');
+            setCategoria('treinamento');
           }}
           className='flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded px-6 py-3 transition-colors'
         >
