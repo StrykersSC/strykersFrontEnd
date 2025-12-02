@@ -274,6 +274,285 @@ export default function Administracao() {
     setFilteredMembros(result);
   }, [membros, filters]);
 
+  useEffect(() => {
+    // Registrar funções globais para eventos
+    window.finalizarEvento = (id) => {
+      if (
+        !confirm(
+          '⚠️ Tem certeza que deseja FINALIZAR este evento?\n\n✅ As missões serão contabilizadas para os participantes'
+        )
+      )
+        return;
+
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const updated = eventos.map((ev) => {
+        if (ev.id === id) return { ...ev, finalizado: true };
+        return ev;
+      });
+
+      // Atualizar membros
+      const evento = updated.find((ev) => ev.id === id);
+      if (evento && evento.participantes && evento.participantes.length > 0) {
+        setMembros((prevMembros) => {
+          const novosMembros = [...prevMembros];
+          evento.participantes.forEach((p) => {
+            const idx = novosMembros.findIndex((m) => m.id === p.id);
+            if (idx !== -1) {
+              novosMembros[idx].eventosParticipados =
+                novosMembros[idx].eventosParticipados || [];
+              novosMembros[idx].eventosParticipados.push({
+                eventoId: evento.id,
+                nome: evento.nome,
+                data: evento.data,
+                categoria: evento.categoria,
+              });
+              novosMembros[idx].missoes =
+                novosMembros[idx].eventosParticipados.length +
+                (novosMembros[idx].valorHistorico || 0);
+            }
+          });
+          return novosMembros;
+        });
+      }
+
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      setSelectedEvento(updated.find((ev) => ev.id === id));
+      alert(
+        '✅ Evento finalizado! Missões contabilizadas para os participantes.'
+      );
+    };
+
+    window.reabrirEvento = (id) => {
+      if (
+        !confirm(
+          '⚠️ Tem certeza que deseja REABRIR este evento?\n\n❌ As missões contabilizadas serão REMOVIDAS dos participantes'
+        )
+      )
+        return;
+
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const evento = eventos.find((ev) => ev.id === id);
+      const updated = eventos.map((ev) =>
+        ev.id === id ? { ...ev, finalizado: false } : ev
+      );
+
+      if (evento && evento.participantes && evento.participantes.length > 0) {
+        setMembros((prevMembros) => {
+          const novosMembros = [...prevMembros];
+          evento.participantes.forEach((p) => {
+            const idx = novosMembros.findIndex((m) => m.id === p.id);
+            if (idx !== -1) {
+              novosMembros[idx].eventosParticipados = (
+                novosMembros[idx].eventosParticipados || []
+              ).filter((e) => e.eventoId !== evento.id);
+              novosMembros[idx].missoes =
+                novosMembros[idx].eventosParticipados.length +
+                (novosMembros[idx].valorHistorico || 0);
+            }
+          });
+          return novosMembros;
+        });
+      }
+
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      setSelectedEvento(updated.find((ev) => ev.id === id));
+      alert('✅ Evento reaberto! Missões removidas dos participantes.');
+    };
+
+    window.editarEvento = (id) => {
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const evento = eventos.find((ev) => ev.id === id);
+      if (!evento) return;
+
+      // Preencher o formulário
+      document.getElementById('evento-nome').value = evento.nome;
+      document.getElementById('evento-categoria').value = evento.categoria;
+      document.getElementById('evento-data').value = evento.data;
+      document.getElementById('evento-horario').value = evento.horario;
+      document.getElementById('evento-descricao').value = evento.descricao;
+
+      // Atualizar título
+      document.getElementById('sidebar-titulo').textContent = 'EDITAR EVENTO';
+
+      // Modificar o form para modo edição
+      const form = document.getElementById('form-evento');
+      form.dataset.editId = id;
+
+      // Abrir sidebar
+      document
+        .getElementById('evento-sidebar')
+        .classList.remove('translate-x-full');
+      setShowEventDetails(false);
+    };
+
+    window.excluirEvento = (id) => {
+      if (!confirm('⚠️ Tem certeza que deseja excluir este evento?')) return;
+
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const updated = eventos.filter((ev) => ev.id !== id);
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      setShowEventDetails(false);
+      alert('✅ Evento excluído com sucesso!');
+    };
+
+    window.abrirGerenciarParticipantes = (id) => {
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const evento = eventos.find((ev) => ev.id === id);
+      if (!evento) return;
+
+      // Abrir sidebar de participantes
+      const sidebar = document.getElementById(
+        'participantes-evento-sidebar-admin'
+      );
+      if (sidebar) {
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.dataset.eventoId = id;
+
+        // Atualizar lista de participantes
+        atualizarListaParticipantes(evento);
+      }
+    };
+
+    function atualizarListaParticipantes(evento) {
+      const listaParticipantes = document.getElementById(
+        'lista-participantes-evento-admin'
+      );
+      const listaMembros = document.getElementById(
+        'lista-membros-disponiveis-admin'
+      );
+
+      if (!listaParticipantes || !listaMembros) return;
+
+      // Renderizar participantes
+      if (evento.participantes && evento.participantes.length > 0) {
+        listaParticipantes.innerHTML = evento.participantes
+          .map(
+            (p) => `
+        <div class="bg-slate-800 rounded px-4 py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img src="${p.foto}" alt="${p.nome}" class="w-10 h-10 rounded-full" />
+            <div>
+              <div class="text-white font-semibold">${p.nome}</div>
+              <div class="text-gray-400 text-sm">${p.patente}</div>
+            </div>
+          </div>
+          <button onclick="removerParticipanteAdmin('${p.id}')" class="text-red-400 hover:text-red-300 text-xl">×</button>
+        </div>
+      `
+          )
+          .join('');
+      } else {
+        listaParticipantes.innerHTML =
+          '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
+      }
+
+      // Renderizar membros disponíveis
+      const participantesIds = evento.participantes?.map((p) => p.id) || [];
+      const membrosAtivos = membros.filter(
+        (m) => m.situacao === 'Ativo' && !participantesIds.includes(m.id)
+      );
+
+      if (membrosAtivos.length > 0) {
+        listaMembros.innerHTML = membrosAtivos
+          .map(
+            (m) => `
+        <div class="membro-item bg-slate-800 hover:bg-slate-700 rounded px-4 py-3 cursor-pointer transition-colors flex items-center gap-3"
+             onclick="adicionarParticipanteAdmin('${m.id}')"
+             data-nome="${m.nome.toLowerCase()}">
+          <img src="${m.foto}" alt="${m.nome}" class="w-10 h-10 rounded-full" />
+          <div>
+            <div class="text-white font-semibold">${m.nome}</div>
+            <div class="text-gray-400 text-sm">${m.patente}</div>
+          </div>
+        </div>
+      `
+          )
+          .join('');
+      } else {
+        listaMembros.innerHTML =
+          '<p class="text-gray-500 text-center py-4">Todos os membros ativos já foram adicionados</p>';
+      }
+    }
+
+    window.adicionarParticipanteAdmin = (membroId) => {
+      const sidebar = document.getElementById(
+        'participantes-evento-sidebar-admin'
+      );
+      const eventoId = parseInt(sidebar?.dataset.eventoId);
+      if (!eventoId) return;
+
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const membro = membros.find((m) => m.id === membroId);
+      if (!membro) return;
+
+      const updated = eventos.map((ev) => {
+        if (ev.id === eventoId) {
+          const participantes = ev.participantes ? [...ev.participantes] : [];
+          participantes.push({
+            id: membro.id,
+            nome: membro.nome,
+            foto: membro.foto,
+            patente: membro.patente,
+          });
+          return { ...ev, participantes };
+        }
+        return ev;
+      });
+
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      const eventoAtualizado = updated.find((ev) => ev.id === eventoId);
+      atualizarListaParticipantes(eventoAtualizado);
+    };
+
+    window.removerParticipanteAdmin = (membroId) => {
+      const sidebar = document.getElementById(
+        'participantes-evento-sidebar-admin'
+      );
+      const eventoId = parseInt(sidebar?.dataset.eventoId);
+      if (!eventoId) return;
+
+      const eventos = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const updated = eventos.map((ev) => {
+        if (ev.id === eventoId) {
+          const participantes = (ev.participantes || []).filter(
+            (p) => p.id !== membroId
+          );
+          return { ...ev, participantes };
+        }
+        return ev;
+      });
+
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      const eventoAtualizado = updated.find((ev) => ev.id === eventoId);
+      atualizarListaParticipantes(eventoAtualizado);
+    };
+
+    // Cleanup
+    return () => {
+      delete window.finalizarEvento;
+      delete window.reabrirEvento;
+      delete window.editarEvento;
+      delete window.excluirEvento;
+      delete window.abrirGerenciarParticipantes;
+      delete window.adicionarParticipanteAdmin;
+      delete window.removerParticipanteAdmin;
+    };
+  }, [membros, setMembros]);
+
   function aplicarFiltros(changes) {
     setFilters((f) => ({ ...f, ...changes }));
   }
@@ -1121,6 +1400,62 @@ export default function Administracao() {
           onClick={() => setShowEventDetails(false)}
         />
       )}
+      <aside
+        id='participantes-evento-sidebar-admin'
+        className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 -translate-x-full transition-transform duration-300 z-[70] overflow-y-auto'
+      >
+        <div className='p-6'>
+          <div className='flex justify-between items-center mb-6'>
+            <h3 className='text-2xl font-bold text-cyan-400'>
+              GERENCIAR PARTICIPANTES
+            </h3>
+            <button
+              onClick={() => {
+                document
+                  .getElementById('participantes-evento-sidebar-admin')
+                  .classList.add('-translate-x-full');
+              }}
+              className='text-gray-400 hover:text-white text-2xl'
+            >
+              ×
+            </button>
+          </div>
+
+          <div className='mb-6'>
+            <h4 className='text-sm text-gray-400 mb-3'>
+              PARTICIPANTES ADICIONADOS
+            </h4>
+            <div
+              id='lista-participantes-evento-admin'
+              className='space-y-2 max-h-60 overflow-y-auto'
+            />
+          </div>
+
+          <div>
+            <h4 className='text-sm text-gray-400 mb-3'>ADICIONAR MEMBRO</h4>
+            <input
+              type='text'
+              id='search-membro-participante-admin'
+              placeholder='Buscar membro ativo...'
+              className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 mb-3'
+              onInput={(e) => {
+                const search = e.target.value.toLowerCase();
+                const items = document.querySelectorAll(
+                  '#lista-membros-disponiveis-admin .membro-item'
+                );
+                items.forEach((item) => {
+                  const nome = item.dataset.nome;
+                  item.style.display = nome.includes(search) ? 'flex' : 'none';
+                });
+              }}
+            />
+            <div
+              id='lista-membros-disponiveis-admin'
+              className='space-y-2 max-h-96 overflow-y-auto'
+            />
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
@@ -1310,22 +1645,52 @@ function EventForm() {
     const eventos = JSON.parse(
       localStorage.getItem('strykers_eventos') || '[]'
     );
-    const novo = {
-      id: Date.now(),
-      nome,
-      categoria,
-      data,
-      horario,
-      descricao,
-      participantes: [],
-      finalizado: false,
-    };
-    eventos.push(novo);
-    localStorage.setItem('strykers_eventos', JSON.stringify(eventos));
+
+    const editId = e.target.dataset.editId;
+
+    if (editId) {
+      // Modo edição
+      const updated = eventos.map((ev) => {
+        if (ev.id === parseInt(editId)) {
+          return {
+            ...ev,
+            nome,
+            categoria,
+            data,
+            horario,
+            descricao,
+          };
+        }
+        return ev;
+      });
+      localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      delete e.target.dataset.editId;
+      document.getElementById('sidebar-titulo').textContent =
+        'CADASTRAR EVENTO';
+      alert('✅ Evento atualizado com sucesso!');
+    } else {
+      // Modo criação
+      const novo = {
+        id: Date.now(),
+        nome,
+        categoria,
+        data,
+        horario,
+        descricao,
+        participantes: [],
+        finalizado: false,
+      };
+      eventos.push(novo);
+      localStorage.setItem('strykers_eventos', JSON.stringify(eventos));
+      alert('✅ Evento cadastrado com sucesso!');
+    }
+
     setNome('');
     setDescricao('');
     setData('');
     setHorario('20:00');
+    setCategoria('treinamento');
+    document.getElementById('evento-sidebar').classList.add('translate-x-full');
   }
 
   return (
