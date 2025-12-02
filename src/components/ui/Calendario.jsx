@@ -71,11 +71,18 @@ export default function Calendario({
     JSON.parse(localStorage.getItem('strykers_eventos') || '[]')
   );
 
+  // ✅ Sincronizar eventos do localStorage
   useEffect(() => {
     const onStorage = () =>
       setEventos(JSON.parse(localStorage.getItem('strykers_eventos') || '[]'));
+
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    document.addEventListener('eventos:updated', onStorage);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('eventos:updated', onStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -113,6 +120,20 @@ export default function Calendario({
     });
   }
 
+  // ✅ Função para abrir detalhes do evento
+  function abrirDetalhesEvento(eventoId) {
+    console.log('🔵 Abrindo detalhes do evento:', eventoId);
+
+    const event = new CustomEvent('eventos:mostrarDetalhes', {
+      detail: { id: eventoId },
+      bubbles: true,
+      composed: true,
+    });
+
+    document.dispatchEvent(event);
+    console.log('✅ Evento disparado:', event);
+  }
+
   const dias = [];
   for (let i = 0; i < primeiroDia; i++) dias.push(null);
   for (let d = 1; d <= ultimoDia; d++) dias.push(d);
@@ -121,6 +142,7 @@ export default function Calendario({
 
   return (
     <div>
+      {/* CABEÇALHO DO CALENDÁRIO */}
       <div className='flex justify-between items-center mb-6'>
         <button
           id={btnAnteriorId}
@@ -141,7 +163,9 @@ export default function Calendario({
         </button>
       </div>
 
+      {/* GRID DO CALENDÁRIO */}
       <div className='grid grid-cols-7 gap-2'>
+        {/* DIAS DA SEMANA */}
         <div className='text-center text-cyan-400 font-semibold py-2'>DOM</div>
         <div className='text-center text-cyan-400 font-semibold py-2'>SEG</div>
         <div className='text-center text-cyan-400 font-semibold py-2'>TER</div>
@@ -150,6 +174,7 @@ export default function Calendario({
         <div className='text-center text-cyan-400 font-semibold py-2'>SEX</div>
         <div className='text-center text-cyan-400 font-semibold py-2'>SÁB</div>
 
+        {/* DIAS DO MÊS */}
         <div id={diasId} className='col-span-7 grid grid-cols-7 gap-2'>
           {dias.map((dia, idx) => {
             if (dia === null)
@@ -159,6 +184,7 @@ export default function Calendario({
                   className='min-h-[120px] bg-slate-700/30 rounded-lg'
                 />
               );
+
             const dataCompleta = `${ano}-${String(mes + 1).padStart(
               2,
               '0'
@@ -198,11 +224,7 @@ export default function Calendario({
                           className={`text-xs ${cores.text} bg-slate-900/50 px-2 py-1 rounded border-l-2 ${cores.border} cursor-pointer hover:bg-slate-900 transition-colors ${finalizadoStyle}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (window.mostrarDetalhesEvento)
-                              window.mostrarDetalhesEvento(
-                                evento.id,
-                                admin ? 'edicao' : 'visualizacao'
-                              );
+                            abrirDetalhesEvento(evento.id);
                           }}
                         >
                           <div className='font-semibold truncate'>
@@ -222,6 +244,19 @@ export default function Calendario({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* ✅ LEGENDA */}
+      <div className='mt-6 pt-6 border-t border-slate-700'>
+        <h4 className='text-sm text-gray-400 mb-3 font-semibold'>LEGENDA</h4>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
+          {Object.entries(CATEGORIAS_CORES).map(([key, value]) => (
+            <div key={key} className='flex items-center gap-2'>
+              <div className={`w-4 h-4 ${value.bg} rounded`} />
+              <span className='text-sm text-gray-300'>{value.nome}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

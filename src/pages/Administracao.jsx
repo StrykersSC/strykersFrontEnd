@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   mostrarMedalhasMembro,
   mostrarMissoesMembro,
 } from '../components/ui/MembrosUtils.jsx';
 import Calendario from '../components/ui/Calendario.jsx';
+import EventDetailsSidebar from '../components/ui/EventDetailsSidebar.jsx';
 import {
   medalhas as MEDALHAS_DISPONIVEIS,
   patentes as PATENTES,
@@ -13,6 +14,7 @@ import {
 // Modal para exibir texto (observações/histórico)
 function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
   if (!isOpen) return null;
+
   return (
     <div className='fixed inset-0 z-[100] flex items-center justify-center'>
       <div className='absolute inset-0 bg-black/70' onClick={onClose} />
@@ -29,171 +31,6 @@ function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function DetailsSidebarAdmin({ open, evento, onClose, onEdit }) {
-  if (!open || !evento) return null;
-
-  const CATEGORIAS_CORES = {
-    treinamento: {
-      bg: 'bg-green-500',
-      text: 'text-green-400',
-      border: 'border-green-500',
-      nome: 'Treinamento',
-    },
-    missao: {
-      bg: 'bg-yellow-500',
-      text: 'text-yellow-400',
-      border: 'border-yellow-500',
-      nome: 'Missão',
-    },
-    operacao: {
-      bg: 'bg-orange-500',
-      text: 'text-orange-400',
-      border: 'border-orange-500',
-      nome: 'Operação',
-    },
-    'mega-operacao': {
-      bg: 'bg-red-500',
-      text: 'text-red-400',
-      border: 'border-red-500',
-      nome: 'Mega Operação',
-    },
-    campanha: {
-      bg: 'bg-purple-500',
-      text: 'text-purple-400',
-      border: 'border-purple-500',
-      nome: 'Campanha',
-    },
-    outro: {
-      bg: 'bg-blue-500',
-      text: 'text-blue-400',
-      border: 'border-blue-500',
-      nome: 'Outro',
-    },
-  };
-
-  const cores = CATEGORIAS_CORES[evento.categoria] || CATEGORIAS_CORES.outro;
-  const dataEvento = new Date(evento.data + 'T00:00:00');
-  const dataFormatada = dataEvento.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-
-  return (
-    <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-[80] overflow-y-auto'>
-      <div className='p-6'>
-        <div className='flex justify-between items-center mb-6'>
-          <h3 className='text-2xl font-bold text-cyan-400'>
-            DETALHES DO EVENTO
-          </h3>
-          <button
-            className='text-gray-400 hover:text-white text-2xl'
-            onClick={() => onClose()}
-          >
-            ×
-          </button>
-        </div>
-        <div className='space-y-6'>
-          <div>
-            <span
-              className={`inline-block px-3 py-1 ${cores.bg} text-slate-900 text-sm font-semibold rounded mb-3`}
-            >
-              {cores.nome}
-            </span>
-            {evento.finalizado ? (
-              <span className='ml-2 inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded'>
-                ✓ FINALIZADO
-              </span>
-            ) : null}
-            <h3 className='text-3xl font-bold text-white'>{evento.nome}</h3>
-          </div>
-          <div className='border-t border-slate-700 pt-4'>
-            <div className='flex items-center gap-2 mb-2'>
-              <span className='text-cyan-400'>📅</span>
-              <span className='text-gray-300 capitalize'>{dataFormatada}</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='text-cyan-400'>🕐</span>
-              <span className='text-gray-300'>{evento.horario}</span>
-            </div>
-          </div>
-          <div className='border-t border-slate-700 pt-4'>
-            <h4 className='text-sm text-gray-400 mb-2'>DESCRIÇÃO</h4>
-            <p className='text-gray-300 leading-relaxed whitespace-pre-wrap'>
-              {evento.descricao}
-            </p>
-          </div>
-          <div className='border-t border-slate-700 pt-4'>
-            <div className='flex justify-between items-center mb-3'>
-              <h4 className='text-sm text-gray-400'>
-                PARTICIPANTES ({evento.participantes?.length || 0})
-              </h4>
-              {!evento.finalizado ? (
-                <button
-                  onClick={() => window.abrirGerenciarParticipantes(evento.id)}
-                  className='bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded px-3 py-1'
-                >
-                  + Gerenciar
-                </button>
-              ) : null}
-            </div>
-            <div className='space-y-2 max-h-40 overflow-y-auto'>
-              {evento.participantes && evento.participantes.length > 0 ? (
-                evento.participantes.map((p) => (
-                  <div
-                    key={p.id}
-                    className='bg-slate-800 rounded px-3 py-2 text-gray-300 text-sm'
-                  >
-                    {p.nome}
-                  </div>
-                ))
-              ) : (
-                <p className='text-gray-500 text-sm'>
-                  Nenhum participante registrado
-                </p>
-              )}
-            </div>
-          </div>
-          <div className='pt-4'>
-            <div className='space-y-2'>
-              {!evento.finalizado ? (
-                <>
-                  <button
-                    onClick={() => window.finalizarEvento(evento.id)}
-                    className='w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                  >
-                    ✓ Finalizar Evento
-                  </button>
-                  <button
-                    onClick={() => onEdit(evento)}
-                    className='w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded px-6 py-3 transition-colors'
-                  >
-                    ✏️ Editar Evento
-                  </button>
-                  <button
-                    onClick={() => window.excluirEvento(evento.id)}
-                    className='w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                  >
-                    🗑 Excluir Evento
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => window.reabrirEvento(evento.id)}
-                  className='w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-                >
-                  🔓 Reabrir Evento
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
   );
 }
 
@@ -220,12 +57,12 @@ export default function Administracao() {
     forca: '',
     data: '',
   });
+
   const [filteredMembros, setFilteredMembros] = useState(membros);
   const [selectedEvento, setSelectedEvento] = useState(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvento, setEditingEvento] = useState(null);
-
   const [editingMember, setEditingMember] = useState(null);
   const [openCondecorar, setOpenCondecorar] = useState(null);
   const [condecorarTipo, setCondecorarTipo] = useState('');
@@ -237,6 +74,7 @@ export default function Administracao() {
   });
   const [removeCondecoracaoMembro, setRemoveCondecoracaoMembro] =
     useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(
@@ -276,8 +114,103 @@ export default function Administracao() {
     setFilteredMembros(result);
   }, [membros, filters]);
 
+  // ✅ Listener para abrir detalhes do evento
   useEffect(() => {
-    // Registrar funções globais para eventos
+    function handleMostrarDetalhes(e) {
+      const { id } = e.detail || {};
+      if (!id) return;
+
+      // Buscar evento atualizado do localStorage
+      const eventosAtuais = JSON.parse(
+        localStorage.getItem('strykers_eventos') || '[]'
+      );
+      const found = eventosAtuais.find((ev) => ev.id === id);
+
+      if (found) {
+        setSelectedEvento(found);
+        setShowEventDetails(true);
+        setShowEventForm(false);
+      }
+    }
+
+    document.addEventListener('eventos:mostrarDetalhes', handleMostrarDetalhes);
+
+    return () => {
+      document.removeEventListener(
+        'eventos:mostrarDetalhes',
+        handleMostrarDetalhes
+      );
+    };
+  }, []);
+
+  const atualizarListaParticipantes = useCallback(
+    (evento) => {
+      const listaParticipantes = document.getElementById(
+        'lista-participantes-evento-admin'
+      );
+      const listaMembros = document.getElementById(
+        'lista-membros-disponiveis-admin'
+      );
+
+      if (!listaParticipantes || !listaMembros) return;
+
+      // Renderizar participantes
+      if (evento.participantes && evento.participantes.length > 0) {
+        listaParticipantes.innerHTML = evento.participantes
+          .map(
+            (p) => `
+          <div class="bg-slate-800 rounded px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${p.foto}" alt="${p.nome}" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="text-white font-semibold">${p.nome}</div>
+                <div class="text-gray-400 text-sm">${p.patente}</div>
+              </div>
+            </div>
+            <button onclick="removerParticipanteAdmin('${p.id}')" class="text-red-400 hover:text-red-300 text-xl">×</button>
+          </div>
+        `
+          )
+          .join('');
+      } else {
+        listaParticipantes.innerHTML =
+          '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
+      }
+
+      // Renderizar membros disponíveis
+      const participantesIds = evento.participantes?.map((p) => p.id) || [];
+      const membrosAtivos = membros.filter(
+        (m) => m.situacao === 'Ativo' && !participantesIds.includes(m.id)
+      );
+
+      if (membrosAtivos.length > 0) {
+        listaMembros.innerHTML = membrosAtivos
+          .map(
+            (m) => `
+          <div class="membro-item bg-slate-800 hover:bg-slate-700 rounded px-4 py-3 cursor-pointer transition-colors flex items-center gap-3"
+               onclick="adicionarParticipanteAdmin('${m.id}')"
+               data-nome="${m.nome.toLowerCase()}">
+            <img src="${m.foto}" alt="${
+              m.nome
+            }" class="w-10 h-10 rounded-full" />
+            <div>
+              <div class="text-white font-semibold">${m.nome}</div>
+              <div class="text-gray-400 text-sm">${m.patente}</div>
+            </div>
+          </div>
+        `
+          )
+          .join('');
+      } else {
+        listaMembros.innerHTML =
+          '<p class="text-gray-500 text-center py-4">Todos os membros ativos já foram adicionados</p>';
+      }
+    },
+    [membros]
+  );
+
+  useEffect(() => {
+    // ✅ Registrar funções globais para eventos
     window.finalizarEvento = (id) => {
       if (
         !confirm(
@@ -286,10 +219,10 @@ export default function Administracao() {
       )
         return;
 
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
-      const updated = eventos.map((ev) => {
+      const updated = eventosAtuais.map((ev) => {
         if (ev.id === id) return { ...ev, finalizado: true };
         return ev;
       });
@@ -321,6 +254,7 @@ export default function Administracao() {
 
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       setSelectedEvento(updated.find((ev) => ev.id === id));
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert(
         '✅ Evento finalizado! Missões contabilizadas para os participantes.'
       );
@@ -334,11 +268,11 @@ export default function Administracao() {
       )
         return;
 
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
-      const evento = eventos.find((ev) => ev.id === id);
-      const updated = eventos.map((ev) =>
+      const evento = eventosAtuais.find((ev) => ev.id === id);
+      const updated = eventosAtuais.map((ev) =>
         ev.id === id ? { ...ev, finalizado: false } : ev
       );
 
@@ -362,26 +296,29 @@ export default function Administracao() {
 
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       setSelectedEvento(updated.find((ev) => ev.id === id));
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert('✅ Evento reaberto! Missões removidas dos participantes.');
     };
 
     window.excluirEvento = (id) => {
       if (!confirm('⚠️ Tem certeza que deseja excluir este evento?')) return;
 
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
-      const updated = eventos.filter((ev) => ev.id !== id);
+      const updated = eventosAtuais.filter((ev) => ev.id !== id);
+
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       setShowEventDetails(false);
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert('✅ Evento excluído com sucesso!');
     };
 
     window.abrirGerenciarParticipantes = (id) => {
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
-      const evento = eventos.find((ev) => ev.id === id);
+      const evento = eventosAtuais.find((ev) => ev.id === id);
       if (!evento) return;
 
       // Abrir sidebar de participantes
@@ -397,67 +334,6 @@ export default function Administracao() {
       }
     };
 
-    function atualizarListaParticipantes(evento) {
-      const listaParticipantes = document.getElementById(
-        'lista-participantes-evento-admin'
-      );
-      const listaMembros = document.getElementById(
-        'lista-membros-disponiveis-admin'
-      );
-
-      if (!listaParticipantes || !listaMembros) return;
-
-      // Renderizar participantes
-      if (evento.participantes && evento.participantes.length > 0) {
-        listaParticipantes.innerHTML = evento.participantes
-          .map(
-            (p) => `
-        <div class="bg-slate-800 rounded px-4 py-3 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <img src="${p.foto}" alt="${p.nome}" class="w-10 h-10 rounded-full" />
-            <div>
-              <div class="text-white font-semibold">${p.nome}</div>
-              <div class="text-gray-400 text-sm">${p.patente}</div>
-            </div>
-          </div>
-          <button onclick="removerParticipanteAdmin('${p.id}')" class="text-red-400 hover:text-red-300 text-xl">×</button>
-        </div>
-      `
-          )
-          .join('');
-      } else {
-        listaParticipantes.innerHTML =
-          '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
-      }
-
-      // Renderizar membros disponíveis
-      const participantesIds = evento.participantes?.map((p) => p.id) || [];
-      const membrosAtivos = membros.filter(
-        (m) => m.situacao === 'Ativo' && !participantesIds.includes(m.id)
-      );
-
-      if (membrosAtivos.length > 0) {
-        listaMembros.innerHTML = membrosAtivos
-          .map(
-            (m) => `
-        <div class="membro-item bg-slate-800 hover:bg-slate-700 rounded px-4 py-3 cursor-pointer transition-colors flex items-center gap-3"
-             onclick="adicionarParticipanteAdmin('${m.id}')"
-             data-nome="${m.nome.toLowerCase()}">
-          <img src="${m.foto}" alt="${m.nome}" class="w-10 h-10 rounded-full" />
-          <div>
-            <div class="text-white font-semibold">${m.nome}</div>
-            <div class="text-gray-400 text-sm">${m.patente}</div>
-          </div>
-        </div>
-      `
-          )
-          .join('');
-      } else {
-        listaMembros.innerHTML =
-          '<p class="text-gray-500 text-center py-4">Todos os membros ativos já foram adicionados</p>';
-      }
-    }
-
     window.adicionarParticipanteAdmin = (membroId) => {
       const sidebar = document.getElementById(
         'participantes-evento-sidebar-admin'
@@ -465,13 +341,13 @@ export default function Administracao() {
       const eventoId = parseInt(sidebar?.dataset.eventoId);
       if (!eventoId) return;
 
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
       const membro = membros.find((m) => m.id === membroId);
       if (!membro) return;
 
-      const updated = eventos.map((ev) => {
+      const updated = eventosAtuais.map((ev) => {
         if (ev.id === eventoId) {
           const participantes = ev.participantes ? [...ev.participantes] : [];
           participantes.push({
@@ -488,6 +364,7 @@ export default function Administracao() {
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       const eventoAtualizado = updated.find((ev) => ev.id === eventoId);
       atualizarListaParticipantes(eventoAtualizado);
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
     };
 
     window.removerParticipanteAdmin = (membroId) => {
@@ -497,10 +374,11 @@ export default function Administracao() {
       const eventoId = parseInt(sidebar?.dataset.eventoId);
       if (!eventoId) return;
 
-      const eventos = JSON.parse(
+      const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
-      const updated = eventos.map((ev) => {
+
+      const updated = eventosAtuais.map((ev) => {
         if (ev.id === eventoId) {
           const participantes = (ev.participantes || []).filter(
             (p) => p.id !== membroId
@@ -513,6 +391,7 @@ export default function Administracao() {
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
       const eventoAtualizado = updated.find((ev) => ev.id === eventoId);
       atualizarListaParticipantes(eventoAtualizado);
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
     };
 
     // Cleanup
@@ -524,7 +403,7 @@ export default function Administracao() {
       delete window.adicionarParticipanteAdmin;
       delete window.removerParticipanteAdmin;
     };
-  }, [membros, setMembros]);
+  }, [membros, setMembros, atualizarListaParticipantes]);
 
   function aplicarFiltros(changes) {
     setFilters((f) => ({ ...f, ...changes }));
@@ -536,8 +415,10 @@ export default function Administracao() {
 
   function aprovarAlistamento(id) {
     if (!confirm('✅ Confirma a aprovação deste alistamento?')) return;
+
     const index = pendentes.findIndex((p) => p.id === id);
     if (index === -1) return;
+
     const alistamento = pendentes[index];
     const novoMembro = {
       id: alistamento.id + '-' + Date.now(),
@@ -558,6 +439,7 @@ export default function Administracao() {
       valorHistorico: 0,
       medalhasDetalhadas: [],
     };
+
     setMembros((prev) => [...prev, novoMembro]);
     setUsuarios((prev) =>
       prev.map((u) => {
@@ -571,15 +453,19 @@ export default function Administracao() {
       })
     );
     setPendentes((prev) => prev.filter((p) => p.id !== id));
+
     alert('✅ Alistamento aprovado! Membro adicionado ao sistema.');
   }
 
   function recusarAlistamento(id) {
     if (!confirm('❌ Confirma a recusa deste alistamento?')) return;
+
     const index = pendentes.findIndex((p) => p.id === id);
     if (index === -1) return;
+
     const alistamento = pendentes[index];
     const recus = { ...alistamento, dataRecusa: new Date().toISOString() };
+
     setRecusados((prev) => [...prev, recus]);
     setUsuarios((prev) =>
       prev.map((u) => {
@@ -593,6 +479,7 @@ export default function Administracao() {
       })
     );
     setPendentes((prev) => prev.filter((p) => p.id !== id));
+
     alert('❌ Alistamento recusado!');
   }
 
@@ -603,12 +490,15 @@ export default function Administracao() {
       )
     )
       return;
+
     const index = recusados.findIndex((r) => r.id === id);
     if (index === -1) return;
+
     const alist = {
       ...recusados[index],
       dataSolicitacao: new Date().toISOString(),
     };
+
     setPendentes((prev) => [...prev, alist]);
     setRecusados((prev) => prev.filter((r) => r.id !== id));
     setUsuarios((prev) =>
@@ -617,6 +507,7 @@ export default function Administracao() {
         return u;
       })
     );
+
     alert('✅ Alistamento devolvido para lista de pendentes!');
   }
 
@@ -627,8 +518,10 @@ export default function Administracao() {
       )
     )
       return;
+
     setRecusados((prev) => prev.filter((r) => r.id !== id));
     setUsuarios((prev) => prev.filter((u) => u.id !== id));
+
     alert('✅ Alistamento excluído permanentemente!');
   }
 
@@ -642,12 +535,10 @@ export default function Administracao() {
     e.preventDefault();
     if (!editingMember) return;
 
-    // Atualizar membro em strykers_membros
     setMembros((prev) =>
       prev.map((m) => (m.id === editingMember.id ? editingMember : m))
     );
 
-    // Atualizar usuário em strykers_usuarios se o nome foi alterado
     const membroAnterior = membros.find((m) => m.id === editingMember.id);
     if (membroAnterior && membroAnterior.nome !== editingMember.nome) {
       setUsuarios((prev) =>
@@ -666,8 +557,10 @@ export default function Administracao() {
 
   function excluirMembro(membroId) {
     if (!confirm('⚠️ Tem certeza que deseja remover este membro?')) return;
+
     const m = membros.find((mm) => mm.id === membroId);
     if (!m) return;
+
     const usuario = usuarios.find((u) => u.nome === m.nome);
     const rec = {
       id: usuario?.id || m.id,
@@ -678,10 +571,10 @@ export default function Administracao() {
       dataRecusa: new Date().toISOString(),
       usuarioCompleto: usuario,
     };
+
     setRecusados((prev) => [...prev, rec]);
     setMembros((prev) => prev.filter((x) => x.id !== membroId));
 
-    // Atualizar status do usuário para 'recusado'
     if (usuario) {
       setUsuarios((prev) =>
         prev.map((u) => {
@@ -706,29 +599,30 @@ export default function Administracao() {
     setCondecorarObs('');
   }
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   function salvarCondecoracao(e) {
     e.preventDefault();
-    if (isSubmitting) return; // previne duplo submit
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     if (!openCondecorar || !condecorarTipo) {
       setIsSubmitting(false);
       return alert('Selecione uma medalha');
     }
+
     setMembros((prev) =>
       prev.map((m) => {
         if (m.id !== openCondecorar) return m;
+
         const nova = { ...m };
         if (!nova.medalhasDetalhadas) nova.medalhasDetalhadas = [];
-        // Evita duplicidade exata
+
         const jaExiste = nova.medalhasDetalhadas.some(
           (md) =>
             md.tipo === condecorarTipo &&
             md.observacoes === condecorarObs &&
             md.data === new Date().toISOString().split('T')[0]
         );
+
         if (!jaExiste) {
           nova.medalhasDetalhadas.push({
             id: Date.now() + Math.floor(Math.random() * 10000),
@@ -737,11 +631,12 @@ export default function Administracao() {
             observacoes: condecorarObs,
           });
         }
-        // Sempre atualiza o número de medalhas
+
         nova.medalhas = nova.medalhasDetalhadas.length;
         return nova;
       })
     );
+
     setOpenCondecorar(null);
     setIsSubmitting(false);
     alert('✅ Condecoração aplicada!');
@@ -749,9 +644,11 @@ export default function Administracao() {
 
   function removerMedalha(membroId, medalhaId) {
     if (!confirm('⚠️ Confirma a remoção desta medalha?')) return;
+
     setMembros((prev) =>
       prev.map((m) => {
         if (m.id !== membroId) return m;
+
         const nova = { ...m };
         if (nova.medalhasDetalhadas) {
           nova.medalhasDetalhadas = nova.medalhasDetalhadas.filter(
@@ -762,6 +659,7 @@ export default function Administracao() {
         return nova;
       })
     );
+
     setRemoveCondecoracaoMembro(null);
     alert('✅ Medalha removida!');
   }
@@ -770,32 +668,12 @@ export default function Administracao() {
     () => [...new Set(membros.map((m) => m.patente).filter(Boolean))].sort(),
     [membros]
   );
+
   const forcas = useMemo(
     () =>
       [...new Set(membros.map((m) => m.forcaEspecial).filter(Boolean))].sort(),
     [membros]
   );
-
-  useEffect(() => {
-    function handleMostrarDetalhes(e) {
-      const { id } = e.detail || {};
-      const eventos = JSON.parse(
-        localStorage.getItem('strykers_eventos') || '[]'
-      );
-      const found = eventos.find((ev) => ev.id === id);
-      if (found) {
-        setSelectedEvento(found);
-        setShowEventDetails(true);
-      }
-    }
-
-    document.addEventListener('eventos:mostrarDetalhes', handleMostrarDetalhes);
-    return () =>
-      document.removeEventListener(
-        'eventos:mostrarDetalhes',
-        handleMostrarDetalhes
-      );
-  }, []);
 
   function abrirFormularioEvento() {
     setEditingEvento(null);
@@ -1049,6 +927,7 @@ export default function Administracao() {
                   const totalMissoes =
                     (m.eventosParticipados?.length || 0) +
                     (m.valorHistorico || 0);
+
                   return (
                     <tr
                       key={m.id}
@@ -1372,11 +1251,12 @@ export default function Administracao() {
       )}
 
       {/* Sidebar de Detalhes do Evento */}
-      <DetailsSidebarAdmin
+      <EventDetailsSidebar
         open={showEventDetails}
         evento={selectedEvento}
         onClose={() => setShowEventDetails(false)}
         onEdit={editarEvento}
+        adminMode={true}
       />
 
       {/* Overlay */}
@@ -1574,6 +1454,7 @@ function EditarMembroForm({ membro, onChange, onSave, onCancel }) {
           Use esta seção para registrar missões realizadas antes da criação
           deste sistema.
         </p>
+
         <div>
           <label className='block text-gray-400 text-sm mb-2'>HISTÓRICO</label>
           <textarea
@@ -1584,6 +1465,7 @@ function EditarMembroForm({ membro, onChange, onSave, onCancel }) {
             className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2'
           />
         </div>
+
         <div className='mt-4'>
           <label className='block text-gray-400 text-sm mb-2'>
             VALOR HISTÓRICO (Quantidade de Missões)
@@ -1634,6 +1516,7 @@ function EventForm({ evento, onClose }) {
   const [horario, setHorario] = useState(evento?.horario || '20:00');
   const [descricao, setDescricao] = useState(evento?.descricao || '');
 
+  // ✅ Atualizar campos quando o evento mudar
   useEffect(() => {
     if (evento) {
       setNome(evento.nome);
@@ -1646,6 +1529,7 @@ function EventForm({ evento, onClose }) {
 
   function salvar(e) {
     e.preventDefault();
+
     const eventos = JSON.parse(
       localStorage.getItem('strykers_eventos') || '[]'
     );
@@ -1665,7 +1549,9 @@ function EventForm({ evento, onClose }) {
         }
         return ev;
       });
+
       localStorage.setItem('strykers_eventos', JSON.stringify(updated));
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert('✅ Evento atualizado com sucesso!');
     } else {
       // Modo criação
@@ -1679,8 +1565,10 @@ function EventForm({ evento, onClose }) {
         participantes: [],
         finalizado: false,
       };
+
       eventos.push(novo);
       localStorage.setItem('strykers_eventos', JSON.stringify(eventos));
+      document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert('✅ Evento cadastrado com sucesso!');
     }
 
@@ -1700,6 +1588,7 @@ function EventForm({ evento, onClose }) {
           className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2'
         />
       </div>
+
       <div>
         <label className='block text-gray-400 text-sm mb-2'>CATEGORIA</label>
         <select
@@ -1715,6 +1604,7 @@ function EventForm({ evento, onClose }) {
           <option value='outro'>Outro</option>
         </select>
       </div>
+
       <div>
         <label className='block text-gray-400 text-sm mb-2'>DATA</label>
         <input
@@ -1724,6 +1614,7 @@ function EventForm({ evento, onClose }) {
           className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2'
         />
       </div>
+
       <div>
         <label className='block text-gray-400 text-sm mb-2'>HORÁRIO</label>
         <input
@@ -1733,6 +1624,7 @@ function EventForm({ evento, onClose }) {
           className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2'
         />
       </div>
+
       <div>
         <label className='block text-gray-400 text-sm mb-2'>DESCRIÇÃO</label>
         <textarea
@@ -1742,6 +1634,7 @@ function EventForm({ evento, onClose }) {
           className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2'
         />
       </div>
+
       <div className='flex gap-4'>
         <button
           type='submit'
