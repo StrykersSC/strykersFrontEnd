@@ -695,12 +695,6 @@ export default function Administracao() {
             ADMINISTRAÇÃO
           </h2>
         </div>
-        <button
-          onClick={abrirFormularioEvento}
-          className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-6 py-3 transition-colors'
-        >
-          ➕ Cadastrar Evento
-        </button>
       </div>
 
       {/* ALISTAMENTOS PENDENTES */}
@@ -1027,9 +1021,23 @@ export default function Administracao() {
 
       {/* CALENDÁRIO DE EVENTOS */}
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        <h3 className='text-2xl font-bold text-cyan-400 mb-4'>
-          📅 CALENDÁRIO DE EVENTOS (ADMINISTRAÇÃO)
-        </h3>
+        {/* Esta div alinha Título e Botão na mesma linha e os separa ao máximo */}
+        <div className='flex justify-between items-center mb-4'>
+          <h3 className='text-2xl font-bold text-cyan-400'>
+            📅 CALENDÁRIO DE EVENTOS (ADMINISTRAÇÃO)
+          </h3>
+
+          <div>
+            <button
+              onClick={abrirFormularioEvento}
+              // Mantive o ajuste de tamanho do botão para melhor harmonia visual
+              className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors text-sm'
+            >
+              ➕ Cadastrar Evento
+            </button>
+          </div>
+        </div>
+
         <Calendario admin={true} modo='edicao' />
       </div>
 
