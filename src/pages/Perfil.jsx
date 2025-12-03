@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import medalhas from '../constants/medalhas.js';
-import { mostrarDetalhesMedalhaPublic } from '../components/ui/MembrosUtils.jsx';
+import {
+  mostrarDetalhesMedalhaPublic,
+  mostrarDetalhesMissaoDoEvento,
+} from '../components/ui/MembrosUtils.jsx';
 
 function getMedalhaInfo(tipo) {
   return (
@@ -285,10 +288,7 @@ export default function Perfil() {
                 <div
                   key={ep.eventoId + '-' + ep.nome}
                   className={`bg-slate-900/50 border-l-4 ${cores.border} rounded p-4 cursor-pointer hover:bg-slate-700/50 transition-all`}
-                  onClick={() =>
-                    window.mostrarDetalhesMissaoDoEvento &&
-                    window.mostrarDetalhesMissaoDoEvento(ep.eventoId)
-                  }
+                  onClick={() => mostrarDetalhesMissaoDoEvento(ep.eventoId)}
                 >
                   <h3 className='text-white font-semibold mb-2 line-clamp-2'>
                     {ep.nome}
