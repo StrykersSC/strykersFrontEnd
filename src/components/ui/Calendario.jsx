@@ -211,34 +211,41 @@ export default function Calendario({
                 </div>
                 {eventosNoDia.length > 0 && (
                   <div className='space-y-1'>
-                    {eventosNoDia.map((evento) => {
-                      const cores =
-                        CATEGORIAS_CORES[evento.categoria] ||
-                        CATEGORIAS_CORES.outro;
-                      const finalizadoStyle = evento.finalizado
-                        ? 'line-through opacity-75'
-                        : '';
-                      return (
-                        <div
-                          key={evento.id}
-                          className={`text-xs ${cores.text} bg-slate-900/50 px-2 py-1 rounded border-l-2 ${cores.border} cursor-pointer hover:bg-slate-900 transition-colors ${finalizadoStyle}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            abrirDetalhesEvento(evento.id);
-                          }}
-                        >
-                          <div className='font-semibold truncate'>
-                            {evento.horario}{' '}
-                            {evento.finalizado ? (
-                              <span className='text-[10px] bg-green-600 px-1 rounded ml-1'>
-                                ✓
-                              </span>
-                            ) : null}
+                    {eventosNoDia
+                      .sort((a, b) => {
+                        // ✅ Ordenar por horário (mais cedo primeiro)
+                        const horarioA = a.horario || '00:00';
+                        const horarioB = b.horario || '00:00';
+                        return horarioA.localeCompare(horarioB);
+                      })
+                      .map((evento) => {
+                        const cores =
+                          CATEGORIAS_CORES[evento.categoria] ||
+                          CATEGORIAS_CORES.outro;
+                        const finalizadoStyle = evento.finalizado
+                          ? 'line-through opacity-75'
+                          : '';
+                        return (
+                          <div
+                            key={evento.id}
+                            className={`text-xs ${cores.text} bg-slate-900/50 px-2 py-1 rounded border-l-2 ${cores.border} cursor-pointer hover:bg-slate-900 transition-colors ${finalizadoStyle}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              abrirDetalhesEvento(evento.id);
+                            }}
+                          >
+                            <div className='font-semibold truncate'>
+                              {evento.horario}{' '}
+                              {evento.finalizado ? (
+                                <span className='text-[10px] bg-green-600 px-1 rounded ml-1'>
+                                  ✓
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className='truncate'>{evento.nome}</div>
                           </div>
-                          <div className='truncate'>{evento.nome}</div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 )}
               </div>

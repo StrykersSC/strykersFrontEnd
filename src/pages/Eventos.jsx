@@ -104,7 +104,19 @@ export default function Eventos() {
         ) : (
           <div className='space-y-4'>
             {eventos
-              .sort((a, b) => new Date(a.data) - new Date(b.data))
+              .filter((evento) => {
+                // ✅ Filtrar apenas eventos futuros ou do dia atual
+                const dataEvento = new Date(evento.data + 'T' + evento.horario);
+                const agora = new Date();
+                return dataEvento >= agora || !evento.finalizado;
+              })
+              .sort((a, b) => {
+                // ✅ Ordenar por data e horário
+                const dataA = new Date(a.data + 'T' + a.horario);
+                const dataB = new Date(b.data + 'T' + b.horario);
+                return dataA - dataB;
+              })
+              .slice(0, 4) // ✅ Limitar a 4 eventos
               .map((evento) => {
                 const dataEvento = new Date(evento.data + 'T00:00:00');
                 const hoje = new Date();
@@ -163,6 +175,23 @@ export default function Eventos() {
                   </div>
                 );
               })}
+          </div>
+        )}
+
+        {/* ✅ Indicador de mais eventos */}
+        {eventos.filter((evento) => {
+          const dataEvento = new Date(evento.data + 'T' + evento.horario);
+          const agora = new Date();
+          return dataEvento >= agora || !evento.finalizado;
+        }).length > 4 && (
+          <div className='text-center mt-4 text-gray-400 text-sm'>
+            +{' '}
+            {eventos.filter((evento) => {
+              const dataEvento = new Date(evento.data + 'T' + evento.horario);
+              const agora = new Date();
+              return dataEvento >= agora || !evento.finalizado;
+            }).length - 4}{' '}
+            eventos adicionais no calendário
           </div>
         )}
       </div>
