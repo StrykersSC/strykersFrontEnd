@@ -227,7 +227,7 @@ export default function Administracao() {
         return ev;
       });
 
-      // Atualizar membros
+      // Atualizar membros - ✅ CORREÇÃO: Verificar duplicatas
       const evento = updated.find((ev) => ev.id === id);
       if (evento && evento.participantes && evento.participantes.length > 0) {
         setMembros((prevMembros) => {
@@ -237,12 +237,22 @@ export default function Administracao() {
             if (idx !== -1) {
               novosMembros[idx].eventosParticipados =
                 novosMembros[idx].eventosParticipados || [];
-              novosMembros[idx].eventosParticipados.push({
-                eventoId: evento.id,
-                nome: evento.nome,
-                data: evento.data,
-                categoria: evento.categoria,
-              });
+
+              // ✅ VERIFICAR SE O EVENTO JÁ FOI ADICIONADO
+              const jaExiste = novosMembros[idx].eventosParticipados.some(
+                (ep) => ep.eventoId === evento.id
+              );
+
+              // ✅ SÓ ADICIONAR SE NÃO EXISTIR
+              if (!jaExiste) {
+                novosMembros[idx].eventosParticipados.push({
+                  eventoId: evento.id,
+                  nome: evento.nome,
+                  data: evento.data,
+                  categoria: evento.categoria,
+                });
+              }
+
               novosMembros[idx].missoes =
                 novosMembros[idx].eventosParticipados.length +
                 (novosMembros[idx].valorHistorico || 0);
@@ -1021,7 +1031,6 @@ export default function Administracao() {
 
       {/* CALENDÁRIO DE EVENTOS */}
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        {/* Esta div alinha Título e Botão na mesma linha e os separa ao máximo */}
         <div className='flex justify-between items-center mb-4'>
           <h3 className='text-2xl font-bold text-cyan-400'>
             📅 CALENDÁRIO DE EVENTOS (ADMINISTRAÇÃO)
@@ -1030,7 +1039,6 @@ export default function Administracao() {
           <div>
             <button
               onClick={abrirFormularioEvento}
-              // Mantive o ajuste de tamanho do botão para melhor harmonia visual
               className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors text-sm'
             >
               ➕ Cadastrar Evento
