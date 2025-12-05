@@ -3,6 +3,7 @@ import {
   mostrarMedalhasMembro,
   mostrarMissoesMembro,
 } from '../components/ui/MembrosUtils.jsx';
+import { atribuicoes as ATRIBUICOES } from '../constants'; // ← IMPORTAR
 
 function formatDate(d) {
   if (!d) return '';
@@ -18,6 +19,7 @@ export default function Membros() {
   const [search, setSearch] = useState('');
   const [patenteFilter, setPatenteFilter] = useState('');
   const [situacaoFilter, setSituacaoFilter] = useState('');
+  const [atribuicaoFilter, setAtribuicaoFilter] = useState(''); // ← NOVO FILTRO
   const [sortField, setSortField] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
@@ -42,6 +44,8 @@ export default function Membros() {
     if (patenteFilter) data = data.filter((m) => m.patente === patenteFilter);
     if (situacaoFilter)
       data = data.filter((m) => m.situacao === situacaoFilter);
+    if (atribuicaoFilter)
+      data = data.filter((m) => m.atribuicao === atribuicaoFilter); // ← FILTRO DE ATRIBUIÇÃO
 
     if (sortField) {
       data.sort((a, b) => {
@@ -56,12 +60,20 @@ export default function Membros() {
     }
 
     return data;
-  }, [membros, search, patenteFilter, situacaoFilter, sortField]);
+  }, [
+    membros,
+    search,
+    patenteFilter,
+    situacaoFilter,
+    atribuicaoFilter,
+    sortField,
+  ]);
 
   function clearFilters() {
     setSearch('');
     setPatenteFilter('');
     setSituacaoFilter('');
+    setAtribuicaoFilter(''); // ← LIMPAR FILTRO DE ATRIBUIÇÃO
   }
 
   function toggleSort(field) {
@@ -99,7 +111,9 @@ export default function Membros() {
       </div>
 
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-6'>
-        <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
+          {' '}
+          {/* ← MUDOU DE 5 PARA 6 */}
           <div className='md:col-span-2'>
             <input
               value={search}
@@ -110,7 +124,6 @@ export default function Membros() {
               className='w-full bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400'
             />
           </div>
-
           <select
             id='filter-patente'
             value={patenteFilter}
@@ -124,7 +137,20 @@ export default function Membros() {
               </option>
             ))}
           </select>
-
+          {/* ← NOVO FILTRO DE ATRIBUIÇÃO */}
+          <select
+            id='filter-atribuicao'
+            value={atribuicaoFilter}
+            onChange={(e) => setAtribuicaoFilter(e.target.value)}
+            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400'
+          >
+            <option value=''>Todas as Atribuições</option>
+            {ATRIBUICOES.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
           <select
             id='filter-situacao'
             value={situacaoFilter}
@@ -136,7 +162,6 @@ export default function Membros() {
             <option value='Reservista'>Reservista</option>
             <option value='Desertor'>Desertor</option>
           </select>
-
           <button
             id='clear-filters'
             onClick={clearFilters}
@@ -166,6 +191,14 @@ export default function Membros() {
                 >
                   NOME
                 </th>
+                {/* ← NOVA COLUNA DE ATRIBUIÇÃO */}
+                <th
+                  onClick={() => toggleSort('atribuicao')}
+                  className='px-6 py-4 cursor-pointer hover:text-cyan-300'
+                  data-sort='atribuicao'
+                >
+                  ATRIBUIÇÃO
+                </th>
                 <th className='px-6 py-4 text-center'>MEDALHAS</th>
                 <th className='px-6 py-4 text-center'>MISSÕES</th>
                 <th className='px-6 py-4 text-center'>FORÇA ESPECIAL</th>
@@ -189,7 +222,9 @@ export default function Membros() {
             <tbody id='membros-tbody' className='text-gray-300'>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className='text-center py-8 text-gray-400'>
+                  <td colSpan={9} className='text-center py-8 text-gray-400'>
+                    {' '}
+                    {/* ← MUDOU DE 8 PARA 9 */}
                     Nenhum membro encontrado
                   </td>
                 </tr>
@@ -205,6 +240,10 @@ export default function Membros() {
                     >
                       <td className='px-6 py-4 font-semibold'>{m.patente}</td>
                       <td className='px-6 py-4'>{m.nome}</td>
+                      {/* ← EXIBIR ATRIBUIÇÃO */}
+                      <td className='px-6 py-4'>
+                        {m.atribuicao || 'Não definida'}
+                      </td>
                       <td className='px-6 py-4 text-center'>
                         {m.medalhas || 0}
                       </td>

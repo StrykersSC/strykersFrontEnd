@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
-import { forcasEspeciais } from '../../constants';
+import { forcasEspeciais, atribuicoes as ATRIBUICOES } from '../../constants';
 
 export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
   const [foto, setFoto] = useState('');
   const [forcaEspecial, setForcaEspecial] = useState('Não');
+  const [atribuicao, setAtribuicao] = useState(''); // ← NOVO ESTADO
   const [observacoes, setObservacoes] = useState('');
   const [historico, setHistorico] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -23,6 +24,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
       if (membro) {
         setFoto(membro.foto || '');
         setForcaEspecial(membro.forcaEspecial || 'Não');
+        setAtribuicao(membro.atribuicao || ''); // ← CARREGAR ATRIBUIÇÃO
         setObservacoes(membro.observacoes || '');
         setHistorico(membro.historico || '');
       }
@@ -33,6 +35,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
     const resultado = salvarConfiguracoes(
       foto,
       forcaEspecial,
+      atribuicao, // ← INCLUIR ATRIBUIÇÃO NO SALVAMENTO
       observacoes,
       historico
     );
@@ -60,6 +63,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
         </h2>
 
         <div className='space-y-4'>
+          {/* URL da Foto */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               URL da Foto
@@ -83,6 +87,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             )}
           </div>
 
+          {/* Força Especial */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Força Especial
@@ -102,6 +107,26 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             </select>
           </div>
 
+          {/* ← CAMPO DE ATRIBUIÇÃO */}
+          <div>
+            <label className='block text-gray-400 text-sm font-medium mb-2'>
+              Atribuição
+            </label>
+            <select
+              value={atribuicao}
+              onChange={(e) => setAtribuicao(e.target.value)}
+              className='w-full px-4 py-2 bg-slate-800 text-white border border-slate-700 rounded-lg focus:outline-none focus:border-cyan-400 transition'
+            >
+              <option value=''>Selecione...</option>
+              {ATRIBUICOES.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Observações */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Observações
@@ -114,6 +139,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             />
           </div>
 
+          {/* Histórico */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Histórico

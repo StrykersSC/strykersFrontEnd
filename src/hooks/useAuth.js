@@ -349,7 +349,7 @@ export function useAuth() {
   );
 
   const salvarConfiguracoes = useCallback(
-    (foto, forcaEspecial, observacoes, historico) => {
+    (foto, forcaEspecial, atribuicao, observacoes, historico) => {
       if (!usuarioAtual) {
         return { success: false, error: 'Nenhum usuário logado!' };
       }
@@ -362,6 +362,7 @@ export function useAuth() {
       if (index !== -1) {
         if (foto) membrosData[index].foto = foto;
         membrosData[index].forcaEspecial = forcaEspecial || 'Não';
+        membrosData[index].atribuicao = atribuicao || '';
         membrosData[index].observacoes = observacoes;
         membrosData[index].historico = historico;
         localStorage.setItem('strykers_membros', JSON.stringify(membrosData));

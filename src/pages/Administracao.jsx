@@ -9,6 +9,7 @@ import {
   medalhas as MEDALHAS_DISPONIVEIS,
   patentes as PATENTES,
   forcasEspeciais as FORCAS_ESPECIAIS,
+  atribuicoes as ATRIBUICOES, // ← IMPORTAR ATRIBUIÇÕES
 } from '../constants';
 
 // Modal para exibir texto (observações/histórico)
@@ -33,8 +34,6 @@ function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
     </div>
   );
 }
-
-const ATRIBUICOES = ['Infantaria', 'Força Aérea', 'Marinha'];
 
 export default function Administracao() {
   const [pendentes, setPendentes] = useState(() =>
