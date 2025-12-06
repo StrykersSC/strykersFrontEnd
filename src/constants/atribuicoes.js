@@ -1,15 +1,8 @@
 const atribuicoes = [
-  'Infantaria',
-  'Marinha',
-  'Força Aérea',
-  'Artilharia',
-  'Engenharia',
-  'Comunicações',
-  'Logística',
-  'Inteligência',
-  'Cavalaria',
-  'Paraquedista',
-  'Outro',
+  '🪖 Exército',
+  '⚓ Marinha Espacial',
+  '🪽 Força Aérea',
+  '⚙️ Forças Auxiliares',
 ];
 
 export default atribuicoes;
