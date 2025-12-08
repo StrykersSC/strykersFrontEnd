@@ -2,7 +2,7 @@
 
 Sistema de gerenciamento completo para a organização militar Strykers no universo de Star Citizen. Uma aplicação SPA (Single Page Application) desenvolvida com Vanilla JavaScript, Vite e TailwindCSS.
 
-![Strykers Logo](STRYKERS-Logo.png)
+![Strykers Logo](public/STRYKERS-Logo.png)
 
 ## 📋 Índice
 
