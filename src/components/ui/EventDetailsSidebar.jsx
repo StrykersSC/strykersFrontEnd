@@ -84,7 +84,9 @@ export default function EventDetailsSidebar({
                 ✓ FINALIZADO
               </span>
             )}
-            <h3 className='text-3xl font-bold text-white'>{evento.nome}</h3>
+            <h3 className='text-3xl font-bold text-white break-words'>
+              {evento.nome}
+            </h3>
           </div>
 
           <div className='border-t border-slate-700 pt-4'>
@@ -100,7 +102,7 @@ export default function EventDetailsSidebar({
 
           <div className='border-t border-slate-700 pt-4'>
             <h4 className='text-sm text-gray-400 mb-2'>DESCRIÇÃO</h4>
-            <p className='text-gray-300 leading-relaxed whitespace-pre-wrap'>
+            <p className='text-gray-300 leading-relaxed whitespace-pre-wrap break-words'>
               {evento.descricao}
             </p>
           </div>
