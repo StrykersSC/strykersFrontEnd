@@ -73,16 +73,98 @@ export default function Eventos() {
     };
   }, []);
 
+  // ✅ Filtrar campanhas ativas (não finalizadas)
+  const campanhsAtivas = eventos
+    .filter((evento) => evento.categoria === 'campanha' && !evento.finalizado)
+    .sort((a, b) => {
+      // Ordenar por data (mais próxima primeiro)
+      const dataA = new Date(a.data + 'T' + a.horario);
+      const dataB = new Date(b.data + 'T' + b.horario);
+      return dataA - dataB;
+    })
+    .slice(0, 3); // Limitar a 3 campanhas
+
   return (
     <div className='relative z-10 container mx-auto px-6 py-16'>
-      <div className='mb-8'>
-        <h2 className='text-4xl font-bold text-white mb-2 tracking-wide'>
-          EVENTOS
-        </h2>
-        <p className='text-gray-400'>
-          Acompanhe os próximos treinamentos, missões e operações
-        </p>
+      <div className='mb-8 flex justify-between items-start'>
+        <div>
+          <h2 className='text-4xl font-bold text-white mb-2 tracking-wide'>
+            EVENTOS
+          </h2>
+          <p className='text-gray-400'>
+            Acompanhe os próximos treinamentos, missões e operações
+          </p>
+        </div>
       </div>
+
+      {/* ✅ CAMPANHAS ATIVAS */}
+      {campanhsAtivas.length > 0 && (
+        <div className='mb-8'>
+          <h3 className='text-2xl font-bold text-purple-400 mb-4'>
+            🎯 CAMPANHAS ATIVAS
+          </h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {campanhsAtivas.map((campanha) => {
+              const dataEvento = new Date(campanha.data + 'T00:00:00');
+              return (
+                <div
+                  key={campanha.id}
+                  onClick={() => {
+                    setSelectedEvento(campanha);
+                    setShowDetails(true);
+                  }}
+                  className='bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500 rounded-lg p-6 hover:bg-slate-700/60 hover:border-purple-400 transition-all cursor-pointer group'
+                >
+                  <div className='flex items-start justify-between mb-3'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-3xl'>🎯</span>
+                      <span className='bg-purple-500 text-white text-xs font-semibold px-2 py-1 rounded'>
+                        CAMPANHA
+                      </span>
+                    </div>
+                    <span className='text-purple-400 group-hover:text-purple-300 transition-colors'>
+                      →
+                    </span>
+                  </div>
+
+                  <h4 className='text-xl font-bold text-white mb-3 line-clamp-2'>
+                    {campanha.nome}
+                  </h4>
+
+                  <div className='space-y-2 text-sm text-gray-400'>
+                    <div className='flex items-center gap-2'>
+                      <span>📅</span>
+                      <span>
+                        {dataEvento.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span>🕐</span>
+                      <span>{campanha.horario}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span>👥</span>
+                      <span>
+                        {campanha.participantes?.length || 0} participantes
+                      </span>
+                    </div>
+                  </div>
+
+                  {campanha.descricao && (
+                    <p className='mt-3 text-gray-500 text-sm line-clamp-2'>
+                      {campanha.descricao}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* CALENDÁRIO */}
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
