@@ -8,6 +8,9 @@ export default function Eventos() {
   );
   const [selectedEvento, setSelectedEvento] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [usuarioLogado, setUsuarioLogado] = useState(() =>
+    JSON.parse(localStorage.getItem('strykers_usuario') || 'null')
+  );
 
   // ✅ Sincronizar eventos do localStorage
   useEffect(() => {
@@ -35,6 +38,23 @@ export default function Eventos() {
       document.removeEventListener('eventos:updated', syncEventos);
     };
   }, [selectedEvento]);
+
+  useEffect(() => {
+    const handleUserChange = () => {
+      const usuario = JSON.parse(
+        localStorage.getItem('strykers_usuario') || 'null'
+      );
+      setUsuarioLogado(usuario);
+    };
+
+    window.addEventListener('storage', handleUserChange);
+    document.addEventListener('usuario:updated', handleUserChange);
+
+    return () => {
+      window.removeEventListener('storage', handleUserChange);
+      document.removeEventListener('usuario:updated', handleUserChange);
+    };
+  }, []);
 
   // ✅ Listener para abrir detalhes do evento
   useEffect(() => {
