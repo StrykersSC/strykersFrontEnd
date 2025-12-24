@@ -5,7 +5,7 @@ import { forcasEspeciais, atribuicoes as ATRIBUICOES } from '../../constants';
 export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
   const [foto, setFoto] = useState('');
   const [forcaEspecial, setForcaEspecial] = useState('Não');
-  const [atribuicao, setAtribuicao] = useState(''); // ← NOVO ESTADO
+  const [atribuicao, setAtribuicao] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [historico, setHistorico] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -13,18 +13,18 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
 
   const { salvarConfiguracoes } = useAuth();
 
-  // Carregar dados existentes quando modal abrir
+  // ✅ Carregar dados por usuarioId
   useEffect(() => {
     if (isOpen && usuario) {
       const membros = JSON.parse(
         localStorage.getItem('strykers_membros') || '[]'
       );
-      const membro = membros.find((m) => m.nome === usuario.nome);
+      const membro = membros.find((m) => m.usuarioId === usuario.id);
 
       if (membro) {
         setFoto(membro.foto || '');
         setForcaEspecial(membro.forcaEspecial || 'Não');
-        setAtribuicao(membro.atribuicao || ''); // ← CARREGAR ATRIBUIÇÃO
+        setAtribuicao(membro.atribuicao || '');
         setObservacoes(membro.observacoes || '');
         setHistorico(membro.historico || '');
       }
@@ -35,7 +35,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
     const resultado = salvarConfiguracoes(
       foto,
       forcaEspecial,
-      atribuicao, // ← INCLUIR ATRIBUIÇÃO NO SALVAMENTO
+      atribuicao,
       observacoes,
       historico
     );
@@ -63,7 +63,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
         </h2>
 
         <div className='space-y-4'>
-          {/* URL da Foto */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               URL da Foto
@@ -87,7 +86,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             )}
           </div>
 
-          {/* Força Especial */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Força Especial
@@ -107,7 +105,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             </select>
           </div>
 
-          {/* ← CAMPO DE ATRIBUIÇÃO */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Atribuição
@@ -126,7 +123,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             </select>
           </div>
 
-          {/* Observações */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Observações
@@ -139,7 +135,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
             />
           </div>
 
-          {/* Histórico */}
           <div>
             <label className='block text-gray-400 text-sm font-medium mb-2'>
               Histórico

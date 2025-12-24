@@ -89,10 +89,17 @@ export default function EventDetailsSidebar({
     year: 'numeric',
   });
 
-  // ✅ Verificar se o usuário logado está participando
+  // ✅ Buscar membro do usuário logado
+  const membroAtual = usuarioAtual
+    ? JSON.parse(localStorage.getItem('strykers_membros') || '[]').find(
+        (m) => m.usuarioId === usuarioAtual.id
+      )
+    : null;
+
+  // ✅ Verificar se o usuário logado está participando (por ID do membro)
   const usuarioParticipando =
-    usuarioAtual &&
-    eventoAtualizado.participantes?.some((p) => p.nome === usuarioAtual.nome);
+    membroAtual &&
+    eventoAtualizado.participantes?.some((p) => p.id === membroAtual.id);
 
   // ✅ Função para participar do evento
   const handleParticipar = () => {
@@ -101,22 +108,15 @@ export default function EventDetailsSidebar({
       return;
     }
 
-    if (processando) return;
-    setProcessando(true);
-
-    // Buscar dados do membro
-    const membros = JSON.parse(
-      localStorage.getItem('strykers_membros') || '[]'
-    );
-    const membro = membros.find((m) => m.nome === usuarioAtual.nome);
-
-    if (!membro) {
+    if (!membroAtual) {
       alert(
         '⚠️ Você precisa ser um membro registrado para participar de eventos!'
       );
-      setProcessando(false);
       return;
     }
+
+    if (processando) return;
+    setProcessando(true);
 
     // Atualizar evento com novo participante
     const eventos = JSON.parse(
@@ -127,8 +127,8 @@ export default function EventDetailsSidebar({
       if (e.id === eventoAtualizado.id) {
         const participantes = e.participantes || [];
 
-        // Verificar duplicata
-        if (participantes.some((p) => p.id === membro.id)) {
+        // ✅ Verificar duplicata por ID
+        if (participantes.some((p) => p.id === membroAtual.id)) {
           return e;
         }
 
@@ -137,10 +137,10 @@ export default function EventDetailsSidebar({
           participantes: [
             ...participantes,
             {
-              id: membro.id,
-              nome: membro.nome,
-              foto: membro.foto,
-              patente: membro.patente,
+              id: membroAtual.id,
+              nome: membroAtual.nome,
+              foto: membroAtual.foto,
+              patente: membroAtual.patente,
             },
           ],
         };
@@ -168,7 +168,7 @@ export default function EventDetailsSidebar({
 
   // ✅ Função para abandonar o evento
   const handleAbandonar = () => {
-    if (!usuarioAtual) return;
+    if (!usuarioAtual || !membroAtual) return;
 
     if (
       !confirm(
@@ -189,8 +189,9 @@ export default function EventDetailsSidebar({
       if (e.id === eventoAtualizado.id) {
         return {
           ...e,
+          // ✅ Remover por ID ao invés de nome
           participantes: (e.participantes || []).filter(
-            (p) => p.nome !== usuarioAtual.nome
+            (p) => p.id !== membroAtual.id
           ),
         };
       }
@@ -304,7 +305,17 @@ export default function EventDetailsSidebar({
           {/* ✅ BOTÕES DE PARTICIPAÇÃO (APENAS MODO NÃO-ADMIN) */}
           {!adminMode && usuarioAtual && !eventoAtualizado.finalizado && (
             <div className='pt-4 border-t border-slate-700'>
-              {!usuarioParticipando ? (
+              {!membroAtual ? (
+                <div className='bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 text-center'>
+                  <p className='text-yellow-400 text-sm font-semibold mb-2'>
+                    ⚠️ Você não é um membro registrado
+                  </p>
+                  <p className='text-gray-400 text-xs'>
+                    Aguarde a aprovação do seu alistamento para participar de
+                    eventos.
+                  </p>
+                </div>
+              ) : !usuarioParticipando ? (
                 <button
                   onClick={handleParticipar}
                   disabled={processando}

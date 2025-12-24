@@ -9,10 +9,9 @@ import {
   medalhas as MEDALHAS_DISPONIVEIS,
   patentes as PATENTES,
   forcasEspeciais as FORCAS_ESPECIAIS,
-  atribuicoes as ATRIBUICOES, // ← IMPORTAR ATRIBUIÇÕES
+  atribuicoes as ATRIBUICOES,
 } from '../constants';
 
-// Modal para exibir texto (observações/histórico)
 function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
   if (!isOpen) return null;
 
@@ -113,13 +112,11 @@ export default function Administracao() {
     setFilteredMembros(result);
   }, [membros, filters]);
 
-  // ✅ Listener para abrir detalhes do evento
   useEffect(() => {
     function handleMostrarDetalhes(e) {
       const { id } = e.detail || {};
       if (!id) return;
 
-      // Buscar evento atualizado do localStorage
       const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
@@ -153,7 +150,6 @@ export default function Administracao() {
 
       if (!listaParticipantes || !listaMembros) return;
 
-      // Renderizar participantes
       if (evento.participantes && evento.participantes.length > 0) {
         listaParticipantes.innerHTML = evento.participantes
           .map(
@@ -176,7 +172,6 @@ export default function Administracao() {
           '<p class="text-gray-500 text-center py-4">Nenhum participante adicionado</p>';
       }
 
-      // Renderizar membros disponíveis
       const participantesIds = evento.participantes?.map((p) => p.id) || [];
       const membrosAtivos = membros.filter(
         (m) => m.situacao === 'Ativo' && !participantesIds.includes(m.id)
@@ -209,7 +204,6 @@ export default function Administracao() {
   );
 
   useEffect(() => {
-    // ✅ Registrar funções globais para eventos
     window.finalizarEvento = (id) => {
       if (
         !confirm(
@@ -226,7 +220,6 @@ export default function Administracao() {
         return ev;
       });
 
-      // Atualizar membros - ✅ CORREÇÃO: Verificar duplicatas
       const evento = updated.find((ev) => ev.id === id);
       if (evento && evento.participantes && evento.participantes.length > 0) {
         setMembros((prevMembros) => {
@@ -237,12 +230,10 @@ export default function Administracao() {
               novosMembros[idx].eventosParticipados =
                 novosMembros[idx].eventosParticipados || [];
 
-              // ✅ VERIFICAR SE O EVENTO JÁ FOI ADICIONADO
               const jaExiste = novosMembros[idx].eventosParticipados.some(
                 (ep) => ep.eventoId === evento.id
               );
 
-              // ✅ SÓ ADICIONAR SE NÃO EXISTIR
               if (!jaExiste) {
                 novosMembros[idx].eventosParticipados.push({
                   eventoId: evento.id,
@@ -330,15 +321,12 @@ export default function Administracao() {
       const evento = eventosAtuais.find((ev) => ev.id === id);
       if (!evento) return;
 
-      // Abrir sidebar de participantes
       const sidebar = document.getElementById(
         'participantes-evento-sidebar-admin'
       );
       if (sidebar) {
         sidebar.classList.remove('-translate-x-full');
         sidebar.dataset.eventoId = id;
-
-        // Atualizar lista de participantes
         atualizarListaParticipantes(evento);
       }
     };
@@ -403,7 +391,6 @@ export default function Administracao() {
       document.dispatchEvent(new CustomEvent('eventos:updated'));
     };
 
-    // Cleanup
     return () => {
       delete window.finalizarEvento;
       delete window.reabrirEvento;
@@ -429,8 +416,11 @@ export default function Administracao() {
     if (index === -1) return;
 
     const alistamento = pendentes[index];
+
+    // ✅ Criar membro com usuarioId
     const novoMembro = {
-      id: alistamento.id + '-' + Date.now(),
+      id: 'membro-' + Date.now(),
+      usuarioId: alistamento.id, // ✅ Referência ao ID do usuário
       nome: alistamento.nome,
       foto: `https://ui-avatars.com/api/?name=${encodeURIComponent(
         alistamento.nome
@@ -548,11 +538,12 @@ export default function Administracao() {
       prev.map((m) => (m.id === editingMember.id ? editingMember : m))
     );
 
+    // ✅ Atualizar nome do usuário se foi alterado
     const membroAnterior = membros.find((m) => m.id === editingMember.id);
     if (membroAnterior && membroAnterior.nome !== editingMember.nome) {
       setUsuarios((prev) =>
         prev.map((u) => {
-          if (u.nome === membroAnterior.nome && u.status === 'aprovado') {
+          if (u.id === membroAnterior.usuarioId) {
             return { ...u, nome: editingMember.nome };
           }
           return u;
@@ -570,9 +561,11 @@ export default function Administracao() {
     const m = membros.find((mm) => mm.id === membroId);
     if (!m) return;
 
-    const usuario = usuarios.find((u) => u.nome === m.nome);
+    // ✅ Buscar usuário por usuarioId
+    const usuario = usuarios.find((u) => u.id === m.usuarioId);
+
     const rec = {
-      id: usuario?.id || m.id,
+      id: usuario?.id || m.usuarioId,
       nome: m.nome,
       email: usuario?.email || '',
       whatsapp: usuario?.whatsapp || '',
@@ -694,6 +687,11 @@ export default function Administracao() {
     setEditingEvento(evento);
     setShowEventForm(true);
     setShowEventDetails(false);
+  }
+
+  // ✅ Função auxiliar para buscar dados do usuário
+  function getUsuarioData(usuarioId) {
+    return usuarios.find((u) => u.id === usuarioId);
   }
 
   return (
@@ -924,9 +922,8 @@ export default function Administracao() {
                 </tr>
               ) : (
                 filteredMembros.map((m) => {
-                  const usuario = usuarios.find(
-                    (u) => u.nome === m.nome && u.status === 'aprovado'
-                  );
+                  // ✅ Buscar usuário por usuarioId
+                  const usuario = getUsuarioData(m.usuarioId);
                   const totalMissoes =
                     (m.eventosParticipados?.length || 0) +
                     (m.valorHistorico || 0);
@@ -1092,7 +1089,6 @@ export default function Administracao() {
             </button>
           </div>
 
-          {/* Form Condecoração */}
           <form onSubmit={salvarCondecoracao} className='space-y-6 mb-6'>
             <div>
               <label className='block text-gray-400 text-sm mb-2'>
@@ -1157,7 +1153,6 @@ export default function Administracao() {
             </div>
           </form>
 
-          {/* Remover Medalha */}
           {membros.find((m) => m.id === openCondecorar)?.medalhasDetalhadas
             ?.length > 0 && (
             <>
@@ -1531,7 +1526,6 @@ function EventForm({ evento, onClose }) {
   const [horario, setHorario] = useState(evento?.horario || '20:00');
   const [descricao, setDescricao] = useState(evento?.descricao || '');
 
-  // ✅ Atualizar campos quando o evento mudar
   useEffect(() => {
     if (evento) {
       setNome(evento.nome);
@@ -1550,7 +1544,6 @@ function EventForm({ evento, onClose }) {
     );
 
     if (evento) {
-      // Modo edição
       const updated = eventos.map((ev) => {
         if (ev.id === evento.id) {
           return {
@@ -1569,7 +1562,6 @@ function EventForm({ evento, onClose }) {
       document.dispatchEvent(new CustomEvent('eventos:updated'));
       alert('✅ Evento atualizado com sucesso!');
     } else {
-      // Modo criação
       const novo = {
         id: Date.now(),
         nome,

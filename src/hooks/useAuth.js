@@ -15,7 +15,6 @@ export function useAuth() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Função para salvar sessão (definida primeiro para evitar problemas de dependência)
   const salvarSessao = useCallback((usuario) => {
     localStorage.setItem('strykers_user_session', JSON.stringify(usuario));
     setUsuarioAtual(usuario);
@@ -26,7 +25,7 @@ export function useAuth() {
     setUsuarioAtual(null);
   }, []);
 
-  // Sincronizar com mudanças no localStorage de outras abas/windows
+  // Sincronizar com mudanças no localStorage
   useEffect(() => {
     const handleStorageChange = () => {
       const userSession = localStorage.getItem('strykers_user_session');
@@ -46,7 +45,7 @@ export function useAuth() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Sincronizar nome do usuário se for alterado na tabela de usuários
+  // ✅ Sincronizar dados do usuário (nome/email) na sessão
   useEffect(() => {
     if (!usuarioAtual) return;
 
@@ -56,21 +55,29 @@ export function useAuth() {
       );
       const usuarioAtualizado = usuarios.find((u) => u.id === usuarioAtual.id);
 
-      if (usuarioAtualizado && usuarioAtualizado.nome !== usuarioAtual.nome) {
+      if (usuarioAtualizado) {
         const sessaoAtualizada = {
-          ...usuarioAtual,
+          id: usuarioAtualizado.id,
           nome: usuarioAtualizado.nome,
+          email: usuarioAtualizado.email,
         };
-        localStorage.setItem(
-          'strykers_user_session',
-          JSON.stringify(sessaoAtualizada)
-        );
-        setUsuarioAtual(sessaoAtualizada);
+
+        // Só atualiza se houver mudança
+        if (
+          sessaoAtualizada.nome !== usuarioAtual.nome ||
+          sessaoAtualizada.email !== usuarioAtual.email
+        ) {
+          localStorage.setItem(
+            'strykers_user_session',
+            JSON.stringify(sessaoAtualizada)
+          );
+          setUsuarioAtual(sessaoAtualizada);
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [usuarioAtual]); // Removido salvarSessao das dependências
+  }, [usuarioAtual]);
 
   const login = useCallback(
     (email, senha) => {
@@ -83,7 +90,6 @@ export function useAuth() {
         return { success: false, error: '⚠️ E-mail não cadastrado!' };
       }
 
-      // Check password first (so confirmation modal only shows if email AND password match)
       if (usuario.senha !== senha) {
         return { success: false, error: '⚠️ Senha incorreta!' };
       }
@@ -215,7 +221,6 @@ export function useAuth() {
     usuarios[index].dataConfirmacao = new Date().toISOString();
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
 
-    // Adicionar a lista de alistamentos pendentes
     const pendentes = JSON.parse(
       localStorage.getItem('strykers_alistamentos_pendentes') || '[]'
     );
@@ -357,7 +362,11 @@ export function useAuth() {
       const membrosData = JSON.parse(
         localStorage.getItem('strykers_membros') || '[]'
       );
-      const index = membrosData.findIndex((m) => m.nome === usuarioAtual.nome);
+
+      // ✅ Buscar por usuarioId ao invés de nome
+      const index = membrosData.findIndex(
+        (m) => m.usuarioId === usuarioAtual.id
+      );
 
       if (index !== -1) {
         if (foto) membrosData[index].foto = foto;

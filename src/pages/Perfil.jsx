@@ -74,7 +74,9 @@ export default function Perfil() {
       const membrosData = JSON.parse(
         localStorage.getItem('strykers_membros') || '[]'
       );
-      const found = membrosData.find((m) => m.nome === usuarioAtual.nome);
+
+      // ✅ Buscar por usuarioId ao invés de nome
+      const found = membrosData.find((m) => m.usuarioId === usuarioAtual.id);
       setMembro(found || null);
     }
   }, [usuarioAtual, isLoading, navigate]);
@@ -213,7 +215,7 @@ export default function Perfil() {
           </h2>
           <div className='space-y-2 text-gray-300'>
             <p>
-              <span className='text-gray-400'>ID:</span> {membro.id}
+              <span className='text-gray-400'>ID do Membro:</span> {membro.id}
             </p>
             <p>
               <span className='text-gray-400'>Data de Registro:</span>{' '}
