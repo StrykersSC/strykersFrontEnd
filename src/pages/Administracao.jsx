@@ -13,7 +13,12 @@ import {
 } from '../constants';
 
 import { useAuth } from '../hooks/useAuth.jsx';
-import { ROLES, ROLE_LABELS, ROLE_BADGES } from '../constants/roles.js';
+import {
+  ROLES,
+  ROLE_LABELS,
+  ROLE_BADGES,
+  hasPermission,
+} from '../constants/roles.js';
 
 function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
   if (!isOpen) return null;
@@ -38,10 +43,8 @@ function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
 }
 
 export default function Administracao() {
-  // ✅ CORREÇÃO: Desestruturar loading junto com os outros valores
   const { usuarioAtual, updateUserRole, loading } = useAuth();
 
-  // ✅ Verificação de loading ANTES de inicializar os estados
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -88,6 +91,16 @@ export default function Administracao() {
   const [removeCondecoracaoMembro, setRemoveCondecoracaoMembro] =
     useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ✅ Verificar permissões
+  const canApproveEnlistments = hasPermission(
+    usuarioAtual?.role,
+    'APPROVE_ENLISTMENTS'
+  );
+  const canManageRoles = hasPermission(usuarioAtual?.role, 'MANAGE_ROLES');
+  const canManageMembers = hasPermission(usuarioAtual?.role, 'MANAGE_MEMBERS');
+  const canManageEvents = hasPermission(usuarioAtual?.role, 'MANAGE_EVENTS');
+  const canAwardMedals = hasPermission(usuarioAtual?.role, 'AWARD_MEDALS');
 
   useEffect(() => {
     localStorage.setItem(
@@ -715,134 +728,144 @@ export default function Administracao() {
         </div>
       </div>
 
-      {/* ALISTAMENTOS PENDENTES */}
-      <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        <h3 className='text-2xl font-bold text-yellow-400 mb-4'>
-          ⏳ ALISTAMENTOS PENDENTES
-        </h3>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-slate-900'>
-              <tr className='text-left text-cyan-400 font-semibold'>
-                <th className='px-4 py-3'>SOLICITANTE</th>
-                <th className='px-4 py-3'>E-MAIL</th>
-                <th className='px-4 py-3'>WHATSAPP</th>
-                <th className='px-4 py-3'>DATA SOLICITAÇÃO</th>
-                <th className='px-4 py-3 text-center'>AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody className='text-gray-300'>
-              {pendentes.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className='text-center py-8 text-gray-400'>
-                    Nenhum alistamento pendente
-                  </td>
+      {/* ✅ ALISTAMENTOS PENDENTES - Apenas se tiver permissão */}
+      {canApproveEnlistments && (
+        <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
+          <h3 className='text-2xl font-bold text-yellow-400 mb-4'>
+            ⏳ ALISTAMENTOS PENDENTES
+          </h3>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-slate-900'>
+                <tr className='text-left text-cyan-400 font-semibold'>
+                  <th className='px-4 py-3'>SOLICITANTE</th>
+                  <th className='px-4 py-3'>E-MAIL</th>
+                  <th className='px-4 py-3'>WHATSAPP</th>
+                  <th className='px-4 py-3'>DATA SOLICITAÇÃO</th>
+                  <th className='px-4 py-3 text-center'>AÇÕES</th>
                 </tr>
-              ) : (
-                pendentes.map((p) => (
-                  <tr
-                    key={p.id}
-                    className='border-b border-slate-700 hover:bg-slate-700/30'
-                  >
-                    <td className='px-4 py-3 font-semibold'>{p.nome}</td>
-                    <td className='px-4 py-3'>{p.email}</td>
-                    <td className='px-4 py-3'>{p.whatsapp || '-'}</td>
-                    <td className='px-4 py-3'>
-                      {new Date(p.dataSolicitacao).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td className='px-4 py-3 text-center'>
-                      <button
-                        onClick={() => aprovarAlistamento(p.id)}
-                        className='bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded mr-2 transition-colors'
-                      >
-                        ✓
-                      </button>
-                      <button
-                        onClick={() => recusarAlistamento(p.id)}
-                        className='bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors'
-                      >
-                        ✕
-                      </button>
+              </thead>
+              <tbody className='text-gray-300'>
+                {pendentes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className='text-center py-8 text-gray-400'>
+                      Nenhum alistamento pendente
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  pendentes.map((p) => (
+                    <tr
+                      key={p.id}
+                      className='border-b border-slate-700 hover:bg-slate-700/30'
+                    >
+                      <td className='px-4 py-3 font-semibold'>{p.nome}</td>
+                      <td className='px-4 py-3'>{p.email}</td>
+                      <td className='px-4 py-3'>{p.whatsapp || '-'}</td>
+                      <td className='px-4 py-3'>
+                        {new Date(p.dataSolicitacao).toLocaleDateString(
+                          'pt-BR',
+                          {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }
+                        )}
+                      </td>
+                      <td className='px-4 py-3 text-center'>
+                        <button
+                          onClick={() => aprovarAlistamento(p.id)}
+                          className='bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded mr-2 transition-colors'
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => recusarAlistamento(p.id)}
+                          className='bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors'
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ALISTAMENTOS RECUSADOS */}
-      <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        <h3 className='text-2xl font-bold text-red-400 mb-4'>
-          ❌ ALISTAMENTOS RECUSADOS
-        </h3>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-slate-900'>
-              <tr className='text-left text-cyan-400 font-semibold'>
-                <th className='px-4 py-3'>SOLICITANTE</th>
-                <th className='px-4 py-3'>E-MAIL</th>
-                <th className='px-4 py-3'>WHATSAPP</th>
-                <th className='px-4 py-3'>DATA SOLICITAÇÃO</th>
-                <th className='px-4 py-3 text-center'>AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody className='text-gray-300'>
-              {recusados.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className='text-center py-8 text-gray-400'>
-                    Nenhum alistamento recusado
-                  </td>
+      {/* ✅ ALISTAMENTOS RECUSADOS - Apenas se tiver permissão */}
+      {canApproveEnlistments && (
+        <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
+          <h3 className='text-2xl font-bold text-red-400 mb-4'>
+            ❌ ALISTAMENTOS RECUSADOS
+          </h3>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-slate-900'>
+                <tr className='text-left text-cyan-400 font-semibold'>
+                  <th className='px-4 py-3'>SOLICITANTE</th>
+                  <th className='px-4 py-3'>E-MAIL</th>
+                  <th className='px-4 py-3'>WHATSAPP</th>
+                  <th className='px-4 py-3'>DATA SOLICITAÇÃO</th>
+                  <th className='px-4 py-3 text-center'>AÇÕES</th>
                 </tr>
-              ) : (
-                recusados.map((r) => (
-                  <tr
-                    key={r.id}
-                    className='border-b border-slate-700 hover:bg-slate-700/30'
-                  >
-                    <td className='px-4 py-3 font-semibold'>{r.nome}</td>
-                    <td className='px-4 py-3'>{r.email}</td>
-                    <td className='px-4 py-3'>{r.whatsapp || '-'}</td>
-                    <td className='px-4 py-3'>
-                      {new Date(r.dataSolicitacao).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td className='px-4 py-3 text-center'>
-                      <button
-                        onClick={() => realistarUsuario(r.id)}
-                        className='bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2 text-sm transition-colors'
-                      >
-                        🔄 Realistar
-                      </button>
-                      <button
-                        onClick={() => excluirAlistamento(r.id)}
-                        className='bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors'
-                      >
-                        🗑️ Excluir
-                      </button>
+              </thead>
+              <tbody className='text-gray-300'>
+                {recusados.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className='text-center py-8 text-gray-400'>
+                      Nenhum alistamento recusado
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  recusados.map((r) => (
+                    <tr
+                      key={r.id}
+                      className='border-b border-slate-700 hover:bg-slate-700/30'
+                    >
+                      <td className='px-4 py-3 font-semibold'>{r.nome}</td>
+                      <td className='px-4 py-3'>{r.email}</td>
+                      <td className='px-4 py-3'>{r.whatsapp || '-'}</td>
+                      <td className='px-4 py-3'>
+                        {new Date(r.dataSolicitacao).toLocaleDateString(
+                          'pt-BR',
+                          {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }
+                        )}
+                      </td>
+                      <td className='px-4 py-3 text-center'>
+                        <button
+                          onClick={() => realistarUsuario(r.id)}
+                          className='bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2 text-sm transition-colors'
+                        >
+                          🔄 Realistar
+                        </button>
+                        <button
+                          onClick={() => excluirAlistamento(r.id)}
+                          className='bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors'
+                        >
+                          🗑️ Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* GERENCIAMENTO DE ROLES (apenas SUPER_ADMIN) */}
-      {usuarioAtual?.role === ROLES.SUPER_ADMIN && (
+      {/* ✅ GERENCIAMENTO DE ROLES - Apenas SUPER_ADMIN */}
+      {canManageRoles && (
         <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
           <h3 className='text-2xl font-bold text-purple-400 mb-4'>
             👑 GERENCIAMENTO DE ROLES
@@ -927,219 +950,229 @@ export default function Administracao() {
         </div>
       )}
 
-      {/* MEMBROS REGISTRADOS */}
-      <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        <h3 className='text-2xl font-bold text-green-400 mb-4'>
-          ✅ MEMBROS REGISTRADOS
-        </h3>
-
-        {/* Filtros */}
-        <div className='grid grid-cols-1 md:grid-cols-6 gap-4 mb-6'>
-          <input
-            type='text'
-            value={filters.search}
-            onChange={(e) => aplicarFiltros({ search: e.target.value })}
-            placeholder='Buscar por nome...'
-            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400'
-          />
-          <select
-            value={filters.patente}
-            onChange={(e) => aplicarFiltros({ patente: e.target.value })}
-            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
-          >
-            <option value=''>Todas Patentes</option>
-            {patentes.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filters.situacao}
-            onChange={(e) => aplicarFiltros({ situacao: e.target.value })}
-            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
-          >
-            <option value=''>Todas Situações</option>
-            <option value='Ativo'>Ativo</option>
-            <option value='Reservista'>Reservista</option>
-            <option value='Desertor'>Desertor</option>
-          </select>
-          <select
-            value={filters.forca}
-            onChange={(e) => aplicarFiltros({ forca: e.target.value })}
-            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
-          >
-            <option value=''>Todas Forças</option>
-            {forcas.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
-          <input
-            type='date'
-            value={filters.data}
-            onChange={(e) => aplicarFiltros({ data: e.target.value })}
-            className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
-          />
-          <button
-            onClick={limparFiltros}
-            className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors'
-          >
-            Limpar
-          </button>
-        </div>
-
-        {/* Tabela */}
-        <div className='overflow-x-auto max-h-[600px] overflow-y-auto'>
-          <table className='w-full'>
-            <thead className='bg-slate-900 sticky top-0'>
-              <tr className='text-left text-cyan-400 font-semibold text-sm'>
-                <th className='px-4 py-3'>NOME</th>
-                <th className='px-4 py-3'>PATENTE</th>
-                <th className='px-4 py-3'>ATRIBUIÇÃO</th>
-                <th className='px-4 py-3'>DATA REGISTRO</th>
-                <th className='px-4 py-3'>SITUAÇÃO</th>
-                <th className='px-4 py-3'>FORÇA ESPECIAL</th>
-                <th className='px-4 py-3 text-center'>MEDALHAS</th>
-                <th className='px-4 py-3 text-center'>MISSÕES</th>
-                <th className='px-4 py-3'>E-MAIL</th>
-                <th className='px-4 py-3'>WHATSAPP</th>
-                <th className='px-4 py-3 text-center'>OBS</th>
-                <th className='px-4 py-3 text-center'>HIST</th>
-                <th className='px-4 py-3 text-center'>AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody className='text-gray-300 text-sm'>
-              {filteredMembros.length === 0 ? (
-                <tr>
-                  <td colSpan={13} className='text-center py-8 text-gray-400'>
-                    Nenhum membro encontrado
-                  </td>
-                </tr>
-              ) : (
-                filteredMembros.map((m) => {
-                  const usuario = getUsuarioData(m.usuarioId);
-                  const totalMissoes =
-                    (m.eventosParticipados?.length || 0) +
-                    (m.valorHistorico || 0);
-
-                  return (
-                    <tr
-                      key={m.id}
-                      className='border-b border-slate-700 hover:bg-slate-700/30'
-                    >
-                      <td className='px-4 py-3 font-semibold'>{m.nome}</td>
-                      <td className='px-4 py-3'>{m.patente}</td>
-                      <td className='px-4 py-3'>{m.atribuicao}</td>
-                      <td className='px-4 py-3'>{m.dataRegistro}</td>
-                      <td className='px-4 py-3'>{m.situacao}</td>
-                      <td className='px-4 py-3'>{m.forcaEspecial || 'Não'}</td>
-                      <td className='px-4 py-3 text-center'>
-                        <button
-                          className='text-yellow-400 hover:text-yellow-300'
-                          onClick={() => mostrarMedalhasMembro(m.id)}
-                        >
-                          {m.medalhas || 0} 👁️
-                        </button>
-                      </td>
-                      <td className='px-4 py-3 text-center'>
-                        <button
-                          className='text-cyan-400 hover:text-cyan-300'
-                          onClick={() => mostrarMissoesMembro(m.id)}
-                        >
-                          {totalMissoes} 👁️
-                        </button>
-                      </td>
-                      <td className='px-4 py-3'>{usuario?.email || '-'}</td>
-                      <td className='px-4 py-3'>{usuario?.whatsapp || '-'}</td>
-                      <td className='px-4 py-3 text-center'>
-                        {m.observacoes ? (
-                          <button
-                            onClick={() =>
-                              setModalTexto({
-                                isOpen: true,
-                                titulo: 'Observações',
-                                conteudo: m.observacoes,
-                              })
-                            }
-                            className='text-cyan-400 hover:text-cyan-300'
-                          >
-                            📋
-                          </button>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
-                        {m.historico ? (
-                          <button
-                            onClick={() =>
-                              setModalTexto({
-                                isOpen: true,
-                                titulo: 'Histórico',
-                                conteudo: m.historico,
-                              })
-                            }
-                            className='text-cyan-400 hover:text-cyan-300'
-                          >
-                            📋
-                          </button>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
-                        <button
-                          onClick={() => abrirEditarMembro(m.id)}
-                          className='text-blue-400 hover:text-blue-300 mr-2'
-                          title='Editar'
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => abrirCondecorar(m.id)}
-                          className='text-yellow-400 hover:text-yellow-300 mr-2'
-                          title='Condecorar'
-                        >
-                          ⭐
-                        </button>
-                        <button
-                          onClick={() => excluirMembro(m.id)}
-                          className='text-red-400 hover:text-red-300'
-                          title='Excluir'
-                        >
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* CALENDÁRIO DE EVENTOS */}
-      <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
-        <div className='flex justify-between items-center mb-4'>
-          <h3 className='text-2xl font-bold text-cyan-400'>
-            📅 CALENDÁRIO DE EVENTOS (ADMINISTRAÇÃO)
+      {/* ✅ MEMBROS REGISTRADOS - Apenas se tiver permissão */}
+      {canManageMembers && (
+        <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
+          <h3 className='text-2xl font-bold text-green-400 mb-4'>
+            ✅ MEMBROS REGISTRADOS
           </h3>
 
-          <div>
-            <button
-              onClick={abrirFormularioEvento}
-              className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors text-sm'
+          {/* Filtros */}
+          <div className='grid grid-cols-1 md:grid-cols-6 gap-4 mb-6'>
+            <input
+              type='text'
+              value={filters.search}
+              onChange={(e) => aplicarFiltros({ search: e.target.value })}
+              placeholder='Buscar por nome...'
+              className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2 focus:outline-none focus:border-cyan-400'
+            />
+            <select
+              value={filters.patente}
+              onChange={(e) => aplicarFiltros({ patente: e.target.value })}
+              className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
             >
-              ➕ Cadastrar Evento
+              <option value=''>Todas Patentes</option>
+              {patentes.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filters.situacao}
+              onChange={(e) => aplicarFiltros({ situacao: e.target.value })}
+              className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
+            >
+              <option value=''>Todas Situações</option>
+              <option value='Ativo'>Ativo</option>
+              <option value='Reservista'>Reservista</option>
+              <option value='Desertor'>Desertor</option>
+            </select>
+            <select
+              value={filters.forca}
+              onChange={(e) => aplicarFiltros({ forca: e.target.value })}
+              className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
+            >
+              <option value=''>Todas Forças</option>
+              {forcas.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+            <input
+              type='date'
+              value={filters.data}
+              onChange={(e) => aplicarFiltros({ data: e.target.value })}
+              className='bg-slate-900 text-white border border-slate-700 rounded px-4 py-2'
+            />
+            <button
+              onClick={limparFiltros}
+              className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors'
+            >
+              Limpar
             </button>
           </div>
-        </div>
 
-        <Calendario admin={true} modo='edicao' />
-      </div>
+          {/* Tabela */}
+          <div className='overflow-x-auto max-h-[600px] overflow-y-auto'>
+            <table className='w-full'>
+              <thead className='bg-slate-900 sticky top-0'>
+                <tr className='text-left text-cyan-400 font-semibold text-sm'>
+                  <th className='px-4 py-3'>NOME</th>
+                  <th className='px-4 py-3'>PATENTE</th>
+                  <th className='px-4 py-3'>ATRIBUIÇÃO</th>
+                  <th className='px-4 py-3'>DATA REGISTRO</th>
+                  <th className='px-4 py-3'>SITUAÇÃO</th>
+                  <th className='px-4 py-3'>FORÇA ESPECIAL</th>
+                  <th className='px-4 py-3 text-center'>MEDALHAS</th>
+                  <th className='px-4 py-3 text-center'>MISSÕES</th>
+                  <th className='px-4 py-3'>E-MAIL</th>
+                  <th className='px-4 py-3'>WHATSAPP</th>
+                  <th className='px-4 py-3 text-center'>OBS</th>
+                  <th className='px-4 py-3 text-center'>HIST</th>
+                  <th className='px-4 py-3 text-center'>AÇÕES</th>
+                </tr>
+              </thead>
+              <tbody className='text-gray-300 text-sm'>
+                {filteredMembros.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className='text-center py-8 text-gray-400'>
+                      Nenhum membro encontrado
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMembros.map((m) => {
+                    const usuario = getUsuarioData(m.usuarioId);
+                    const totalMissoes =
+                      (m.eventosParticipados?.length || 0) +
+                      (m.valorHistorico || 0);
+
+                    return (
+                      <tr
+                        key={m.id}
+                        className='border-b border-slate-700 hover:bg-slate-700/30'
+                      >
+                        <td className='px-4 py-3 font-semibold'>{m.nome}</td>
+                        <td className='px-4 py-3'>{m.patente}</td>
+                        <td className='px-4 py-3'>{m.atribuicao}</td>
+                        <td className='px-4 py-3'>{m.dataRegistro}</td>
+                        <td className='px-4 py-3'>{m.situacao}</td>
+                        <td className='px-4 py-3'>
+                          {m.forcaEspecial || 'Não'}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          <button
+                            className='text-yellow-400 hover:text-yellow-300'
+                            onClick={() => mostrarMedalhasMembro(m.id)}
+                          >
+                            {m.medalhas || 0} 👁️
+                          </button>
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          <button
+                            className='text-cyan-400 hover:text-cyan-300'
+                            onClick={() => mostrarMissoesMembro(m.id)}
+                          >
+                            {totalMissoes} 👁️
+                          </button>
+                        </td>
+                        <td className='px-4 py-3'>{usuario?.email || '-'}</td>
+                        <td className='px-4 py-3'>
+                          {usuario?.whatsapp || '-'}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          {m.observacoes ? (
+                            <button
+                              onClick={() =>
+                                setModalTexto({
+                                  isOpen: true,
+                                  titulo: 'Observações',
+                                  conteudo: m.observacoes,
+                                })
+                              }
+                              className='text-cyan-400 hover:text-cyan-300'
+                            >
+                              📋
+                            </button>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          {m.historico ? (
+                            <button
+                              onClick={() =>
+                                setModalTexto({
+                                  isOpen: true,
+                                  titulo: 'Histórico',
+                                  conteudo: m.historico,
+                                })
+                              }
+                              className='text-cyan-400 hover:text-cyan-300'
+                            >
+                              📋
+                            </button>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          <button
+                            onClick={() => abrirEditarMembro(m.id)}
+                            className='text-blue-400 hover:text-blue-300 mr-2'
+                            title='Editar'
+                          >
+                            ✏️
+                          </button>
+                          {canAwardMedals && (
+                            <button
+                              onClick={() => abrirCondecorar(m.id)}
+                              className='text-yellow-400 hover:text-yellow-300 mr-2'
+                              title='Condecorar'
+                            >
+                              ⭐
+                            </button>
+                          )}
+                          <button
+                            onClick={() => excluirMembro(m.id)}
+                            className='text-red-400 hover:text-red-300'
+                            title='Excluir'
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ CALENDÁRIO DE EVENTOS - Apenas se tiver permissão */}
+      {canManageEvents && (
+        <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
+          <div className='flex justify-between items-center mb-4'>
+            <h3 className='text-2xl font-bold text-cyan-400'>
+              📅 CALENDÁRIO DE EVENTOS (ADMINISTRAÇÃO)
+            </h3>
+
+            <div>
+              <button
+                onClick={abrirFormularioEvento}
+                className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2 transition-colors text-sm'
+              >
+                ➕ Cadastrar Evento
+              </button>
+            </div>
+          </div>
+
+          <Calendario admin={true} modo='edicao' />
+        </div>
+      )}
 
       {/* Modal de Texto */}
       <ModalTexto
@@ -1152,7 +1185,7 @@ export default function Administracao() {
       />
 
       {/* Drawer Editar Membro */}
-      {editingMember && (
+      {editingMember && canManageMembers && (
         <aside className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 z-80 overflow-y-auto p-6'>
           <div className='flex justify-between items-center mb-6'>
             <h3 className='text-2xl font-bold text-cyan-400'>EDITAR MEMBRO</h3>
@@ -1173,7 +1206,7 @@ export default function Administracao() {
       )}
 
       {/* Drawer Condecorar */}
-      {openCondecorar && (
+      {openCondecorar && canAwardMedals && (
         <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-60 overflow-y-auto p-6'>
           <div className='flex justify-between items-center mb-6'>
             <h3 className='text-2xl font-bold text-cyan-400'>CONDECORAR</h3>
@@ -1266,7 +1299,7 @@ export default function Administracao() {
       )}
 
       {/* Drawer Remover Medalha */}
-      {removeCondecoracaoMembro && (
+      {removeCondecoracaoMembro && canAwardMedals && (
         <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-70 overflow-y-auto p-6'>
           <div className='flex justify-between items-center mb-6'>
             <h3 className='text-2xl font-bold text-red-400'>
@@ -1328,7 +1361,7 @@ export default function Administracao() {
       )}
 
       {/* Sidebar de Formulário de Eventos */}
-      {showEventForm && (
+      {showEventForm && canManageEvents && (
         <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 z-[70] overflow-y-auto'>
           <div className='p-6'>
             <div className='flex justify-between items-center mb-6'>
@@ -1357,13 +1390,15 @@ export default function Administracao() {
       )}
 
       {/* Sidebar de Detalhes do Evento */}
-      <EventDetailsSidebar
-        open={showEventDetails}
-        evento={selectedEvento}
-        onClose={() => setShowEventDetails(false)}
-        onEdit={editarEvento}
-        adminMode={true}
-      />
+      {canManageEvents && (
+        <EventDetailsSidebar
+          open={showEventDetails}
+          evento={selectedEvento}
+          onClose={() => setShowEventDetails(false)}
+          onEdit={editarEvento}
+          adminMode={true}
+        />
+      )}
 
       {/* Overlay */}
       {(showEventDetails || showEventForm) && (
@@ -1378,66 +1413,71 @@ export default function Administracao() {
       )}
 
       {/* Sidebar de Participantes */}
-      <aside
-        id='participantes-evento-sidebar-admin'
-        className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 -translate-x-full transition-transform duration-300 z-[70] overflow-y-auto'
-      >
-        <div className='p-6'>
-          <div className='flex justify-between items-center mb-6'>
-            <h3 className='text-2xl font-bold text-cyan-400'>
-              GERENCIAR PARTICIPANTES
-            </h3>
-            <button
-              onClick={() => {
-                document
-                  .getElementById('participantes-evento-sidebar-admin')
-                  .classList.add('-translate-x-full');
-              }}
-              className='text-gray-400 hover:text-white text-2xl'
-            >
-              ×
-            </button>
-          </div>
+      {canManageEvents && (
+        <aside
+          id='participantes-evento-sidebar-admin'
+          className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 -translate-x-full transition-transform duration-300 z-[70] overflow-y-auto'
+        >
+          <div className='p-6'>
+            <div className='flex justify-between items-center mb-6'>
+              <h3 className='text-2xl font-bold text-cyan-400'>
+                GERENCIAR PARTICIPANTES
+              </h3>
+              <button
+                onClick={() => {
+                  document
+                    .getElementById('participantes-evento-sidebar-admin')
+                    .classList.add('-translate-x-full');
+                }}
+                className='text-gray-400 hover:text-white text-2xl'
+              >
+                ×
+              </button>
+            </div>
 
-          <div className='mb-6'>
-            <h4 className='text-sm text-gray-400 mb-3'>
-              PARTICIPANTES ADICIONADOS
-            </h4>
-            <div
-              id='lista-participantes-evento-admin'
-              className='space-y-2 max-h-60 overflow-y-auto'
-            />
-          </div>
+            <div className='mb-6'>
+              <h4 className='text-sm text-gray-400 mb-3'>
+                PARTICIPANTES ADICIONADOS
+              </h4>
+              <div
+                id='lista-participantes-evento-admin'
+                className='space-y-2 max-h-60 overflow-y-auto'
+              />
+            </div>
 
-          <div>
-            <h4 className='text-sm text-gray-400 mb-3'>ADICIONAR MEMBRO</h4>
-            <input
-              type='text'
-              id='search-membro-participante-admin'
-              placeholder='Buscar membro ativo...'
-              className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 mb-3'
-              onInput={(e) => {
-                const search = e.target.value.toLowerCase();
-                const items = document.querySelectorAll(
-                  '#lista-membros-disponiveis-admin .membro-item'
-                );
-                items.forEach((item) => {
-                  const nome = item.dataset.nome;
-                  item.style.display = nome.includes(search) ? 'flex' : 'none';
-                });
-              }}
-            />
-            <div
-              id='lista-membros-disponiveis-admin'
-              className='space-y-2 max-h-96 overflow-y-auto'
-            />
+            <div>
+              <h4 className='text-sm text-gray-400 mb-3'>ADICIONAR MEMBRO</h4>
+              <input
+                type='text'
+                id='search-membro-participante-admin'
+                placeholder='Buscar membro ativo...'
+                className='w-full bg-slate-800 text-white border border-slate-700 rounded px-4 py-2 mb-3'
+                onInput={(e) => {
+                  const search = e.target.value.toLowerCase();
+                  const items = document.querySelectorAll(
+                    '#lista-membros-disponiveis-admin .membro-item'
+                  );
+                  items.forEach((item) => {
+                    const nome = item.dataset.nome;
+                    item.style.display = nome.includes(search)
+                      ? 'flex'
+                      : 'none';
+                  });
+                }}
+              />
+              <div
+                id='lista-membros-disponiveis-admin'
+                className='space-y-2 max-h-96 overflow-y-auto'
+              />
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      )}
     </div>
   );
 }
 
+// ✅ Componentes auxiliares (EditarMembroForm e EventForm) permanecem iguais
 function EditarMembroForm({ membro, onChange, onSave, onCancel }) {
   return (
     <form onSubmit={onSave} className='space-y-4'>
