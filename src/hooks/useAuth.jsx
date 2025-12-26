@@ -355,11 +355,12 @@ export function AuthProvider({ children }) {
       return { success: false, error: 'Usuário não está logado' };
     }
 
-    if (!novoTelefone || !repetirNovoTelefone) {
-      return { success: false, error: 'Preencha todos os campos' };
-    }
+    // ✅ Permitir campos vazios (para remover telefone)
+    // Mas ambos devem estar vazios ou ambos preenchidos
+    const telefone1 = (novoTelefone || '').trim();
+    const telefone2 = (repetirNovoTelefone || '').trim();
 
-    if (novoTelefone !== repetirNovoTelefone) {
+    if (telefone1 !== telefone2) {
       return { success: false, error: 'Os telefones não coincidem' };
     }
 
@@ -373,20 +374,26 @@ export function AuthProvider({ children }) {
       return { success: false, error: 'Usuário não encontrado' };
     }
 
-    if (novoTelefone === usuario.whatsapp) {
+    // ✅ Verificar se está tentando "alterar" para o mesmo valor
+    const telefoneAtual = usuario.whatsapp || '';
+    if (telefone1 === telefoneAtual) {
       return {
         success: false,
-        error: 'O novo telefone deve ser diferente do telefone atual',
+        error: telefone1
+          ? 'O novo telefone deve ser diferente do telefone atual'
+          : 'O telefone já está vazio',
       };
     }
 
     const index = usuarios.findIndex((u) => u.id === usuarioAtual.id);
-    usuarios[index].whatsapp = novoTelefone;
+    usuarios[index].whatsapp = telefone1; // ✅ Pode ser string vazia
     localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
 
     return {
       success: true,
-      message: '✅ Telefone alterado com sucesso!',
+      message: telefone1
+        ? '✅ Telefone alterado com sucesso!'
+        : '✅ Telefone removido com sucesso!',
     };
   }
 

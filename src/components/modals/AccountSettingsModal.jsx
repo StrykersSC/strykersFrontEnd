@@ -258,6 +258,10 @@ export default function AccountSettingsModal({ isOpen, onClose }) {
                 placeholder='(11) 99999-9999'
                 className='w-full px-4 py-2 bg-slate-800 text-white border border-slate-700 rounded-lg focus:outline-none focus:border-cyan-400 transition'
               />
+
+              <p className='text-gray-500 text-xs mt-1'>
+                💡 Deixe ambos os campos vazios para remover o telefone
+              </p>
             </div>
 
             {erro && <p className='text-red-400 text-sm'>{erro}</p>}
