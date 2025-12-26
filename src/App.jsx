@@ -95,7 +95,7 @@ function AppContent() {
         />
       </div>
 
-      <nav className='relative z-10 bg-slate-900/80 backdrop-blur-sm z-[100] border-b border-slate-700'>
+      <nav className='relative z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
         <div className='container mx-auto px-6 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-3'>
@@ -109,8 +109,15 @@ function AppContent() {
 
             <div className='flex items-center space-x-8'>
               <NavItem to='/'>HOME</NavItem>
-              <NavItem to='/membros'>MEMBROS</NavItem>
-              <NavItem to='/eventos'>EVENTOS</NavItem>
+
+              {/* ✅ Links protegidos por permissão */}
+              <NavItem to='/membros' permission='VIEW_MEMBERS'>
+                MEMBROS
+              </NavItem>
+              <NavItem to='/eventos' permission='VIEW_EVENTS'>
+                EVENTOS
+              </NavItem>
+
               <NavItem to='/recrutamento'>RECRUTAMENTO</NavItem>
               <NavItem to='/forcasespeciais'>FORÇAS ESPECIAIS</NavItem>
 
@@ -212,13 +219,36 @@ function AppContent() {
       <main className='relative z-10 container mx-auto px-6 py-16'>
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/membros' element={<Membros />} />
-          <Route path='/eventos' element={<Eventos />} />
-          <Route path='/forcasespeciais' element={<ForcasEspeciais />} />
-          <Route path='/perfil' element={<Perfil />} />
           <Route path='/recrutamento' element={<Recrutamento />} />
+          <Route path='/forcasespeciais' element={<ForcasEspeciais />} />
 
-          {/* ✅ Rota protegida de Administração */}
+          {/* ✅ Rotas protegidas de USUÁRIO */}
+          <Route
+            path='/perfil'
+            element={
+              <ProtectedRoute permission='VIEW_PROFILE'>
+                <Perfil />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/membros'
+            element={
+              <ProtectedRoute permission='VIEW_MEMBERS'>
+                <Membros />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/eventos'
+            element={
+              <ProtectedRoute permission='VIEW_EVENTS'>
+                <Eventos />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ Rota protegida de ADMIN */}
           <Route
             path='/administracao'
             element={

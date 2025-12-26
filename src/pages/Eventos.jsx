@@ -8,9 +8,6 @@ export default function Eventos() {
   );
   const [selectedEvento, setSelectedEvento] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [usuarioLogado, setUsuarioLogado] = useState(() =>
-    JSON.parse(localStorage.getItem('strykers_usuario') || 'null')
-  );
 
   // ✅ Sincronizar eventos do localStorage
   useEffect(() => {
@@ -20,7 +17,6 @@ export default function Eventos() {
       );
       setEventos(stored);
 
-      // ✅ Atualizar evento selecionado se estiver aberto
       if (selectedEvento) {
         const updated = stored.find((ev) => ev.id === selectedEvento.id);
         if (updated) {
@@ -39,35 +35,12 @@ export default function Eventos() {
     };
   }, [selectedEvento]);
 
-  useEffect(() => {
-    const handleUserChange = () => {
-      const usuario = JSON.parse(
-        localStorage.getItem('strykers_usuario') || 'null'
-      );
-      setUsuarioLogado(usuario);
-    };
-
-    window.addEventListener('storage', handleUserChange);
-    document.addEventListener('usuario:updated', handleUserChange);
-
-    return () => {
-      window.removeEventListener('storage', handleUserChange);
-      document.removeEventListener('usuario:updated', handleUserChange);
-    };
-  }, []);
-
   // ✅ Listener para abrir detalhes do evento
   useEffect(() => {
     function handleMostrarDetalhes(e) {
-      console.log('🟢 Eventos.jsx recebeu evento:', e.detail);
-
       const { id } = e.detail || {};
-      if (!id) {
-        console.error('❌ ID do evento não encontrado');
-        return;
-      }
+      if (!id) return;
 
-      // Buscar evento atualizado do localStorage
       const eventosAtuais = JSON.parse(
         localStorage.getItem('strykers_eventos') || '[]'
       );
@@ -75,11 +48,8 @@ export default function Eventos() {
       const found = eventosAtuais.find((ev) => ev.id === id);
 
       if (found) {
-        console.log('✅ Evento encontrado:', found);
         setSelectedEvento(found);
         setShowDetails(true);
-      } else {
-        console.error('❌ Evento não encontrado no localStorage:', id);
       }
     }
 
@@ -93,16 +63,15 @@ export default function Eventos() {
     };
   }, []);
 
-  // ✅ Filtrar campanhas ativas (não finalizadas)
+  // ✅ Filtrar campanhas ativas
   const campanhsAtivas = eventos
     .filter((evento) => evento.categoria === 'campanha' && !evento.finalizado)
     .sort((a, b) => {
-      // Ordenar por data (mais próxima primeiro)
       const dataA = new Date(a.data + 'T' + a.horario);
       const dataB = new Date(b.data + 'T' + b.horario);
       return dataA - dataB;
     })
-    .slice(0, 3); // Limitar a 3 campanhas
+    .slice(0, 3);
 
   return (
     <div className='relative z-10 container mx-auto px-6 py-16'>
@@ -207,18 +176,16 @@ export default function Eventos() {
           <div className='space-y-4'>
             {eventos
               .filter((evento) => {
-                // ✅ Filtrar apenas eventos futuros ou do dia atual
                 const dataEvento = new Date(evento.data + 'T' + evento.horario);
                 const agora = new Date();
                 return dataEvento >= agora || !evento.finalizado;
               })
               .sort((a, b) => {
-                // ✅ Ordenar por data e horário
                 const dataA = new Date(a.data + 'T' + a.horario);
                 const dataB = new Date(b.data + 'T' + b.horario);
                 return dataA - dataB;
               })
-              .slice(0, 4) // ✅ Limitar a 4 eventos
+              .slice(0, 4)
               .map((evento) => {
                 const dataEvento = new Date(evento.data + 'T00:00:00');
                 const hoje = new Date();
@@ -243,7 +210,6 @@ export default function Eventos() {
                       isPast ? 'opacity-60' : ''
                     }`}
                     onClick={() => {
-                      console.log('🔵 Clicou no evento da lista:', evento.id);
                       setSelectedEvento(evento);
                       setShowDetails(true);
                     }}
@@ -280,7 +246,6 @@ export default function Eventos() {
           </div>
         )}
 
-        {/* ✅ Indicador de mais eventos */}
         {eventos.filter((evento) => {
           const dataEvento = new Date(evento.data + 'T' + evento.horario);
           const agora = new Date();
@@ -303,7 +268,6 @@ export default function Eventos() {
         open={showDetails}
         evento={selectedEvento}
         onClose={() => {
-          console.log('🔴 Fechando sidebar');
           setShowDetails(false);
           setSelectedEvento(null);
         }}

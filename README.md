@@ -23,7 +23,8 @@ O Strykers Front-End é uma plataforma web completa para gerenciar todos os aspe
 
 - ✨ Interface moderna com tema espacial/militar
 - 🔐 Sistema completo de autenticação e autorização
-- 👥 Gerenciamento avançado de membros e patentes
+- 👥 Sistema de roles e permissões (USER, ADMIN, SUPER_ADMIN)
+- 👤 Gerenciamento avançado de membros e patentes
 - 📅 Sistema de eventos com calendário interativo
 - 🏅 Sistema de condecorações e medalhas
 - 📊 Estatísticas e histórico detalhado
@@ -36,9 +37,14 @@ O Strykers Front-End é uma plataforma web completa para gerenciar todos os aspe
 
 - Cadastro de novos usuários com confirmação de e-mail
 - Login seguro com validação
-- Recuperação de senha
-- Gerenciamento de perfil pessoal
 - Sistema de aprovação de alistamentos
+- **Três níveis de acesso:**
+  - 👤 **USER**: Acesso básico (visualização e perfil próprio)
+  - ⚜️ **ADMIN**: Gerenciamento operacional (membros, eventos, aprovações)
+  - 👑 **SUPER_ADMIN**: Controle total (incluindo gerenciamento de roles)
+- Proteção de rotas baseada em permissões
+- Badges visuais de identificação de role
+- Gerenciamento de perfil pessoal
 
 ### 2. Gerenciamento de Membros
 
@@ -181,6 +187,7 @@ strykersFrontEnd/
 
 Para informações mais específicas, consulte os documentos na pasta `docs/`:
 
+- **[ROLES.md](docs/ROLES.md)** - Sistema de roles e permissões
 - **[CAROUSEL.md](docs/CAROUSEL.md)** - Como usar e configurar o carrossel de imagens
 - **[EVENTS.md](docs/EVENTS.md)** - Sistema de eventos e calendário
 - **[MEMBERS.md](docs/MEMBERS.md)** - Gerenciamento de membros e patentes
@@ -190,6 +197,27 @@ Para informações mais específicas, consulte os documentos na pasta `docs/`:
 - **[CONSTANTS.md](docs/CONSTANTS.md)** - Como modificar constantes do projeto
 
 ## ⚙️ Configuração
+
+### Criar Super Admin Inicial
+
+Para criar o primeiro super administrador do sistema:
+
+1.  Abra o console do navegador (F12)
+2.  Execute o seguinte código:
+
+`
+
+javascript
+
+`const usuarios =  JSON.parse(localStorage.getItem('strykers_usuarios')  ||  '[]');  usuarios.push({  id:  'user-superadmin-'  +  Date.now(),  nome:  'Super Admin',  email:  'admin@strykers.com',  senha:  'admin123',  role:  'super_admin',  status:  'aprovado',  emailConfirmado:  true,  dataSolicitacao:  new  Date().toISOString(),  });  localStorage.setItem('strykers_usuarios',  JSON.stringify(usuarios));  console.log('✅ Super Admin criado!');`
+
+`
+
+1.  Faça login com:
+    - Email: `admin@strykers.com`
+    - Senha: `admin123`
+
+⚠️ **IMPORTANTE**: Altere a senha imediatamente após o primeiro login!
 
 ### Carrossel de Imagens
 

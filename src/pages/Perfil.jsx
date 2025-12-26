@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 import medalhas from '../constants/medalhas.js';
 import {
@@ -60,34 +59,30 @@ function getCoresCategoria(categoria) {
 }
 
 export default function Perfil() {
-  const { usuarioAtual, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { usuarioAtual, loading } = useAuth();
   const [membro, setMembro] = useState(null);
 
+  // ✅ Carregar dados do membro
   useEffect(() => {
-    if (!isLoading && !usuarioAtual) {
-      navigate('/');
-      return;
-    }
-
     if (usuarioAtual) {
       const membrosData = JSON.parse(
         localStorage.getItem('strykers_membros') || '[]'
       );
-
-      // ✅ Buscar por usuarioId ao invés de nome
       const found = membrosData.find((m) => m.usuarioId === usuarioAtual.id);
       setMembro(found || null);
     }
-  }, [usuarioAtual, isLoading, navigate]);
+  }, [usuarioAtual]);
 
-  if (isLoading)
+  // ✅ Loading state
+  if (loading) {
     return (
       <div className='relative z-10 container mx-auto px-6 py-16 text-center'>
         <p className='text-gray-400'>Carregando...</p>
       </div>
     );
+  }
 
+  // ✅ Usuário sem registro de membro
   if (!membro) {
     return (
       <main className='relative z-10 container mx-auto px-6 py-16 text-center'>

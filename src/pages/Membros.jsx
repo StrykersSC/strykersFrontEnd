@@ -3,7 +3,7 @@ import {
   mostrarMedalhasMembro,
   mostrarMissoesMembro,
 } from '../components/ui/MembrosUtils.jsx';
-import { atribuicoes as ATRIBUICOES } from '../constants'; // ← IMPORTAR
+import { atribuicoes as ATRIBUICOES } from '../constants';
 
 function formatDate(d) {
   if (!d) return '';
@@ -19,7 +19,7 @@ export default function Membros() {
   const [search, setSearch] = useState('');
   const [patenteFilter, setPatenteFilter] = useState('');
   const [situacaoFilter, setSituacaoFilter] = useState('');
-  const [atribuicaoFilter, setAtribuicaoFilter] = useState(''); // ← NOVO FILTRO
+  const [atribuicaoFilter, setAtribuicaoFilter] = useState('');
   const [sortField, setSortField] = useState(null);
   const [selected, setSelected] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
@@ -45,7 +45,7 @@ export default function Membros() {
     if (situacaoFilter)
       data = data.filter((m) => m.situacao === situacaoFilter);
     if (atribuicaoFilter)
-      data = data.filter((m) => m.atribuicao === atribuicaoFilter); // ← FILTRO DE ATRIBUIÇÃO
+      data = data.filter((m) => m.atribuicao === atribuicaoFilter);
 
     if (sortField) {
       data.sort((a, b) => {
@@ -73,7 +73,7 @@ export default function Membros() {
     setSearch('');
     setPatenteFilter('');
     setSituacaoFilter('');
-    setAtribuicaoFilter(''); // ← LIMPAR FILTRO DE ATRIBUIÇÃO
+    setAtribuicaoFilter('');
   }
 
   function toggleSort(field) {
@@ -112,8 +112,6 @@ export default function Membros() {
 
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-6'>
         <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
-          {' '}
-          {/* ← MUDOU DE 5 PARA 6 */}
           <div className='md:col-span-2'>
             <input
               value={search}
@@ -137,7 +135,6 @@ export default function Membros() {
               </option>
             ))}
           </select>
-          {/* ← NOVO FILTRO DE ATRIBUIÇÃO */}
           <select
             id='filter-atribuicao'
             value={atribuicaoFilter}
@@ -191,7 +188,6 @@ export default function Membros() {
                 >
                   NOME
                 </th>
-                {/* ← NOVA COLUNA DE ATRIBUIÇÃO */}
                 <th
                   onClick={() => toggleSort('atribuicao')}
                   className='px-6 py-4 cursor-pointer hover:text-cyan-300'
@@ -223,8 +219,6 @@ export default function Membros() {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={9} className='text-center py-8 text-gray-400'>
-                    {' '}
-                    {/* ← MUDOU DE 8 PARA 9 */}
                     Nenhum membro encontrado
                   </td>
                 </tr>
@@ -240,7 +234,6 @@ export default function Membros() {
                     >
                       <td className='px-6 py-4 font-semibold'>{m.patente}</td>
                       <td className='px-6 py-4'>{m.nome}</td>
-                      {/* ← EXIBIR ATRIBUIÇÃO */}
                       <td className='px-6 py-4'>
                         {m.atribuicao || 'Não definida'}
                       </td>
@@ -407,7 +400,7 @@ export default function Membros() {
         />
       )}
 
-      {/* Edit/Add sidebar placeholder (not implemented fully yet) */}
+      {/* Edit/Add sidebar placeholder */}
       {showEdit && (
         <aside
           id='edit-member-sidebar'

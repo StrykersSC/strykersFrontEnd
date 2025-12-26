@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { forcasEspeciais, atribuicoes as ATRIBUICOES } from '../../constants';
+import { hasPermission } from '../../constants/roles.js';
 
 export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
   const [foto, setFoto] = useState('');
@@ -11,7 +12,10 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
   const [sucesso, setSucesso] = useState('');
   const [erro, setErro] = useState('');
 
-  const { salvarConfiguracoes } = useAuth();
+  const { usuarioAtual, salvarConfiguracoes } = useAuth();
+
+  // ✅ Verificar permissão
+  const canEditProfile = hasPermission(usuarioAtual?.role, 'EDIT_OWN_PROFILE');
 
   // ✅ Carregar dados por usuarioId
   useEffect(() => {
@@ -53,8 +57,35 @@ export default function ProfileSettingsModal({ isOpen, onClose, usuario }) {
     }
   };
 
+  // ✅ ÚNICO return null - verificar isOpen primeiro
   if (!isOpen) return null;
 
+  // ✅ Verificar permissão DEPOIS de confirmar que está aberto
+  if (!canEditProfile) {
+    return (
+      <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50'>
+        <div className='bg-slate-900 border-2 border-red-400 rounded-lg p-8 max-w-md'>
+          <div className='text-center'>
+            <div className='text-6xl mb-4'>🚫</div>
+            <h2 className='text-2xl font-bold text-red-400 mb-2'>
+              Acesso Negado
+            </h2>
+            <p className='text-gray-400 mb-6'>
+              Você não tem permissão para editar perfis.
+            </p>
+            <button
+              onClick={onClose}
+              className='bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded'
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Renderização normal do modal
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50'>
       <div className='bg-slate-900 border-2 border-cyan-400 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto p-8'>
