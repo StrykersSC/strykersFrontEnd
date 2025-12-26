@@ -12,6 +12,9 @@ import {
   atribuicoes as ATRIBUICOES,
 } from '../constants';
 
+import { useAuth } from '../hooks/useAuth.jsx';
+import { ROLES, ROLE_LABELS, ROLE_BADGES } from '../constants/roles.js';
+
 function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
   if (!isOpen) return null;
 
@@ -35,6 +38,18 @@ function ModalTexto({ isOpen, titulo, conteudo, onClose }) {
 }
 
 export default function Administracao() {
+  // ✅ CORREÇÃO: Desestruturar loading junto com os outros valores
+  const { usuarioAtual, updateUserRole, loading } = useAuth();
+
+  // ✅ Verificação de loading ANTES de inicializar os estados
+  if (loading) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-cyan-400 text-xl'>Carregando...</div>
+      </div>
+    );
+  }
+
   const [pendentes, setPendentes] = useState(() =>
     JSON.parse(localStorage.getItem('strykers_alistamentos_pendentes') || '[]')
   );
@@ -417,10 +432,9 @@ export default function Administracao() {
 
     const alistamento = pendentes[index];
 
-    // ✅ Criar membro com usuarioId
     const novoMembro = {
       id: 'membro-' + Date.now(),
-      usuarioId: alistamento.id, // ✅ Referência ao ID do usuário
+      usuarioId: alistamento.id,
       nome: alistamento.nome,
       foto: `https://ui-avatars.com/api/?name=${encodeURIComponent(
         alistamento.nome
@@ -538,7 +552,6 @@ export default function Administracao() {
       prev.map((m) => (m.id === editingMember.id ? editingMember : m))
     );
 
-    // ✅ Atualizar nome do usuário se foi alterado
     const membroAnterior = membros.find((m) => m.id === editingMember.id);
     if (membroAnterior && membroAnterior.nome !== editingMember.nome) {
       setUsuarios((prev) =>
@@ -561,7 +574,6 @@ export default function Administracao() {
     const m = membros.find((mm) => mm.id === membroId);
     if (!m) return;
 
-    // ✅ Buscar usuário por usuarioId
     const usuario = usuarios.find((u) => u.id === m.usuarioId);
 
     const rec = {
@@ -689,7 +701,6 @@ export default function Administracao() {
     setShowEventDetails(false);
   }
 
-  // ✅ Função auxiliar para buscar dados do usuário
   function getUsuarioData(usuarioId) {
     return usuarios.find((u) => u.id === usuarioId);
   }
@@ -830,6 +841,92 @@ export default function Administracao() {
         </div>
       </div>
 
+      {/* GERENCIAMENTO DE ROLES (apenas SUPER_ADMIN) */}
+      {usuarioAtual?.role === ROLES.SUPER_ADMIN && (
+        <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
+          <h3 className='text-2xl font-bold text-purple-400 mb-4'>
+            👑 GERENCIAMENTO DE ROLES
+          </h3>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-slate-900'>
+                <tr className='text-left text-cyan-400 font-semibold'>
+                  <th className='px-4 py-3'>USUÁRIO</th>
+                  <th className='px-4 py-3'>E-MAIL</th>
+                  <th className='px-4 py-3'>ROLE ATUAL</th>
+                  <th className='px-4 py-3'>STATUS</th>
+                  <th className='px-4 py-3 text-center'>ALTERAR ROLE</th>
+                </tr>
+              </thead>
+              <tbody className='text-gray-300'>
+                {usuarios
+                  .filter((u) => u.status === 'aprovado')
+                  .map((u) => {
+                    const roleBadge = ROLE_BADGES[u.role || ROLES.USER];
+                    return (
+                      <tr
+                        key={u.id}
+                        className='border-b border-slate-700 hover:bg-slate-700/30'
+                      >
+                        <td className='px-4 py-3 font-semibold'>{u.nome}</td>
+                        <td className='px-4 py-3'>{u.email}</td>
+                        <td className='px-4 py-3'>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${roleBadge.bg} ${roleBadge.text}`}
+                          >
+                            {roleBadge.icon} {ROLE_LABELS[u.role || ROLES.USER]}
+                          </span>
+                        </td>
+                        <td className='px-4 py-3'>{u.status}</td>
+                        <td className='px-4 py-3 text-center'>
+                          <select
+                            value={u.role || ROLES.USER}
+                            onChange={(e) => {
+                              if (
+                                confirm(
+                                  `Alterar role de ${u.nome} para ${
+                                    ROLE_LABELS[e.target.value]
+                                  }?`
+                                )
+                              ) {
+                                const result = updateUserRole(
+                                  u.id,
+                                  e.target.value
+                                );
+                                if (result.success) {
+                                  setUsuarios((prev) =>
+                                    prev.map((user) =>
+                                      user.id === u.id
+                                        ? { ...user, role: e.target.value }
+                                        : user
+                                    )
+                                  );
+                                  alert('✅ Role atualizado com sucesso!');
+                                } else {
+                                  alert('❌ ' + result.error);
+                                }
+                              }
+                            }}
+                            className='bg-slate-900 text-white border border-slate-700 rounded px-3 py-1 text-sm'
+                          >
+                            {Object.entries(ROLE_LABELS).map(
+                              ([role, label]) => (
+                                <option key={role} value={role}>
+                                  {label}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* MEMBROS REGISTRADOS */}
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8'>
         <h3 className='text-2xl font-bold text-green-400 mb-4'>
@@ -922,7 +1019,6 @@ export default function Administracao() {
                 </tr>
               ) : (
                 filteredMembros.map((m) => {
-                  // ✅ Buscar usuário por usuarioId
                   const usuario = getUsuarioData(m.usuarioId);
                   const totalMissoes =
                     (m.eventosParticipados?.length || 0) +

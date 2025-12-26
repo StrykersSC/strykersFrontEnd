@@ -17,9 +17,21 @@ import AuthModal from './components/modals/AuthModal.jsx';
 import EmailConfirmationModal from './components/modals/EmailConfirmationModal.jsx';
 import AccountSettingsModal from './components/modals/AccountSettingsModal.jsx';
 import ProfileSettingsModal from './components/modals/ProfileSettingsModal.jsx';
-import { useAuth } from './hooks/useAuth.js';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
+import { hasPermission, ROLE_BADGES, ROLE_LABELS } from './constants/roles';
 
-function NavItem({ to, children }) {
+function NavItem({ to, children, permission }) {
+  const { usuarioAtual } = useAuth();
+
+  // Se requer permissão e usuário não tem, não mostrar
+  if (
+    permission &&
+    (!usuarioAtual || !hasPermission(usuarioAtual.role, permission))
+  ) {
+    return null;
+  }
+
   return (
     <NavLink
       to={to}
@@ -69,6 +81,10 @@ function AppContent() {
       navigate('/');
     }
   };
+
+  // Badge do role do usuário
+  const userRoleBadge = usuarioAtual ? ROLE_BADGES[usuarioAtual.role] : null;
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'>
       <div className='fixed inset-0 pointer-events-none z-0 flex items-center justify-center'>
@@ -79,7 +95,7 @@ function AppContent() {
         />
       </div>
 
-      <nav className='relative z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
+      <nav className='relative z-10 bg-slate-900/80 backdrop-blur-sm z-[100] border-b border-slate-700'>
         <div className='container mx-auto px-6 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-3'>
@@ -97,7 +113,11 @@ function AppContent() {
               <NavItem to='/eventos'>EVENTOS</NavItem>
               <NavItem to='/recrutamento'>RECRUTAMENTO</NavItem>
               <NavItem to='/forcasespeciais'>FORÇAS ESPECIAIS</NavItem>
-              <NavItem to='/administracao'>ADMINISTRAÇÃO</NavItem>
+
+              {/* ✅ Link de Administração protegido */}
+              <NavItem to='/administracao' permission='VIEW_ADMIN_PANEL'>
+                ADMINISTRAÇÃO
+              </NavItem>
 
               <div className='ml-auto pl-8 border-l border-slate-700'>
                 {usuarioAtual ? (
@@ -106,15 +126,39 @@ function AppContent() {
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className='text-cyan-400 font-semibold hover:text-cyan-300 transition-colors pb-1 flex items-center gap-2'
                     >
+                      {/* ✅ Badge do role */}
+                      {userRoleBadge && (
+                        <span className='text-lg'>{userRoleBadge.icon}</span>
+                      )}
                       {usuarioAtual.nome}
                       <span className='text-sm'>▼</span>
                     </button>
 
                     {dropdownOpen && (
                       <div
-                        className='fixed mt-0 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50 top-16 right-6'
+                        className='fixed mt-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-[9999] top-16 right-6'
                         style={{ pointerEvents: 'auto' }}
                       >
+                        {/* ✅ Header com role */}
+                        <div className='px-4 py-3 border-b border-slate-700'>
+                          <div className='text-white font-semibold'>
+                            {usuarioAtual.nome}
+                          </div>
+                          <div className='text-gray-400 text-sm'>
+                            {usuarioAtual.email}
+                          </div>
+                          {userRoleBadge && (
+                            <div className='mt-2'>
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${userRoleBadge.bg} ${userRoleBadge.text}`}
+                              >
+                                {userRoleBadge.icon}{' '}
+                                {ROLE_LABELS[usuarioAtual.role]}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
                         <button
                           onClick={() => {
                             navigate('/perfil');
@@ -172,8 +216,17 @@ function AppContent() {
           <Route path='/eventos' element={<Eventos />} />
           <Route path='/forcasespeciais' element={<ForcasEspeciais />} />
           <Route path='/perfil' element={<Perfil />} />
-          <Route path='/administracao' element={<Administracao />} />
           <Route path='/recrutamento' element={<Recrutamento />} />
+
+          {/* ✅ Rota protegida de Administração */}
+          <Route
+            path='/administracao'
+            element={
+              <ProtectedRoute permission='VIEW_ADMIN_PANEL'>
+                <Administracao />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
 
@@ -216,7 +269,9 @@ function AppContent() {
 export function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

@@ -757,3 +757,23 @@ Use os filtros para gerar insights:
 ---
 
 **Disciplina. Ordem. Supremacia.**
+
+## Criar uma conta ADM para teste em Local Storage:
+
+Limpe o Local Storage e use o código a seguir no console do navegador:
+
+```
+const usuarios = JSON.parse(localStorage.getItem('strykers_usuarios') || '[]');
+usuarios.push({
+  id: 'user-superadmin-' + Date.now(),
+  nome: 'Super Admin',
+  email: 'admin@strykers.com',
+  senha: 'admin123',
+  role: 'super_admin',
+  status: 'aprovado',
+  emailConfirmado: true,
+  dataSolicitacao: new Date().toISOString(),
+});
+localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
+console.log('✅ Super Admin criado!');
+```

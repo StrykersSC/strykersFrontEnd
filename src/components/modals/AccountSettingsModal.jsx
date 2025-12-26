@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../hooks/useAuth.jsx';
 
 export default function AccountSettingsModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('senha');
