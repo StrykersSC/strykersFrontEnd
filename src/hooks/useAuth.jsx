@@ -231,6 +231,170 @@ export function AuthProvider({ children }) {
     return { success: true };
   }
 
+  /**
+   * Alterar senha do usuário logado
+   */
+  function alterarSenha(senhaAtual, novaSenha, repetirNovaSenha) {
+    if (!usuarioAtual) {
+      return { success: false, error: 'Você precisa estar logado' };
+    }
+
+    const usuarios = JSON.parse(
+      localStorage.getItem('strykers_usuarios') || '[]'
+    );
+
+    const usuario = usuarios.find((u) => u.id === usuarioAtual.id);
+    if (!usuario) {
+      return { success: false, error: 'Usuário não encontrado' };
+    }
+
+    if (usuario.senha !== senhaAtual) {
+      return { success: false, error: 'Senha atual incorreta' };
+    }
+
+    if (novaSenha.length < 6) {
+      return {
+        success: false,
+        error: 'A nova senha deve ter no mínimo 6 caracteres',
+      };
+    }
+
+    if (novaSenha === senhaAtual) {
+      return {
+        success: false,
+        error: 'A nova senha deve ser diferente da senha atual',
+      };
+    }
+
+    if (novaSenha !== repetirNovaSenha) {
+      return { success: false, error: 'As senhas não coincidem' };
+    }
+
+    const usuariosAtualizados = usuarios.map((u) =>
+      u.id === usuarioAtual.id ? { ...u, senha: novaSenha } : u
+    );
+
+    localStorage.setItem(
+      'strykers_usuarios',
+      JSON.stringify(usuariosAtualizados)
+    );
+
+    return {
+      success: true,
+      message: '✅ Senha alterada com sucesso!',
+    };
+  }
+
+  /**
+   * Alterar e-mail do usuário logado
+   */
+  function alterarEmail(novoEmail, repetirNovoEmail) {
+    if (!usuarioAtual) {
+      return { success: false, error: 'Você precisa estar logado' };
+    }
+
+    if (!novoEmail || !repetirNovoEmail) {
+      return { success: false, error: 'Preencha todos os campos' };
+    }
+
+    if (novoEmail !== repetirNovoEmail) {
+      return { success: false, error: 'Os e-mails não coincidem' };
+    }
+
+    if (novoEmail === usuarioAtual.email) {
+      return {
+        success: false,
+        error: 'O novo e-mail deve ser diferente do e-mail atual',
+      };
+    }
+
+    const usuarios = JSON.parse(
+      localStorage.getItem('strykers_usuarios') || '[]'
+    );
+
+    const emailEmUso = usuarios.some(
+      (u) =>
+        u.email.toLowerCase() === novoEmail.toLowerCase() &&
+        u.id !== usuarioAtual.id
+    );
+
+    if (emailEmUso) {
+      return { success: false, error: 'Este e-mail já está em uso' };
+    }
+
+    const usuariosAtualizados = usuarios.map((u) =>
+      u.id === usuarioAtual.id ? { ...u, email: novoEmail.toLowerCase() } : u
+    );
+
+    localStorage.setItem(
+      'strykers_usuarios',
+      JSON.stringify(usuariosAtualizados)
+    );
+
+    const usuarioAtualizado = {
+      ...usuarioAtual,
+      email: novoEmail.toLowerCase(),
+    };
+    setUsuarioAtual(usuarioAtualizado);
+    localStorage.setItem(
+      'strykers_usuario_logado',
+      JSON.stringify(usuarioAtualizado)
+    );
+
+    return {
+      success: true,
+      message: '✅ E-mail alterado com sucesso!',
+    };
+  }
+
+  /**
+   * Salvar configurações do perfil do usuário
+   */
+  function salvarConfiguracoes(
+    foto,
+    forcaEspecial,
+    atribuicao,
+    observacoes,
+    historico
+  ) {
+    if (!usuarioAtual) {
+      return { success: false, error: 'Você precisa estar logado' };
+    }
+
+    try {
+      const membros = JSON.parse(
+        localStorage.getItem('strykers_membros') || '[]'
+      );
+
+      const membroIndex = membros.findIndex(
+        (m) => m.usuarioId === usuarioAtual.id
+      );
+
+      if (membroIndex === -1) {
+        return {
+          success: false,
+          error: 'Você não tem registro de membro na organização',
+        };
+      }
+
+      membros[membroIndex] = {
+        ...membros[membroIndex],
+        foto: foto || membros[membroIndex].foto,
+        forcaEspecial: forcaEspecial || 'Não',
+        atribuicao: atribuicao || membros[membroIndex].atribuicao,
+        observacoes: observacoes || '',
+        historico: historico || '',
+      };
+
+      localStorage.setItem('strykers_membros', JSON.stringify(membros));
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
+      return { success: false, error: 'Erro ao salvar configurações' };
+    }
+  }
+
   const value = {
     usuarioAtual,
     loading,
@@ -239,6 +403,9 @@ export function AuthProvider({ children }) {
     cadastro,
     confirmarEmail,
     updateUserRole,
+    alterarSenha,
+    alterarEmail,
+    salvarConfiguracoes,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
