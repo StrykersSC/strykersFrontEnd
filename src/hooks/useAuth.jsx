@@ -348,6 +348,49 @@ export function AuthProvider({ children }) {
   }
 
   /**
+   * Alterar telefone
+   */
+  function alterarTelefone(novoTelefone, repetirNovoTelefone) {
+    if (!usuarioAtual) {
+      return { success: false, error: 'Usuário não está logado' };
+    }
+
+    if (!novoTelefone || !repetirNovoTelefone) {
+      return { success: false, error: 'Preencha todos os campos' };
+    }
+
+    if (novoTelefone !== repetirNovoTelefone) {
+      return { success: false, error: 'Os telefones não coincidem' };
+    }
+
+    const usuarios = JSON.parse(
+      localStorage.getItem('strykers_usuarios') || '[]'
+    );
+
+    const usuario = usuarios.find((u) => u.id === usuarioAtual.id);
+
+    if (!usuario) {
+      return { success: false, error: 'Usuário não encontrado' };
+    }
+
+    if (novoTelefone === usuario.whatsapp) {
+      return {
+        success: false,
+        error: 'O novo telefone deve ser diferente do telefone atual',
+      };
+    }
+
+    const index = usuarios.findIndex((u) => u.id === usuarioAtual.id);
+    usuarios[index].whatsapp = novoTelefone;
+    localStorage.setItem('strykers_usuarios', JSON.stringify(usuarios));
+
+    return {
+      success: true,
+      message: '✅ Telefone alterado com sucesso!',
+    };
+  }
+
+  /**
    * Salvar configurações do perfil do usuário
    */
   function salvarConfiguracoes(
@@ -405,6 +448,7 @@ export function AuthProvider({ children }) {
     updateUserRole,
     alterarSenha,
     alterarEmail,
+    alterarTelefone,
     salvarConfiguracoes,
   };
 
