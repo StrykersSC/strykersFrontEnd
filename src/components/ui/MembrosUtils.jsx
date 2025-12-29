@@ -77,7 +77,7 @@ function MedalModal({ medalha, observacoes, onClose }) {
 function MedalSidebar({ membro, onClose, onShowDetalhe }) {
   const medalhas = membro.medalhasDetalhadas || [];
   return (
-    <aside className='fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-0 transition-transform duration-300 z-50 overflow-y-auto p-6'>
+    <aside className='fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-0 transition-transform duration-300 z-[50] overflow-y-auto p-6'>
       <div className='flex justify-between items-center mb-6'>
         <h3 className='text-2xl font-bold text-cyan-400'>
           MEDALHAS DE {membro.nome}
@@ -149,7 +149,7 @@ function MissaoSidebar({ membro, onClose, onShowDetalheMissao }) {
   const totalMissoes =
     eventosParticipados.length + (membro.valorHistorico || 0);
   return (
-    <aside className='fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-0 transition-transform duration-300 z-50 overflow-y-auto p-6'>
+    <aside className='fixed top-0 left-0 h-full w-96 bg-slate-900 border-r border-slate-700 transform -translate-x-0 transition-transform duration-300 z-[50] overflow-y-auto p-6'>
       <div className='flex justify-between items-center mb-6'>
         <h3 className='text-2xl font-bold text-cyan-400'>
           MISSÕES DE {membro.nome}
@@ -265,7 +265,7 @@ function MissaoSidebar({ membro, onClose, onShowDetalheMissao }) {
 function HistorySidebar({ membro, onClose }) {
   if (!membro || !membro.historico) return null;
   return (
-    <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 translate-x-0 transition-transform duration-300 z-50 overflow-y-auto p-6'>
+    <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 translate-x-0 transition-transform duration-300 z-[50] overflow-y-auto p-6'>
       <div className='flex justify-between items-center mb-6'>
         <h3 className='text-2xl font-bold text-gray-400'>📜 HISTÓRICO</h3>
         <button
@@ -346,7 +346,7 @@ function MissionDetails({ evento, onClose }) {
     year: 'numeric',
   });
   return (
-    <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 translate-x-0 transition-transform duration-300 z-50 overflow-y-auto p-6'>
+    <aside className='fixed top-0 right-0 h-full w-[500px] bg-slate-900 border-l border-slate-700 translate-x-0 transition-transform duration-300 z-[50] overflow-y-auto p-6'>
       <div className='flex justify-between items-center mb-6'>
         <h3 className='text-2xl font-bold text-cyan-400'>DETALHES DA MISSÃO</h3>
         <button

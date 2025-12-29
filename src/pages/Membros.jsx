@@ -89,7 +89,7 @@ export default function Membros() {
   }
 
   return (
-    <div className='relative z-10 container mx-auto px-6 py-16'>
+    <div className='relative z-[10] container mx-auto px-6 py-16'>
       <div className='mb-8 flex justify-between items-center flex-wrap gap-4'>
         <div>
           <h2 className='text-4xl font-bold text-white mb-2 tracking-wide'>
@@ -98,15 +98,6 @@ export default function Membros() {
           <p className='text-cyan-400 text-xl' id='total-membros'>
             Total: {membros.length} membros
           </p>
-        </div>
-
-        <div className='flex items-center gap-2'>
-          <button
-            onClick={() => setShowEdit(true)}
-            className='bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded px-4 py-2'
-          >
-            Adicionar
-          </button>
         </div>
       </div>
 
@@ -172,7 +163,7 @@ export default function Membros() {
       <div className='bg-slate-800/60 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden'>
         <div className='overflow-x-auto max-h-[600px] overflow-y-auto'>
           <table className='w-full'>
-            <thead className='bg-slate-900 sticky top-0 z-10'>
+            <thead className='bg-slate-900 sticky top-0 z-[10]'>
               <tr className='text-left text-cyan-400 font-semibold'>
                 <th
                   onClick={() => toggleSort('patente')}
@@ -281,7 +272,7 @@ export default function Membros() {
       {selected && (
         <aside
           id='member-details-sidebar'
-          className='fixed top-0 right-0 h-full w-96 bg-slate-900 border-l border-slate-700 transition-transform z-50 overflow-y-auto'
+          className='fixed top-0 right-0 h-full w-96 bg-slate-900 border-l border-slate-700 transition-transform z-[60] overflow-y-auto'
         >
           <div className='p-6'>
             <div className='flex justify-between items-center mb-6'>
@@ -396,33 +387,8 @@ export default function Membros() {
         <div
           id='sidebar-overlay'
           onClick={closeDetails}
-          className='fixed inset-0 bg-black/50 z-40'
+          className='fixed inset-0 bg-black/50 z-[40]'
         />
-      )}
-
-      {/* Edit/Add sidebar placeholder */}
-      {showEdit && (
-        <aside
-          id='edit-member-sidebar'
-          className='fixed top-0 left-0 h-full w-[500px] bg-slate-900 border-r border-slate-700 transition-transform z-50 overflow-y-auto'
-        >
-          <div className='p-6'>
-            <div className='flex justify-between items-center mb-6'>
-              <h3 className='text-2xl font-bold text-cyan-400'>
-                ADICIONAR MEMBRO
-              </h3>
-              <button
-                onClick={() => setShowEdit(false)}
-                className='text-gray-400 hover:text-white text-2xl'
-              >
-                ×
-              </button>
-            </div>
-            <p className='text-gray-400'>
-              Formulário de criação ainda não implementado nesta etapa.
-            </p>
-          </div>
-        </aside>
       )}
     </div>
   );

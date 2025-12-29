@@ -87,7 +87,7 @@ function AppContent() {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'>
-      <div className='fixed inset-0 pointer-events-none z-0 flex items-center justify-center'>
+      <div className='fixed inset-0 pointer-events-none z-[0] flex items-center justify-center'>
         <img
           src='/STRYKERS-Logo.png'
           alt='Logo da Strykers'
@@ -95,7 +95,7 @@ function AppContent() {
         />
       </div>
 
-      <nav className='relative z-[100] bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
+      <nav className='relative z-[50] bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
         <div className='container mx-auto px-6 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-3'>
@@ -143,8 +143,9 @@ function AppContent() {
 
                     {dropdownOpen && (
                       <div
-                        className='fixed mt-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-[9999] top-16 right-6'
+                        className='fixed mt-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-[50] top-16 right-6'
                         style={{ pointerEvents: 'auto' }}
+                        head
                       >
                         {/* ✅ Header com role */}
                         <div className='px-4 py-3 border-b border-slate-700'>
@@ -216,7 +217,7 @@ function AppContent() {
         </div>
       </nav>
 
-      <main className='relative z-10 container mx-auto px-6 py-16'>
+      <main className='relative z-[10] container mx-auto px-6 py-16'>
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/recrutamento' element={<Recrutamento />} />
