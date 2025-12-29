@@ -20,6 +20,7 @@ import ProfileSettingsModal from './components/modals/ProfileSettingsModal.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { hasPermission, ROLE_BADGES, ROLE_LABELS } from './constants/roles';
+import Portal from './components/Portal.jsx';
 
 function NavItem({ to, children, permission }) {
   const { usuarioAtual } = useAuth();
@@ -95,7 +96,7 @@ function AppContent() {
         />
       </div>
 
-      <nav className='relative z-[50] bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
+      <nav className='relative z-[10] bg-slate-900/80 backdrop-blur-sm border-b border-slate-700'>
         <div className='container mx-auto px-6 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-3'>
@@ -128,7 +129,7 @@ function AppContent() {
 
               <div className='ml-auto pl-8 border-l border-slate-700'>
                 {usuarioAtual ? (
-                  <div ref={dropdownRef}>
+                  <div>
                     <button
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className='text-cyan-400 font-semibold hover:text-cyan-300 transition-colors pb-1 flex items-center gap-2'
@@ -142,65 +143,67 @@ function AppContent() {
                     </button>
 
                     {dropdownOpen && (
-                      <div
-                        className='fixed mt-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-[50] top-16 right-6'
-                        style={{ pointerEvents: 'auto' }}
-                        head
-                      >
-                        {/* ✅ Header com role */}
-                        <div className='px-4 py-3 border-b border-slate-700'>
-                          <div className='text-white font-semibold'>
-                            {usuarioAtual.nome}
-                          </div>
-                          <div className='text-gray-400 text-sm'>
-                            {usuarioAtual.email}
-                          </div>
-                          {userRoleBadge && (
-                            <div className='mt-2'>
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${userRoleBadge.bg} ${userRoleBadge.text}`}
-                              >
-                                {userRoleBadge.icon}{' '}
-                                {ROLE_LABELS[usuarioAtual.role]}
-                              </span>
+                      <Portal>
+                        <div
+                          ref={dropdownRef}
+                          className='fixed mt-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-[100] top-16 right-6'
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          {/* ✅ Header com role */}
+                          <div className='px-4 py-3 border-b border-slate-700'>
+                            <div className='text-white font-semibold'>
+                              {usuarioAtual.nome}
                             </div>
-                          )}
-                        </div>
+                            <div className='text-gray-400 text-sm'>
+                              {usuarioAtual.email}
+                            </div>
+                            {userRoleBadge && (
+                              <div className='mt-2'>
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${userRoleBadge.bg} ${userRoleBadge.text}`}
+                                >
+                                  {userRoleBadge.icon}{' '}
+                                  {ROLE_LABELS[usuarioAtual.role]}
+                                </span>
+                              </div>
+                            )}
+                          </div>
 
-                        <button
-                          onClick={() => {
-                            navigate('/perfil');
-                            setDropdownOpen(false);
-                          }}
-                          className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
-                        >
-                          👤 Perfil
-                        </button>
-                        <button
-                          onClick={() => {
-                            setProfileSettingsModalOpen(true);
-                            setDropdownOpen(false);
-                          }}
-                          className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
-                        >
-                          ⚙️ Configurações
-                        </button>
-                        <button
-                          onClick={() => {
-                            setAccountSettingsModalOpen(true);
-                            setDropdownOpen(false);
-                          }}
-                          className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
-                        >
-                          🔐 Configuração de Conta
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-red-400 transition-colors'
-                        >
-                          🚪 Sair
-                        </button>
-                      </div>
+                          <button
+                            onClick={() => {
+                              navigate('/perfil');
+                              setDropdownOpen(false);
+                            }}
+                            className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
+                          >
+                            👤 Perfil
+                          </button>
+                          <button
+                            onClick={() => {
+                              setProfileSettingsModalOpen(true);
+                              setDropdownOpen(false);
+                            }}
+                            className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
+                          >
+                            ⚙️ Configurações
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAccountSettingsModalOpen(true);
+                              setDropdownOpen(false);
+                            }}
+                            className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors border-b border-slate-700'
+                          >
+                            🔐 Configuração de Conta
+                          </button>
+                          <button
+                            onClick={handleLogout}
+                            className='w-full text-left px-4 py-3 text-gray-300 hover:bg-slate-700 hover:text-red-400 transition-colors'
+                          >
+                            🚪 Sair
+                          </button>
+                        </div>
+                      </Portal>
                     )}
                   </div>
                 ) : (
